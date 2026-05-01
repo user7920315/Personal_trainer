@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:background="#1A1A2E"
+    android:padding="24dp">
+
+    <!-- Иконка -->
+    <ImageView
+        android:layout_width="120dp"
+        android:layout_height="120dp"
+        android:src="@drawable/ic_fitness"
+        android:layout_marginBottom="24dp"/>
+
+    <!-- Заголовок -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Персональный тренер"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:textColor="#FFFFFF"
+        android:layout_marginBottom="8dp"/>
+
+    <!-- Подзаголовок -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Выберите упражнение"
+        android:textSize="16sp"
+        android:textColor="#AAAAAA"
+        android:layout_marginBottom="40dp"/>
+
+    <!-- Кнопка отжимания -->
+    <Button
+        android:id="@+id/btnPushUp"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="💪 Отжимания"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#E94560"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Кнопка приседания -->
+    <Button
+        android:id="@+id/btnSquat"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="🏋 Приседания"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#0F3460"
+        android:layout_marginBottom="16dp"/>
+
+    <!-- Кнопка планка -->
+    <Button
+        android:id="@+id/btnPlank"
+        android:layout_width="match_parent"
+        android:layout_height="60dp"
+        android:text="🧘 Планка"
+        android:textSize="18sp"
+        android:textColor="#FFFFFF"
+        android:backgroundTint="#16213E"
+        android:layout_marginBottom="16dp"/>
+
+</LinearLayout>
