@@ -1,0 +1,653 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootProfile"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#1A1A2E"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_md">
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="wrap_content"
+            android:layout_height="@dimen/btn_height_sm"
+            android:backgroundTint="#33FFFFFF"
+            android:text="← Назад"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/text_sm" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:gravity="center"
+            android:maxLines="1"
+            android:text="Профиль"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/text_xl"
+            android:textStyle="bold" />
+
+        <View
+            android:layout_width="80dp"
+            android:layout_height="@dimen/btn_height_sm" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/scrollViewProfile"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="@dimen/spacing_xl">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingTop="@dimen/spacing_lg"
+                android:paddingBottom="@dimen/spacing_md">
+
+                <androidx.cardview.widget.CardView
+                    android:layout_width="@dimen/profile_avatar"
+                    android:layout_height="@dimen/profile_avatar"
+                    app:cardBackgroundColor="#E94560"
+                    app:cardCornerRadius="50dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:text="👤"
+                        android:textSize="36sp" />
+
+                </androidx.cardview.widget.CardView>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/spacing_sm"
+                    android:text="Спортсмен"
+                    android:textColor="#FFFFFF"
+                    android:textSize="@dimen/profile_title_text"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvBmiCategory"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="Заполните данные ниже"
+                    android:textColor="#AAAAAA"
+                    android:textSize="@dimen/text_sm" />
+
+            </LinearLayout>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/card_margin"
+                android:layout_marginBottom="@dimen/spacing_md"
+                app:cardBackgroundColor="#0F3460"
+                app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/card_elevation">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_md"
+                        android:text="⚖ Индекс массы тела"
+                        android:textColor="#FFFFFF"
+                        android:textSize="@dimen/text_lg"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_sm"
+                        android:text="Пол"
+                        android:textColor="#AAAAAA"
+                        android:textSize="@dimen/text_xs" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/btn_height_md"
+                        android:layout_marginBottom="@dimen/spacing_md"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:id="@+id/btnGenderMale"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginEnd="6dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_gender_selected"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="♂ "
+                                android:textColor="#FFFFFF"
+                                android:textSize="@dimen/text_md" />
+
+                            <TextView
+                                android:id="@+id/tvGenderMaleLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:maxLines="1"
+                                android:text="Мужской"
+                                android:textColor="#FFFFFF"
+                                android:textSize="@dimen/text_sm"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:id="@+id/btnGenderFemale"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_gender_unselected"
+                            android:clickable="true"
+                            android:focusable="true"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="♀ "
+                                android:textColor="#AAAAAA"
+                                android:textSize="@dimen/text_md" />
+
+                            <TextView
+                                android:id="@+id/tvGenderFemaleLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:maxLines="1"
+                                android:text="Женский"
+                                android:textColor="#AAAAAA"
+                                android:textSize="@dimen/text_sm" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="@dimen/spacing_sm"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
+                                android:text="Рост (см)"
+                                android:textColor="#AAAAAA"
+                                android:textSize="@dimen/text_xs" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:theme="@style/ThemeOverlay.Profile.Input">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etHeight"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="175"
+                                    android:inputType="numberDecimal"
+                                    android:textColor="#FFFFFF"
+                                    android:textColorHint="#666666"
+                                    android:textSize="@dimen/text_md" />
+
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="@dimen/spacing_sm"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="4dp"
+                                android:text="Вес (кг)"
+                                android:textColor="#AAAAAA"
+                                android:textSize="@dimen/text_xs" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:theme="@style/ThemeOverlay.Profile.Input">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etWeight"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:hint="70"
+                                    android:inputType="numberDecimal"
+                                    android:textColor="#FFFFFF"
+                                    android:textColorHint="#666666"
+                                    android:textSize="@dimen/text_md" />
+
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_sm"
+                        android:layout_marginBottom="4dp"
+                        android:text="Возраст"
+                        android:textColor="#AAAAAA"
+                        android:textSize="@dimen/text_xs" />
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:theme="@style/ThemeOverlay.Profile.Input">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAge"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="25"
+                            android:inputType="number"
+                            android:textColor="#FFFFFF"
+                            android:textColorHint="#666666"
+                            android:textSize="@dimen/text_md" />
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <Button
+                        android:id="@+id/btnCalculateBmi"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/btn_height_md"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:backgroundTint="#E94560"
+                        android:text="Рассчитать ИМТ"
+                        android:textColor="#FFFFFF"
+                        android:textSize="@dimen/text_md" />
+
+                    <LinearLayout
+                        android:id="@+id/layoutBmiResult"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="@dimen/spacing_md"
+                        android:background="@drawable/bg_bmi_result"
+                        android:orientation="vertical"
+                        android:padding="@dimen/spacing_sm"
+                        android:visibility="gone">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="horizontal">
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ИМТ"
+                                    android:textColor="#AAAAAA"
+                                    android:textSize="@dimen/text_xs" />
+
+                                <TextView
+                                    android:id="@+id/tvBmiValue"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="—"
+                                    android:textColor="#FFFFFF"
+                                    android:textSize="@dimen/bmi_value_text"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="44dp"
+                                android:background="#33FFFFFF" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Категория"
+                                    android:textColor="#AAAAAA"
+                                    android:textSize="@dimen/text_xs" />
+
+                                <TextView
+                                    android:id="@+id/tvBmiResultCategory"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="center"
+                                    android:maxLines="2"
+                                    android:text="—"
+                                    android:textColor="#00FF88"
+                                    android:textSize="@dimen/bmi_category_text"
+                                    android:textStyle="bold" />
+
+                            </LinearLayout>
+
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvBmiNorm"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="@dimen/spacing_sm"
+                            android:gravity="center"
+                            android:maxLines="2"
+                            android:textColor="#AAAAAA"
+                            android:textSize="@dimen/text_xs" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/card_margin"
+                android:layout_marginBottom="@dimen/spacing_md"
+                app:cardBackgroundColor="#0F3460"
+                app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/card_elevation">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_sm"
+                        android:text="📈 Динамика веса"
+                        android:textColor="#FFFFFF"
+                        android:textSize="@dimen/text_lg"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvNoWeightData"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_lg"
+                        android:text="Сохраните вес несколько раз&#10;чтобы увидеть динамику"
+                        android:textColor="#666666"
+                        android:textSize="@dimen/text_sm"
+                        android:visibility="visible" />
+
+                    <com.github.mikephil.charting.charts.LineChart
+                        android:id="@+id/weightChart"
+                        android:layout_width="match_parent"
+                        android:layout_height="@dimen/chart_height"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/card_margin"
+                android:layout_marginBottom="@dimen/spacing_md"
+                app:cardBackgroundColor="#0F3460"
+                app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/card_elevation">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_md"
+                        android:text="🏆 Статистика"
+                        android:textColor="#FFFFFF"
+                        android:textSize="@dimen/text_lg"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="4dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_stat_card"
+                            android:gravity="center"
+                            android:minHeight="@dimen/stat_min_height"
+                            android:orientation="vertical"
+                            android:padding="@dimen/stat_card_padding">
+
+                            <TextView
+                                android:id="@+id/tvTotalWorkouts"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:maxLines="1"
+                                android:text="0"
+                                android:textColor="#E94560"
+                                android:textSize="@dimen/stat_value_text"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:maxLines="1"
+                                android:text="Тренировок"
+                                android:textColor="#AAAAAA"
+                                android:textSize="@dimen/stat_label_text" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginHorizontal="4dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_stat_card"
+                            android:gravity="center"
+                            android:minHeight="@dimen/stat_min_height"
+                            android:orientation="vertical"
+                            android:padding="@dimen/stat_card_padding">
+
+                            <TextView
+                                android:id="@+id/tvCurrentStreak"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:maxLines="1"
+                                android:text="0"
+                                android:textColor="#FFD700"
+                                android:textSize="@dimen/stat_value_text"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:maxLines="1"
+                                android:text="Дней подряд"
+                                android:textColor="#AAAAAA"
+                                android:textSize="@dimen/stat_label_text" />
+
+                        </LinearLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="4dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_stat_card"
+                            android:gravity="center"
+                            android:minHeight="@dimen/stat_min_height"
+                            android:orientation="vertical"
+                            android:padding="@dimen/stat_card_padding">
+
+                            <TextView
+                                android:id="@+id/tvWeekWorkouts"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:maxLines="1"
+                                android:text="0"
+                                android:textColor="#00AAFF"
+                                android:textSize="@dimen/stat_value_text"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:gravity="center"
+                                android:maxLines="1"
+                                android:text="На неделе"
+                                android:textColor="#AAAAAA"
+                                android:textSize="@dimen/stat_label_text" />
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+            <androidx.cardview.widget.CardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="@dimen/card_margin"
+                android:layout_marginBottom="@dimen/spacing_md"
+                app:cardBackgroundColor="#0F3460"
+                app:cardCornerRadius="@dimen/card_radius"
+                app:cardElevation="@dimen/card_elevation">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/card_padding">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="@dimen/spacing_sm"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:ellipsize="end"
+                            android:maxLines="1"
+                            android:text="📋 История тренировок"
+                            android:textColor="#FFFFFF"
+                            android:textSize="@dimen/text_lg"
+                            android:textStyle="bold" />
+
+                        <Button
+                            android:id="@+id/btnClearHistory"
+                            android:layout_width="wrap_content"
+                            android:layout_height="@dimen/btn_height_sm"
+                            android:backgroundTint="#22FFFFFF"
+                            android:paddingHorizontal="@dimen/spacing_sm"
+                            android:text="Очистить"
+                            android:textColor="#AAAAAA"
+                            android:textSize="@dimen/text_xs" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvNoHistory"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center"
+                        android:padding="@dimen/spacing_lg"
+                        android:text="История тренировок пуста&#10;Начните тренироваться!"
+                        android:textColor="#666666"
+                        android:textSize="@dimen/text_sm"
+                        android:visibility="visible" />
+
+                    <androidx.recyclerview.widget.RecyclerView
+                        android:id="@+id/rvHistory"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:nestedScrollingEnabled="false"
+                        android:visibility="gone" />
+
+                </LinearLayout>
+
+            </androidx.cardview.widget.CardView>
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</LinearLayout>

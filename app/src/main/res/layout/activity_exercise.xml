@@ -1,0 +1,279 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="#000000">
+
+    <androidx.camera.view.PreviewView
+        android:id="@+id/previewView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <ru.sv.personaltrainer.overlay.PoseOverlayView
+        android:id="@+id/poseOverlay"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvRepCount"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/exercise_side_margin"
+        android:layout_marginTop="@dimen/exercise_top_margin"
+        android:background="#BB000000"
+        android:maxLines="1"
+        android:padding="@dimen/spacing_sm"
+        android:text="Повторений: 0"
+        android:textColor="#FFFFFF"
+        android:textSize="@dimen/rep_count_text"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvExerciseName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="@dimen/exercise_top_margin"
+        android:layout_marginEnd="@dimen/exercise_side_margin"
+        android:background="#BBE94560"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:maxLines="1"
+        android:padding="@dimen/spacing_sm"
+        android:text="Упражнение"
+        android:textColor="#FFFFFF"
+        android:textSize="@dimen/exercise_name_text"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintWidth_max="160dp" />
+
+    <TextView
+        android:id="@+id/tvPhase"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:background="#BB003322"
+        android:padding="@dimen/spacing_sm"
+        android:text="● ГОТОВ"
+        android:textColor="#00FF88"
+        android:textSize="@dimen/phase_text_size"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/tvRepCount"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layoutRecordingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/exercise_side_margin"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:background="#BB000000"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_sm"
+        android:visibility="gone"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvPhase">
+
+        <View
+            android:id="@+id/viewRecordingDot"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
+            android:layout_marginEnd="6dp"
+            android:background="@drawable/bg_recording_dot" />
+
+        <TextView
+            android:id="@+id/tvRecordingTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/text_sm"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <Button
+        android:id="@+id/btnToggleTts"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="@dimen/feedback_card_margin"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:backgroundTint="#88333333"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:padding="0dp"
+        android:text="🔊"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@id/layoutButtons"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <LinearLayout
+        android:id="@+id/layoutButtons"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/feedback_card_margin"
+        android:layout_marginEnd="@dimen/feedback_card_margin"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:orientation="horizontal"
+        app:layout_constraintBottom_toTopOf="@id/cardFeedback"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/btn_exercise_height"
+            android:layout_marginEnd="4dp"
+            android:layout_weight="1"
+            android:backgroundTint="#88E94560"
+            android:maxLines="1"
+            android:text="↺ Сброс"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/btn_exercise_text" />
+
+        <Button
+            android:id="@+id/btnRecord"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/btn_exercise_height"
+            android:layout_marginHorizontal="4dp"
+            android:layout_weight="1"
+            android:backgroundTint="#88CC0000"
+            android:maxLines="1"
+            android:text="⏺ Запись"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/btn_exercise_text" />
+
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/btn_exercise_height"
+            android:layout_marginStart="4dp"
+            android:layout_weight="1"
+            android:backgroundTint="#88333333"
+            android:maxLines="1"
+            android:text="← Назад"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/btn_exercise_text" />
+
+    </LinearLayout>
+
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardFeedback"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="@dimen/feedback_card_margin"
+        android:layout_marginEnd="@dimen/feedback_card_margin"
+        android:layout_marginBottom="@dimen/feedback_card_margin"
+        app:cardBackgroundColor="#EE1A1A2E"
+        app:cardCornerRadius="@dimen/card_radius"
+        app:cardElevation="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="@dimen/feedback_card_padding">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:maxLines="1"
+                    android:text="📊 Анализ техники"
+                    android:textColor="#E94560"
+                    android:textSize="@dimen/feedback_title_text"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvQuality"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="●●●●●"
+                    android:textColor="#00FF88"
+                    android:textSize="@dimen/feedback_title_text" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginBottom="@dimen/spacing_sm"
+                android:background="#33FFFFFF" />
+
+            <TextView
+                android:id="@+id/tvFeedback"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_xs"
+                android:ellipsize="end"
+                android:maxLines="2"
+                android:text="Встаньте в кадр для начала анализа"
+                android:textColor="#FFFFFF"
+                android:textSize="@dimen/feedback_body_text"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/layoutErrors"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:visibility="gone">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginBottom="@dimen/spacing_xs"
+                    android:background="#33FF0000" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="2dp"
+                    android:text="Также исправьте:"
+                    android:textColor="#AAAAAA"
+                    android:textSize="@dimen/text_xs" />
+
+                <TextView
+                    android:id="@+id/tvErrors"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:ellipsize="end"
+                    android:lineSpacingExtra="3dp"
+                    android:maxLines="3"
+                    android:textColor="#FF6B6B"
+                    android:textSize="@dimen/feedback_error_text" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+    </androidx.cardview.widget.CardView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
