@@ -1,11 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:background="#1A1A2E">
 
+    <!-- ── Шапка ───────────────────────────────────── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,6 +16,7 @@
         android:padding="16dp"
         android:layout_marginTop="8dp">
 
+        <!-- Приветствие + заголовок -->
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -37,14 +40,14 @@
 
         </LinearLayout>
 
-
+        <!-- Кнопка профиля -->
         <androidx.cardview.widget.CardView
             android:id="@+id/btnProfile"
             android:layout_width="48dp"
             android:layout_height="48dp"
             app:cardCornerRadius="24dp"
             app:cardBackgroundColor="#E94560"
-            xmlns:app="http://schemas.android.com/apk/res-auto">
+            app:cardElevation="4dp">
 
             <TextView
                 android:layout_width="match_parent"
@@ -57,7 +60,7 @@
 
     </LinearLayout>
 
-
+    <!-- ── Поиск ────────────────────────────────────── -->
     <EditText
         android:id="@+id/etSearch"
         android:layout_width="match_parent"
@@ -71,7 +74,7 @@
         android:paddingHorizontal="16dp"
         android:inputType="text"/>
 
-
+    <!-- ── Список упражнений ─────────────────────────── -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerExercises"
         android:layout_width="match_parent"
