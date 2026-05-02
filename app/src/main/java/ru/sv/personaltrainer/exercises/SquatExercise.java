@@ -8,77 +8,60 @@ public class SquatExercise extends BaseExercise {
 
     private static final String TAG = "SquatExercise";
 
-    // ════════════════════════════════════════════════
-    //  Константы
-    // ════════════════════════════════════════════════
+    private static final float DEPTH_TOO_SHALLOW_ERR = -0.20f;
+    private static final float DEPTH_TOO_SHALLOW_WARN = -0.10f;
+    private static final float DEPTH_TOO_DEEP_ERR = 0.15f;
+    private static final float DEPTH_TOO_DEEP_WARN = 0.07f;
 
-    // Глубина (только для вида СБОКУ)
-    // Угол уменьшается при приседе: стоя ~170°, глубоко ~80-90°
-    private static final float DEPTH_SHALLOW_ERR  = 120f; // мало
-    private static final float DEPTH_SHALLOW_WARN = 105f; // почти мало
-    private static final float DEPTH_DEEP_ERR     = 55f;  // слишком глубоко
-    private static final float DEPTH_DEEP_WARN    = 70f;  // почти слишком
-    private static final float DEPTH_ACTIVE       = 160f; // начал приседать
+    private static final float DEPTH_ACTIVE = 160f;
 
-    // Стоит прямо (для определения фазы)
     private static final float STANDING_ANGLE = 155f;
 
-    // Спина (только сбоку)
     private static final float BACK_DIFF_WARN  = 20f;
     private static final float BACK_DIFF_ERROR = 35f;
 
-    // Пятки — heel.Y vs ankle.Y нормализованное на длину ноги
-    // liftRatio = (ankle.Y - heel.Y) / legLength
-    // > 0 → пятка выше лодыжки → оторвана
-    // < 0 → пятка ниже лодыжки → норма
-    private static final float HEEL_ERROR = 0.06f;
-    private static final float HEEL_WARN  = 0.02f;
+    private static final float HEEL_NORMAL_OFFSET = 0.90f;
+    private static final float HEEL_WARN = 0.10f;
+    private static final float HEEL_ERROR = 0.20f;
 
-    // Колено за носком (только сбоку)
     private static final float KNEE_OVER_TOE = 0.06f;
 
-    // Колени внутрь (только спереди)
     private static final float KNEE_CAVE_ERROR = 0.70f;
     private static final float KNEE_CAVE_WARN  = 0.82f;
 
-    // Асимметрия (только спереди)
     private static final float KNEE_ASYMMETRY = 14f;
 
-    // Вид съёмки
-    private static final float SIDE_THRESHOLD   = 0.12f;
-    private static final int   STABLE_FRAMES    = 8;
+    private static final float SIDE_THRESHOLD = 0.12f;
+    private static final int   STABLE_FRAMES  = 8;
 
-    // EMA сглаживание
     private static final float EMA_ALPHA = 0.15f;
 
-    // ════════════════════════════════════════════════
-    //  EMA состояние
-    // ════════════════════════════════════════════════
+    private float emaLHeelY      = -1f;
+    private float emaLFootIdxY   = -1f;
+    private float emaLAnkleY     = -1f;
+    private float emaLHipY       = -1f;
+    private float emaLKneeY      = -1f;
 
-    // Пятки и лодыжки
-    private float emaLHeelY  = -1f, emaRHeelY  = -1f;
-    private float emaLAnkleY = -1f, emaRAnkleY = -1f;
-    private float emaLHipY   = -1f, emaRHipY   = -1f;
+    private float emaRHeelY      = -1f;
+    private float emaRFootIdxY   = -1f;
+    private float emaRAnkleY     = -1f;
+    private float emaRHipY       = -1f;
+    private float emaRKneeY      = -1f;
 
-    // Спина (EMA точек для сглаживания)
     private float emaShX = -1f, emaShY = -1f;
     private float emaHiX = -1f, emaHiY = -1f;
     private float emaKnX = -1f, emaKnY = -1f;
     private float emaAnX = -1f, emaAnY = -1f;
 
-    // Ширина плеч
     private float emaShoulderWidth = -1f;
 
-    // Стабилизация вида
-    private ViewMode currentView   = ViewMode.UNKNOWN;
-    private ViewMode candidateView = ViewMode.UNKNOWN;
+    private ViewMode currentView    = ViewMode.UNKNOWN;
+    private ViewMode candidateView  = ViewMode.UNKNOWN;
     private int      candidateCount = 0;
 
     private enum ViewMode { SIDE, FRONT, UNKNOWN }
 
-    // ════════════════════════════════════════════════
-    //  Основной метод
-    // ════════════════════════════════════════════════
+
     @Override
     public String getName() { return "🏋 Приседания"; }
 
@@ -91,10 +74,8 @@ public class SquatExercise extends BaseExercise {
             return result;
         }
 
-        // Обновляем EMA
         updateEMA(lm);
 
-        // Определяем вид
         ViewMode view = updateView(lm);
         if (view == ViewMode.UNKNOWN) {
             result.mainFeedback =
@@ -103,7 +84,6 @@ public class SquatExercise extends BaseExercise {
             return result;
         }
 
-        // Рабочая сторона
         Side side = selectBestSide(lm);
         if (side == null || side.kneeAngle < 0) {
             result.mainFeedback =
@@ -132,82 +112,72 @@ public class SquatExercise extends BaseExercise {
         return result;
     }
 
-    // ════════════════════════════════════════════════
-    //  ВИД СБОКУ
-    //  ✅ Глубина (мало и слишком глубоко)
-    //  ✅ Спина (параллельность с голенью)
-    //  ✅ Пятки (heel vs ankle)
-    //  ✅ Колено за носком
-    // ════════════════════════════════════════════════
     private void analyzeSide(List<NormalizedLandmark> lm,
                              AnalysisResult result,
                              Side s) {
-        // 1. Глубина
-        checkDepth(result, s.kneeAngle);
 
-        // 2. Спина
+        checkDepth(result, s, lm);
+
         updateBackEMA(lm, s);
         if (s.hasShoulder && s.hasHip
                 && s.hasKnee && s.hasAnkle) {
             checkBack(result, s);
         }
-
-        // 3. Пятка рабочей стороны
-        float heelY  = s.isLeft ? emaLHeelY  : emaRHeelY;
-        float ankleY = s.isLeft ? emaLAnkleY : emaRAnkleY;
-        float hipY   = s.isLeft ? emaLHipY   : emaRHipY;
-
-        if (s.hasHeel && s.hasAnkle && s.hasHip
-                && heelY > 0 && ankleY > 0 && hipY > 0) {
-            checkHeel(result,
-                    heelY, ankleY, hipY,
-                    s.isLeft,
-                    s.heelIdx, s.ankleIdx);
+        if (s.isLeft) {
+            if (s.hasHeel && s.hasToe
+                    && emaLHeelY > 0 && emaLFootIdxY > 0 && emaLAnkleY > 0) {
+                checkHeel(result,
+                        emaLHeelY, emaLFootIdxY, emaLAnkleY,
+                        true, s.heelIdx, s.toeIdx);
+            }
+        } else {
+            if (s.hasHeel && s.hasToe
+                    && emaRHeelY > 0 && emaRFootIdxY > 0 && emaRAnkleY > 0) {
+                checkHeel(result,
+                        emaRHeelY, emaRFootIdxY, emaRAnkleY,
+                        false, s.heelIdx, s.toeIdx);
+            }
         }
 
-        // 4. Колено за носком
-        if (s.hasToe && s.hasAnkle) {
+        if (s.hasToe && s.hasAnkle && s.hasKnee) {
             checkKneeOverToe(lm, result, s);
         }
     }
 
-    // ════════════════════════════════════════════════
-    //  ВИД СПЕРЕДИ
-    //  ✅ Колени внутрь
-    //  ✅ Пятки обеих ног
-    //  ✅ Асимметрия колен
-    //  ❌ Глубина (удалена — ненадёжна спереди)
-    //  ❌ Носки (удалены — не работали)
-    // ════════════════════════════════════════════════
     private void analyzeFront(List<NormalizedLandmark> lm,
                               AnalysisResult result,
                               Side s) {
-        // 1. Колени внутрь
+
+
+        checkDepth(result, s, lm);
+
         if (allVisible(lm, LEFT_KNEE,  RIGHT_KNEE,
                 LEFT_ANKLE, RIGHT_ANKLE)) {
             checkKneesInward(lm, result);
         }
 
-        // 2. Пятки обеих ног
         if (isVisible(lm, LEFT_HEEL)
+                && isVisible(lm, LEFT_FOOT_INDEX)
                 && isVisible(lm, LEFT_ANKLE)
-                && isVisible(lm, LEFT_HIP)
-                && emaLHeelY > 0 && emaLAnkleY > 0 && emaLHipY > 0) {
+                && emaLHeelY > 0
+                && emaLFootIdxY > 0
+                && emaLAnkleY > 0) {
             checkHeel(result,
-                    emaLHeelY, emaLAnkleY, emaLHipY,
-                    true, LEFT_HEEL, LEFT_ANKLE);
+                    emaLHeelY, emaLFootIdxY, emaLAnkleY,
+                    true, LEFT_HEEL, LEFT_FOOT_INDEX);
         }
 
         if (isVisible(lm, RIGHT_HEEL)
+                && isVisible(lm, RIGHT_FOOT_INDEX)
                 && isVisible(lm, RIGHT_ANKLE)
-                && isVisible(lm, RIGHT_HIP)
-                && emaRHeelY > 0 && emaRAnkleY > 0 && emaRHipY > 0) {
+                && emaRHeelY > 0
+                && emaRFootIdxY > 0
+                && emaRAnkleY > 0) {
             checkHeel(result,
-                    emaRHeelY, emaRAnkleY, emaRHipY,
-                    false, RIGHT_HEEL, RIGHT_ANKLE);
+                    emaRHeelY, emaRFootIdxY, emaRAnkleY,
+                    false, RIGHT_HEEL, RIGHT_FOOT_INDEX);
         }
 
-        // 3. Асимметрия колен
         if (allVisible(lm, LEFT_HIP,  RIGHT_HIP,
                 LEFT_KNEE,  RIGHT_KNEE,
                 LEFT_ANKLE, RIGHT_ANKLE)) {
@@ -215,58 +185,57 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    // ════════════════════════════════════════════════
-    //  ГЛУБИНА (только сбоку)
-    //
-    //  Исправлена логика:
-    //  Стоя:        angle ~ 170°
-    //  Норма:       angle ~ 80-105°
-    //  Мало:        angle > 120°
-    //  Слишком:     angle < 55°
-    //
-    //  Проверяем только если начал приседать (< DEPTH_ACTIVE)
-    // ════════════════════════════════════════════════
-    private void checkDepth(AnalysisResult result, float angle) {
-        // Только в фазе DOWN
+    private void checkDepth(AnalysisResult result,
+                            Side s,
+                            List<NormalizedLandmark> lm) {
+
         if (!result.phase.equals("DOWN")) return;
 
-        // Не начал приседать
-        if (angle >= DEPTH_ACTIVE) return;
+        if (!s.hasHip || !s.hasKnee) return;
 
-        if (angle > DEPTH_SHALLOW_ERR) {
-            // angle = 130° → мало (> 120)
+        float hipY  = s.isLeft ? emaLHipY  : emaRHipY;
+        float kneeY = s.isLeft ? emaLKneeY : emaRKneeY;
+
+        if (hipY <= 0 || kneeY <= 0) return;
+
+        float hipKneeDist = Math.abs(kneeY - hipY);
+        if (hipKneeDist < 0.05f) {
+            Log.w(TAG, "Depth: hipKneeDist too small=" + hipKneeDist);
+            return;
+        }
+
+        float ratio = (hipY - kneeY) / hipKneeDist;
+
+        Log.d(TAG, String.format(
+                "Depth[%s]: hipY=%.3f kneeY=%.3f dist=%.3f ratio=%.3f",
+                s.isLeft ? "L" : "R",
+                hipY, kneeY, hipKneeDist, ratio));
+
+        if (ratio < DEPTH_TOO_SHALLOW_ERR) {
             result.addError(
                     "⚠ Приседайте глубже — "
-                            + "угол колена должен быть ~90°",
-                    LEFT_KNEE, RIGHT_KNEE);
+                            + "опустите таз до уровня колен",
+                    s.hipIdx, s.kneeIdx);
 
-        } else if (angle > DEPTH_SHALLOW_WARN) {
-            // angle = 110° → почти мало (> 105)
+        } else if (ratio < DEPTH_TOO_SHALLOW_WARN) {
             result.addError(
-                    "⚠ Чуть глубже!",
-                    LEFT_KNEE, RIGHT_KNEE);
+                    "⚠ Чуть глубже — почти достаточно!",
+                    s.hipIdx, s.kneeIdx);
 
-        } else if (angle < DEPTH_DEEP_ERR) {
-            // angle = 50° → слишком глубоко (< 55)
+        } else if (ratio > DEPTH_TOO_DEEP_ERR) {
             result.addError(
                     "⚠ Слишком глубокий присед — "
-                            + "поднимитесь немного",
-                    LEFT_KNEE, RIGHT_KNEE);
+                            + "поднимитесь чуть выше",
+                    s.hipIdx, s.kneeIdx);
 
-        } else if (angle < DEPTH_DEEP_WARN) {
-            // angle = 65° → почти слишком (< 70)
+        } else if (ratio > DEPTH_TOO_DEEP_WARN) {
             result.addError(
                     "⚠ Очень глубокий присед — "
                             + "следите за коленями",
-                    LEFT_KNEE, RIGHT_KNEE);
+                    s.hipIdx, s.kneeIdx);
         }
-        // 70° - 105° → идеально ✅ — нет ошибки
-    }
 
-    // ════════════════════════════════════════════════
-    //  СПИНА (только сбоку)
-    //  Параллельность вектора спины и вектора голени
-    // ════════════════════════════════════════════════
+    }
     private void checkBack(AnalysisResult result, Side s) {
 
         if (!isFinite(emaShX) || !isFinite(emaShY)
@@ -274,21 +243,19 @@ public class SquatExercise extends BaseExercise {
                 || !isFinite(emaKnX) || !isFinite(emaKnY)
                 || !isFinite(emaAnX) || !isFinite(emaAnY)) return;
 
-        // Вектор спины: shoulder → hip
+
         double backDx = emaHiX - emaShX;
         double backDy = emaHiY - emaShY;
 
-        // Вектор голени: knee → ankle
+
         double shinDx = emaAnX - emaKnX;
         double shinDy = emaAnY - emaKnY;
 
-        // Угол к горизонтали
-        double backAngle = Math.toDegrees(
-                Math.atan2(backDy, backDx));
-        double shinAngle = Math.toDegrees(
-                Math.atan2(shinDy, shinDx));
 
-        // Разница с нормализацией [0, 180]
+        double backAngle = Math.toDegrees(Math.atan2(backDy, backDx));
+        double shinAngle = Math.toDegrees(Math.atan2(shinDy, shinDx));
+
+
         double diff = Math.abs(backAngle - shinAngle);
         if (diff > 180.0) diff = 360.0 - diff;
 
@@ -309,68 +276,44 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    // ════════════════════════════════════════════════
-    //  ПЯТКИ — heel.Y vs ankle.Y
-    //
-    //  Координатная система MediaPipe: Y растёт ВНИЗ
-    //
-    //  В норме пятка находится НИЖЕ лодыжки:
-    //    heel.Y > ankle.Y
-    //    ankle.Y - heel.Y < 0 → liftRatio < 0 → норма ✅
-    //
-    //  При отрыве пятки она ПОДНИМАЕТСЯ (Y уменьшается):
-    //    heel.Y < ankle.Y
-    //    ankle.Y - heel.Y > 0 → liftRatio > 0 → ошибка ❌
-    //
-    //  Нормализация на длину ноги (ankle.Y - hip.Y):
-    //  Делает порог независимым от роста и расстояния до камеры
-    // ════════════════════════════════════════════════
     private void checkHeel(AnalysisResult result,
                            float heelY,
+                           float footIndexY,
                            float ankleY,
-                           float hipY,
                            boolean isLeft,
                            int heelIdx,
-                           int ankleIdx) {
+                           int footIdxIdx) {
 
-        // Длина ноги (лодыжка ниже бедра → ankleY > hipY)
-        float legLength = ankleY - hipY;
-
-        // Аномальные данные
-        if (legLength < 0.05f) {
-            Log.w(TAG, "Heel: anomalous legLength=" + legLength);
-            return;
+        float ankleHeelDist = Math.abs(ankleY - heelY);
+        if (ankleHeelDist < 0.01f) {
+            ankleHeelDist = 0.05f;
         }
 
-        // heelDiff > 0 → пятка ВЫШЕ лодыжки → оторвана
-        // heelDiff < 0 → пятка НИЖЕ лодыжки → норма
-        float heelDiff  = ankleY - heelY;
-        float liftRatio = heelDiff / legLength;
+        float liftRatio = (footIndexY - heelY) / ankleHeelDist;
+
+        float deviation = liftRatio - HEEL_NORMAL_OFFSET;
 
         String name = isLeft ? "Левая" : "Правая";
 
         Log.d(TAG, String.format(
-                "Heel[%s]: heelY=%.3f ankleY=%.3f hipY=%.3f "
-                        + "legLen=%.3f diff=%.3f ratio=%.3f",
-                name, heelY, ankleY, hipY,
-                legLength, heelDiff, liftRatio));
+                "Heel[%s]: heelY=%.3f footIdxY=%.3f ankleY=%.3f "
+                        + "dist=%.3f liftRatio=%.3f deviation=%.3f",
+                name, heelY, footIndexY, ankleY,
+                ankleHeelDist, liftRatio, deviation));
 
-        if (liftRatio > HEEL_ERROR) {
+        if (deviation > HEEL_ERROR) {
             result.addError(
                     "⚠ " + name + " пятка оторвана! "
                             + "Прижимайте пятку к полу",
-                    heelIdx, ankleIdx);
+                    heelIdx, footIdxIdx);
 
-        } else if (liftRatio > HEEL_WARN) {
+        } else if (deviation > HEEL_WARN) {
             result.addError(
                     "⚠ " + name + " пятка начинает подниматься",
                     heelIdx);
         }
     }
 
-    // ════════════════════════════════════════════════
-    //  КОЛЕНО ЗА НОСКОМ (только сбоку)
-    // ════════════════════════════════════════════════
     private void checkKneeOverToe(List<NormalizedLandmark> lm,
                                   AnalysisResult result,
                                   Side s) {
@@ -392,9 +335,6 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    // ════════════════════════════════════════════════
-    //  КОЛЕНИ ВНУТРЬ (только спереди)
-    // ════════════════════════════════════════════════
     private void checkKneesInward(List<NormalizedLandmark> lm,
                                   AnalysisResult result) {
         float kW = distX(lm, LEFT_KNEE,  RIGHT_KNEE);
@@ -417,9 +357,6 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    // ════════════════════════════════════════════════
-    //  АСИММЕТРИЯ (только спереди)
-    // ════════════════════════════════════════════════
     private void checkAsymmetry(List<NormalizedLandmark> lm,
                                 AnalysisResult result) {
         float lA = getAngle(lm, LEFT_HIP,  LEFT_KNEE,  LEFT_ANKLE);
@@ -438,9 +375,6 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    // ════════════════════════════════════════════════
-    //  Стабилизация вида съёмки
-    // ════════════════════════════════════════════════
     private ViewMode updateView(List<NormalizedLandmark> lm) {
         ViewMode raw = detectRawView(lm);
 
@@ -460,7 +394,7 @@ public class SquatExercise extends BaseExercise {
                 && currentView != candidateView) {
             Log.d(TAG, "View: "
                     + currentView + " → " + candidateView);
-            resetHeelEMA();
+            resetEMA();
             currentView = candidateView;
         }
 
@@ -483,17 +417,22 @@ public class SquatExercise extends BaseExercise {
         return ViewMode.UNKNOWN;
     }
 
-    // ════════════════════════════════════════════════
-    //  EMA обновление
-    // ════════════════════════════════════════════════
     private void updateEMA(List<NormalizedLandmark> lm) {
 
-        emaLHeelY  = emaPoint(emaLHeelY,  lm, LEFT_HEEL,       true);
-        emaRHeelY  = emaPoint(emaRHeelY,  lm, RIGHT_HEEL,      true);
-        emaLAnkleY = emaPoint(emaLAnkleY, lm, LEFT_ANKLE,      true);
-        emaRAnkleY = emaPoint(emaRAnkleY, lm, RIGHT_ANKLE,     true);
-        emaLHipY   = emaPoint(emaLHipY,   lm, LEFT_HIP,        true);
-        emaRHipY   = emaPoint(emaRHipY,   lm, RIGHT_HIP,       true);
+
+        emaLHeelY    = emaPointY(emaLHeelY,    lm, LEFT_HEEL);
+        emaLFootIdxY = emaPointY(emaLFootIdxY, lm, LEFT_FOOT_INDEX);
+        emaLAnkleY   = emaPointY(emaLAnkleY,   lm, LEFT_ANKLE);
+        emaLHipY     = emaPointY(emaLHipY,     lm, LEFT_HIP);
+        emaLKneeY    = emaPointY(emaLKneeY,    lm, LEFT_KNEE);
+
+
+        emaRHeelY    = emaPointY(emaRHeelY,    lm, RIGHT_HEEL);
+        emaRFootIdxY = emaPointY(emaRFootIdxY, lm, RIGHT_FOOT_INDEX);
+        emaRAnkleY   = emaPointY(emaRAnkleY,   lm, RIGHT_ANKLE);
+        emaRHipY     = emaPointY(emaRHipY,     lm, RIGHT_HIP);
+        emaRKneeY    = emaPointY(emaRKneeY,    lm, RIGHT_KNEE);
+
 
         if (allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
             float w = distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
@@ -503,21 +442,20 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    // EMA для Y координаты одной точки
-    private float emaPoint(float prev,
-                           List<NormalizedLandmark> lm,
-                           int idx,
-                           boolean useY) {
-        if (!isVisible(lm, idx)) return -1f; // сброс при потере
-        float val = useY ? lm.get(idx).y() : lm.get(idx).x();
+    private float emaPointY(float prev,
+                            List<NormalizedLandmark> lm,
+                            int idx) {
+        if (!isVisible(lm, idx)) return -1f;
+        float val = lm.get(idx).y();
         return emaVal(prev, val);
     }
 
     private float emaVal(float prev, float newVal) {
-        if (newVal < 0 || newVal > 1.0f
+        if (newVal < 0
+                || newVal > 1.0f
                 || Float.isNaN(newVal)
                 || Float.isInfinite(newVal)) return prev;
-        if (prev < 0) return newVal; // первое значение
+        if (prev < 0) return newVal;
         return prev + EMA_ALPHA * (newVal - prev);
     }
 
@@ -543,10 +481,6 @@ public class SquatExercise extends BaseExercise {
         } else { emaAnX = emaAnY = -1f; }
     }
 
-    // ════════════════════════════════════════════════
-    //  Вспомогательные методы
-    // ════════════════════════════════════════════════
-
     private boolean isFinite(float v) {
         return !Float.isNaN(v) && !Float.isInfinite(v) && v > 0;
     }
@@ -569,6 +503,7 @@ public class SquatExercise extends BaseExercise {
         s.kneeIdx     = left ? LEFT_KNEE       : RIGHT_KNEE;
         s.ankleIdx    = left ? LEFT_ANKLE      : RIGHT_ANKLE;
         s.heelIdx     = left ? LEFT_HEEL       : RIGHT_HEEL;
+        // toeIdx = foot_index (31 для LEFT, 32 для RIGHT)
         s.toeIdx      = left ? LEFT_FOOT_INDEX : RIGHT_FOOT_INDEX;
 
         s.hasShoulder = isVisible(lm, s.shoulderIdx);
@@ -624,19 +559,21 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    private void resetHeelEMA() {
-        emaLHeelY  = emaRHeelY  = -1f;
-        emaLAnkleY = emaRAnkleY = -1f;
-        emaLHipY   = emaRHipY   = -1f;
-        Log.d(TAG, "Heel EMA reset");
+    private void resetEMA() {
+        emaLHeelY    = emaRHeelY    = -1f;
+        emaLFootIdxY = emaRFootIdxY = -1f;
+        emaLAnkleY   = emaRAnkleY   = -1f;
+        emaLHipY     = emaRHipY     = -1f;
+        emaLKneeY    = emaRKneeY    = -1f;
+        emaShX = emaShY = emaHiX = emaHiY = -1f;
+        emaKnX = emaKnY = emaAnX = emaAnY = -1f;
+        Log.d(TAG, "EMA reset");
     }
 
     @Override
     public void reset() {
         super.reset();
-        resetHeelEMA();
-        emaShX = emaShY = emaHiX = emaHiY = -1f;
-        emaKnX = emaKnY = emaAnX = emaAnY = -1f;
+        resetEMA();
         emaShoulderWidth = -1f;
         currentView    = ViewMode.UNKNOWN;
         candidateView  = ViewMode.UNKNOWN;
