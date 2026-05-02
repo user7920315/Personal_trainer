@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
 
     private void goToExerciseList() {
         startActivity(new Intent(this, ExerciseListActivity.class));
-        finish(); // закрываем MainActivity
+        finish();
     }
 
     @Override

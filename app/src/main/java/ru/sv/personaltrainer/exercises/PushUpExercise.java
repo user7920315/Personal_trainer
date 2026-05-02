@@ -18,7 +18,6 @@ public class PushUpExercise extends BaseExercise {
             return result;
         }
 
-        // ── Проверяем что видна верхняя часть тела ───
         boolean hasShoulders = allVisible(lm,
                 LEFT_SHOULDER, RIGHT_SHOULDER);
         boolean hasElbows    = allVisible(lm,
@@ -35,14 +34,12 @@ public class PushUpExercise extends BaseExercise {
                 LEFT_HEEL,     RIGHT_HEEL);
         boolean hasNose      = isVisible(lm, NOSE);
 
-        // Минимум — должны быть видны плечи
         if (!hasShoulders) {
             result.mainFeedback = "Направьте камеру — должны быть видны плечи";
             result.phase = "";
             return result;
         }
 
-        // ── Угол локтей (основной показатель фазы) ───
         float leftElbow  = hasElbows
                 ? getAngle(lm, LEFT_SHOULDER,  LEFT_ELBOW,  LEFT_WRIST)
                 : -1f;
@@ -58,7 +55,6 @@ public class PushUpExercise extends BaseExercise {
         else if   (rightElbow < 0) avgElbow = leftElbow;
         else avgElbow = (leftElbow + rightElbow) / 2f;
 
-        // ── Определяем фазу ──────────────────────────
         if (avgElbow < 90f) {
             if (!isDown) isDown = true;
             result.phase = "DOWN";
@@ -70,12 +66,6 @@ public class PushUpExercise extends BaseExercise {
             result.phase = avgElbow < 130f ? "DOWN" : "UP";
         }
 
-        // ════════════════════════════════════════════
-        //  АНАЛИЗ ОШИБОК
-        // ════════════════════════════════════════════
-
-        // ── 1. Локти слишком широко ──────────────────
-        // Нужны оба плеча + оба локтя
         if (hasShoulders && hasElbows) {
             float shoulderW = distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
             float elbowW    = distX(lm, LEFT_ELBOW,    RIGHT_ELBOW);
@@ -87,28 +77,22 @@ public class PushUpExercise extends BaseExercise {
             }
         }
 
-        // ── 2. Неполное разгибание вверху ────────────
         if (result.phase.equals("UP") && avgElbow < 150f) {
             result.addError(
                     "⚠ Полностью разгибайте руки в верхней точке",
                     LEFT_ELBOW, RIGHT_ELBOW);
         }
 
-        // ── 3. Неполный спуск вниз ───────────────────
         if (result.phase.equals("DOWN") && avgElbow > 110f) {
             result.addError(
                     "⚠ Опускайтесь ниже — грудь ближе к полу",
                     LEFT_ELBOW, RIGHT_ELBOW);
         }
 
-        // ── 4. СПИНА И ТАЗ ───────────────────────────
-        //  Используем разные методы в зависимости
-        //  от того что видит камера
         analyzeBackAndHips(lm, result,
                 hasShoulders, hasHips, hasKnees,
                 hasAnkles, hasWrists, hasNose);
 
-        // ── Итоговая подсказка ────────────────────────
         result.repCount     = repCount;
         result.mainFeedback = result.errors.isEmpty()
                 ? (result.phase.equals("DOWN")
@@ -119,9 +103,6 @@ public class PushUpExercise extends BaseExercise {
         return result;
     }
 
-    // ════════════════════════════════════════════════
-    //  Анализ спины и таза — адаптивная логика
-    // ════════════════════════════════════════════════
     private void analyzeBackAndHips(List<NormalizedLandmark> lm,
                                     AnalysisResult result,
                                     boolean hasShoulders,
@@ -133,11 +114,6 @@ public class PushUpExercise extends BaseExercise {
 
         boolean hasElbows = allVisible(lm, LEFT_ELBOW, RIGHT_ELBOW);
 
-        // ════════════════════════════════════════════
-        //  МЕТОД 1: Локти + Бёдра
-        //  Твоя идея — самый надёжный способ!
-        //  Таз должен быть на уровне локтей
-        // ════════════════════════════════════════════
         if (hasElbows && hasHips) {
 
             float elbowY = avgY(lm, LEFT_ELBOW, RIGHT_ELBOW);
@@ -145,24 +121,20 @@ public class PushUpExercise extends BaseExercise {
 
             if (elbowY >= 0 && hipY >= 0) {
 
-                // Допуск ±0.04 (нормализованные координаты)
-                // чтобы не было ложных срабатываний
                 float diff = hipY - elbowY;
 
                 if (diff > 0.04f) {
-                    // Бёдра НИЖЕ локтей (Y больше = ниже на экране)
                     result.addError(
                             "⚠ Таз провисает — напрягите пресс и ягодицы",
                             LEFT_HIP, RIGHT_HIP);
 
                 } else if (diff < -0.04f) {
-                    // Бёдра ВЫШЕ локтей
                     result.addError(
                             "⚠ Таз задран вверх — опустите его",
                             LEFT_HIP, RIGHT_HIP);
                 }
 
-                // Дополнительно: спина по углу плечо→бедро→колено
+
                 if (hasKnees) {
                     float backAngle = getAngle(lm,
                             LEFT_SHOULDER, LEFT_HIP, LEFT_KNEE);
@@ -173,20 +145,15 @@ public class PushUpExercise extends BaseExercise {
                     }
                 }
             }
-            return; // основной метод отработал
+            return;
         }
 
-        // ════════════════════════════════════════════
-        //  МЕТОД 2: Локти + Плечи (без бёдер)
-        //  Анализируем по взаимному положению
-        //  плеч и локтей
-        // ════════════════════════════════════════════
+
         if (hasElbows && hasShoulders) {
 
             float shoulderY = avgY(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
             float elbowY    = avgY(lm, LEFT_ELBOW,    RIGHT_ELBOW);
 
-            // Перекос плеч — всегда полезная проверка
             float leftShoulderY  = lm.get(LEFT_SHOULDER).y();
             float rightShoulderY = lm.get(RIGHT_SHOULDER).y();
             float tilt           = Math.abs(leftShoulderY - rightShoulderY);
@@ -197,7 +164,6 @@ public class PushUpExercise extends BaseExercise {
                         LEFT_SHOULDER, RIGHT_SHOULDER);
             }
 
-            // Положение головы как косвенный признак
             if (hasNose) {
                 float noseY     = lm.get(NOSE).y();
                 if (shoulderY >= 0) {
@@ -215,10 +181,6 @@ public class PushUpExercise extends BaseExercise {
             return;
         }
 
-        // ════════════════════════════════════════════
-        //  МЕТОД 3: Только плечи + нос
-        //  Минимальный анализ
-        // ════════════════════════════════════════════
         if (hasShoulders && hasNose) {
 
             float leftShoulderY  = lm.get(LEFT_SHOULDER).y();

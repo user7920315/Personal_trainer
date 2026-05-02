@@ -17,7 +17,6 @@
         android:gravity="center_vertical"
         android:padding="20dp">
 
-        <!-- Эмодзи иконка -->
         <TextView
             android:id="@+id/tvEmoji"
             android:layout_width="60dp"
@@ -27,7 +26,7 @@
             android:background="@drawable/bg_emoji_circle"
             android:layout_marginEnd="16dp"/>
 
-        <!-- Текст -->
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
@@ -62,7 +61,7 @@
 
         </LinearLayout>
 
-        <!-- Стрелка -->
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"

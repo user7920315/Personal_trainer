@@ -6,7 +6,6 @@
     android:layout_height="match_parent"
     android:background="#000000">
 
-    <!-- Камера -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
@@ -16,7 +15,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Скелет поверх камеры -->
     <ru.sv.personaltrainer.overlay.PoseOverlayView
         android:id="@+id/poseOverlay"
         android:layout_width="match_parent"
@@ -26,7 +24,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Счётчик повторений -->
     <TextView
         android:id="@+id/tvRepCount"
         android:layout_width="wrap_content"
@@ -42,7 +39,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <!-- Название упражнения -->
     <TextView
         android:id="@+id/tvExerciseName"
         android:layout_width="wrap_content"
@@ -58,7 +54,6 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Фаза движения -->
     <TextView
         android:id="@+id/tvPhase"
         android:layout_width="wrap_content"
@@ -74,7 +69,6 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Кнопка сброс -->
     <Button
         android:id="@+id/btnReset"
         android:layout_width="wrap_content"
@@ -88,7 +82,6 @@
         app:layout_constraintBottom_toTopOf="@id/cardFeedback"
         app:layout_constraintStart_toStartOf="parent"/>
 
-    <!-- Кнопка назад -->
     <Button
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
@@ -102,7 +95,6 @@
         app:layout_constraintBottom_toTopOf="@id/cardFeedback"
         app:layout_constraintEnd_toEndOf="parent"/>
 
-    <!-- Карточка с анализом -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardFeedback"
         android:layout_width="match_parent"
@@ -123,7 +115,6 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Заголовок + индикатор качества -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -150,14 +141,12 @@
 
             </LinearLayout>
 
-            <!-- Разделитель -->
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#33FFFFFF"
                 android:layout_marginBottom="10dp"/>
 
-            <!-- Главная подсказка -->
             <TextView
                 android:id="@+id/tvFeedback"
                 android:layout_width="match_parent"
@@ -168,7 +157,6 @@
                 android:textStyle="bold"
                 android:layout_marginBottom="8dp"/>
 
-            <!-- Блок дополнительных ошибок -->
             <LinearLayout
                 android:id="@+id/layoutErrors"
                 android:layout_width="match_parent"

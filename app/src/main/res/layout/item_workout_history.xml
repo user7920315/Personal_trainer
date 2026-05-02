@@ -5,7 +5,6 @@
     android:layout_height="wrap_content"
     android:orientation="vertical">
 
-    <!-- Строка с данными тренировки -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -14,8 +13,7 @@
         android:paddingVertical="10dp"
         android:paddingHorizontal="4dp">
 
-        <!-- Иконка упражнения -->
-        <!-- android:id="@+id/tvWorkoutIcon" → генерирует R.id.tvWorkoutIcon -->
+
         <TextView
             android:id="@+id/tvWorkoutIcon"
             android:layout_width="40dp"
@@ -25,14 +23,14 @@
             android:background="@drawable/bg_stat_card"
             android:layout_marginEnd="12dp"/>
 
-        <!-- Название + дата -->
+
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
 
-            <!-- android:id="@+id/tvWorkoutName" → генерирует R.id.tvWorkoutName -->
+
             <TextView
                 android:id="@+id/tvWorkoutName"
                 android:layout_width="wrap_content"
@@ -41,7 +39,7 @@
                 android:textSize="14sp"
                 android:textStyle="bold"/>
 
-            <!-- android:id="@+id/tvWorkoutDate" → генерирует R.id.tvWorkoutDate -->
+
             <TextView
                 android:id="@+id/tvWorkoutDate"
                 android:layout_width="wrap_content"
@@ -52,14 +50,14 @@
 
         </LinearLayout>
 
-        <!-- Повторения -->
+
         <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:gravity="center">
 
-            <!-- android:id="@+id/tvWorkoutReps" → генерирует R.id.tvWorkoutReps -->
+
             <TextView
                 android:id="@+id/tvWorkoutReps"
                 android:layout_width="wrap_content"
@@ -79,7 +77,7 @@
 
     </LinearLayout>
 
-    <!-- Разделитель между элементами -->
+
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"

@@ -7,7 +7,6 @@ import java.util.List;
 
 public abstract class BaseExercise {
 
-    // Индексы точек MediaPipe
     protected static final int NOSE             = 0;
     protected static final int LEFT_SHOULDER    = 11;
     protected static final int RIGHT_SHOULDER   = 12;
@@ -26,15 +25,11 @@ public abstract class BaseExercise {
     protected static final int LEFT_FOOT_INDEX  = 31;
     protected static final int RIGHT_FOOT_INDEX = 32;
 
-    // Порог видимости точки
     protected static final float VISIBILITY_THRESHOLD = 0.6f;
 
     protected int     repCount = 0;
     protected boolean isDown   = false;
 
-    // ═══════════════════════════════════════════
-    //  Результат анализа
-    // ═══════════════════════════════════════════
     public static class AnalysisResult {
         public List<String>  errors         = new ArrayList<>();
         public List<Integer> errorLandmarks = new ArrayList<>();
@@ -75,9 +70,6 @@ public abstract class BaseExercise {
         return true;
     }
 
-    /**
-     * Видима ли хотя бы ОДНА из точек
-     */
     protected boolean anyVisible(List<NormalizedLandmark> lm, int... indices) {
         for (int idx : indices) {
             if (isVisible(lm, idx)) return true;
@@ -85,9 +77,6 @@ public abstract class BaseExercise {
         return false;
     }
 
-    /**
-     * Получить visibility точки (0.0 - 1.0)
-     */
     protected float getVisibility(List<NormalizedLandmark> lm, int idx) {
         if (idx >= lm.size()) return 0f;
         NormalizedLandmark point = lm.get(idx);
@@ -97,24 +86,12 @@ public abstract class BaseExercise {
         return 0f;
     }
 
-    /**
-     * Проверка достаточности данных
-     */
     protected boolean isValidData(List<NormalizedLandmark> lm) {
         return lm != null && lm.size() >= 33;
     }
 
-    // ═══════════════════════════════════════════
-    //  Математические вспомогательные методы
-    // ═══════════════════════════════════════════
-
-    /**
-     * Угол между тремя точками в точке b (градусы)
-     * Возвращает -1 если точки невидимы
-     */
     protected float getAngle(List<NormalizedLandmark> lm,
                              int aIdx, int bIdx, int cIdx) {
-        // Проверяем видимость перед вычислением
         if (!allVisible(lm, aIdx, bIdx, cIdx)) return -1f;
 
         NormalizedLandmark a = lm.get(aIdx);
@@ -136,37 +113,21 @@ public abstract class BaseExercise {
         return (float) Math.toDegrees(Math.acos(cos));
     }
 
-    /**
-     * Среднее Y двух точек
-     * Возвращает -1 если точки невидимы
-     */
     protected float avgY(List<NormalizedLandmark> lm, int idx1, int idx2) {
         if (!allVisible(lm, idx1, idx2)) return -1f;
         return (lm.get(idx1).y() + lm.get(idx2).y()) / 2f;
     }
 
-    /**
-     * Среднее X двух точек
-     * Возвращает -1 если точки невидимы
-     */
     protected float avgX(List<NormalizedLandmark> lm, int idx1, int idx2) {
         if (!allVisible(lm, idx1, idx2)) return -1f;
         return (lm.get(idx1).x() + lm.get(idx2).x()) / 2f;
     }
 
-    /**
-     * Расстояние между точками по X
-     * Возвращает -1 если точки невидимы
-     */
     protected float distX(List<NormalizedLandmark> lm, int idx1, int idx2) {
         if (!allVisible(lm, idx1, idx2)) return -1f;
         return Math.abs(lm.get(idx1).x() - lm.get(idx2).x());
     }
 
-    /**
-     * Разница Y между двумя точками
-     * Возвращает -1 если точки невидимы
-     */
     protected float diffY(List<NormalizedLandmark> lm, int idx1, int idx2) {
         if (!allVisible(lm, idx1, idx2)) return -1f;
         return lm.get(idx1).y() - lm.get(idx2).y();

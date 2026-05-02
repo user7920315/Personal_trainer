@@ -10,12 +10,12 @@ public class PlankExercise extends BaseExercise {
 
     private static final float BODY_SAG_WARN   =  0.06f;
     private static final float BODY_SAG_ERROR  =  0.12f;
-    private static final float HIP_SAG_WARN    =  0.15f; // таз ниже плеч
+    private static final float HIP_SAG_WARN    =  0.15f;
     private static final float HIP_SAG_ERROR   =  0.25f;
-    private static final float HIP_HIGH_WARN   = -0.20f; // таз выше плеч
+    private static final float HIP_HIGH_WARN   = -0.20f;
     private static final float HIP_HIGH_ERROR  = -0.35f;
-    private static final float BODY_HIGH_WARN  = -0.12f; // было -0.06
-    private static final float BODY_HIGH_ERROR = -0.20f; // было -0.12
+    private static final float BODY_HIGH_WARN  = -0.12f;
+    private static final float BODY_HIGH_ERROR = -0.20f;
 
     private static final float KNEE_T = 0.70f;
 
@@ -37,32 +37,32 @@ public class PlankExercise extends BaseExercise {
     private static final float KNEE_ONLY_SAG_WARN  =  0.08f;
     private static final float KNEE_ONLY_SAG_ERROR =  0.14f;
 
-    private static final float KNEE_ONLY_HIGH_WARN  = -0.14f; // было -0.08
-    private static final float KNEE_ONLY_HIGH_ERROR = -0.22f; // было -0.14
+    private static final float KNEE_ONLY_HIGH_WARN  = -0.14f;
+    private static final float KNEE_ONLY_HIGH_ERROR = -0.22f;
 
     private static final float SIDE_THRESHOLD = 0.12f;
     private static final int   STABLE_FRAMES  = 8;
 
     private static final float EMA_ALPHA = 0.15f;
 
-    private float emaShoulderY  = -1f; // avg Y обоих плеч
-    private float emaShoulderX  = -1f; // avg X обоих плеч
-    private float emaLShoulderY = -1f; // левое плечо Y
-    private float emaRShoulderY = -1f; // правое плечо Y
-    private float emaHipY = -1f; // avg Y обоих бёдер
-    private float   emaKneeY  = -1f; // avg или одно колено Y
-    private float   emaKneeX  = -1f; // avg или одно колено X
-    private float   emaLKneeY = -1f; // левое колено Y
-    private float   emaRKneeY = -1f; // правое колено Y
+    private float emaShoulderY  = -1f;
+    private float emaShoulderX  = -1f;
+    private float emaLShoulderY = -1f;
+    private float emaRShoulderY = -1f;
+    private float emaHipY = -1f;
+    private float   emaKneeY  = -1f;
+    private float   emaKneeX  = -1f;
+    private float   emaLKneeY = -1f;
+    private float   emaRKneeY = -1f;
     private boolean hasLKnee  = false;
     private boolean hasRKnee  = false;
-    private float emaAnkleY = -1f; // avg Y нижней точки ног
-    private float emaAnkleX = -1f; // avg X нижней точки ног
+    private float emaAnkleY = -1f;
+    private float emaAnkleX = -1f;
 
     private float emaNoseY = -1f;
 
-    private float emaWristX = -1f; // avg X запястий
-    private float emaWristY = -1f; // avg Y запястий
+    private float emaWristX = -1f;
+    private float emaWristY = -1f;
 
     private float emaShoulderWidth = -1f;
 
@@ -86,7 +86,6 @@ public class PlankExercise extends BaseExercise {
             return result;
         }
 
-        // Минимум: плечи видны
         if (!allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
             result.mainFeedback =
                     "Направьте камеру — должны быть видны плечи";
@@ -94,10 +93,8 @@ public class PlankExercise extends BaseExercise {
             return result;
         }
 
-        // Обновляем EMA
         updateEMA(lm);
 
-        // Определяем вид
         ViewMode view = updateView();
         if (view == ViewMode.UNKNOWN) {
             result.mainFeedback =
@@ -125,14 +122,12 @@ public class PlankExercise extends BaseExercise {
     private void analyzeSide(List<NormalizedLandmark> lm,
                              AnalysisResult result) {
 
-        // 1. Прямолинейность тела через таз
         if (emaHipY > 0 && emaShoulderY > 0) {
             checkBodyLineSide(result);
         } else {
             Log.d(TAG, "Side: таз не виден — пропускаем проверку тела");
         }
 
-        // 2. Параллельность руки и тела
         boolean hasWrist = emaWristX > 0 && emaWristY > 0;
         boolean hasBody  = (emaAnkleX > 0 && emaAnkleY > 0)
                 || (emaKneeX  > 0 && emaKneeY  > 0);
@@ -142,7 +137,6 @@ public class PlankExercise extends BaseExercise {
             checkArmBodyAngle(result);
         }
 
-        // 3. Голова
         if (emaNoseY > 0 && emaShoulderY > 0
                 && emaShoulderWidth > 0) {
             checkHead(result);
@@ -151,18 +145,14 @@ public class PlankExercise extends BaseExercise {
     private void analyzeFront(List<NormalizedLandmark> lm,
                               AnalysisResult result) {
 
-        // 1. Симметрия плеч
         if (emaLShoulderY > 0 && emaRShoulderY > 0) {
             checkShoulderTilt(result);
         }
 
-        // 2. Симметрия колен
-        // Проверяем флаги — оба колена должны быть актуальны
         if (hasLKnee && hasRKnee) {
             checkKneeTilt(result);
         }
 
-        // 3. Голова по центру
         if (isVisible(lm, NOSE)
                 && allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
             checkHeadCenter(lm, result);
@@ -171,12 +161,10 @@ public class PlankExercise extends BaseExercise {
 
     private void checkBodyLineSide(AnalysisResult result) {
 
-        // Разница Y: > 0 → таз ниже плеч → провисает
-        //            < 0 → таз выше плеч → задран
+
         float diff = emaHipY - emaShoulderY;
 
-        // Масштаб — используем расстояние плечо-колено
-        // если колено видно, иначе фиксированный
+
         float scale = (emaKneeY > 0 && emaShoulderY > 0)
                 ? Math.abs(emaKneeY - emaShoulderY)
                 : 0.20f;
@@ -244,34 +232,31 @@ public class PlankExercise extends BaseExercise {
 
     private void checkArmBodyAngle(AnalysisResult result) {
 
-        // Нижняя точка тела: лодыжка если есть, иначе колено
+
         float bodyEndY = emaAnkleY > 0 ? emaAnkleY : emaKneeY;
         float bodyEndX = emaAnkleX > 0 ? emaAnkleX : emaKneeX;
 
         if (bodyEndY <= 0 || bodyEndX <= 0) return;
 
-        // Вектор тела: плечо → лодыжка/колено
+
         double bodyDx = bodyEndX - emaShoulderX;
         double bodyDy = bodyEndY - emaShoulderY;
 
-        // Вектор руки: запястье → плечо (снизу вверх)
+
         double armDx  = emaShoulderX - emaWristX;
         double armDy  = emaShoulderY - emaWristY;
 
-        // Длины векторов — проверка на вырожденный случай
         double bodyLen = Math.sqrt(bodyDx * bodyDx + bodyDy * bodyDy);
         double armLen  = Math.sqrt(armDx  * armDx  + armDy  * armDy);
         if (bodyLen < 0.01 || armLen < 0.01) return;
 
-        // Угол каждого вектора к горизонтали
         double bodyAngle = Math.toDegrees(Math.atan2(bodyDy, bodyDx));
         double armAngle  = Math.toDegrees(Math.atan2(armDy,  armDx));
 
-        // Угол между векторами, нормализация в [0, 180]
+
         double angleBetween = Math.abs(bodyAngle - armAngle);
         if (angleBetween > 180.0) angleBetween = 360.0 - angleBetween;
 
-        // Отклонение от идеальных 90°
         double diff = Math.abs(angleBetween - 90.0);
 
         Log.d(TAG, String.format(
@@ -311,7 +296,6 @@ public class PlankExercise extends BaseExercise {
                 emaNoseY, emaShoulderY, scale,
                 headDiff, deviation));
 
-        // Нейтральная зона — нет ошибки
         if (Math.abs(deviation) <= HEAD_NEUTRAL) return;
 
         if (deviation > HEAD_DROP_ERROR) {
@@ -454,7 +438,6 @@ public class PlankExercise extends BaseExercise {
             emaHipY = emaVal(emaHipY, lm.get(RIGHT_HIP).y());
         }
 
-        // ── Плечи ────────────────────────────────────
         if (allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
             float lShY = lm.get(LEFT_SHOULDER).y();
             float rShY = lm.get(RIGHT_SHOULDER).y();
@@ -488,17 +471,14 @@ public class PlankExercise extends BaseExercise {
             emaKneeX  = emaVal(emaKneeX,  lm.get(LEFT_KNEE).x());
             emaLKneeY = emaVal(emaLKneeY, lm.get(LEFT_KNEE).y());
             hasLKnee  = true;
-            // emaRKneeY и hasRKnee не трогаем
 
         } else if (isVisible(lm, RIGHT_KNEE)) {
             emaKneeY  = emaVal(emaKneeY,  lm.get(RIGHT_KNEE).y());
             emaKneeX  = emaVal(emaKneeX,  lm.get(RIGHT_KNEE).x());
             emaRKneeY = emaVal(emaRKneeY, lm.get(RIGHT_KNEE).y());
             hasRKnee  = true;
-            // emaLKneeY и hasLKnee не трогаем
         }
 
-        // ── Лодыжки / пятки ──────────────────────────
         if (allVisible(lm, LEFT_ANKLE, RIGHT_ANKLE)) {
             float lAnY = lm.get(LEFT_ANKLE).y();
             float rAnY = lm.get(RIGHT_ANKLE).y();
@@ -516,7 +496,6 @@ public class PlankExercise extends BaseExercise {
             emaAnkleX = emaVal(emaAnkleX, lm.get(RIGHT_ANKLE).x());
 
         } else if (allVisible(lm, LEFT_HEEL, RIGHT_HEEL)) {
-            // Fallback на пятки если лодыжки не видны
             emaAnkleY = emaVal(emaAnkleY,
                     (lm.get(LEFT_HEEL).y()
                             + lm.get(RIGHT_HEEL).y()) / 2f);
@@ -525,12 +504,10 @@ public class PlankExercise extends BaseExercise {
                             + lm.get(RIGHT_HEEL).x()) / 2f);
         }
 
-        // ── Голова ───────────────────────────────────
         if (isVisible(lm, NOSE)) {
             emaNoseY = emaVal(emaNoseY, lm.get(NOSE).y());
         }
 
-        // ── Запястья ─────────────────────────────────
         if (allVisible(lm, LEFT_WRIST, RIGHT_WRIST)) {
             float lWrX = lm.get(LEFT_WRIST).x();
             float rWrX = lm.get(RIGHT_WRIST).x();
@@ -554,14 +531,14 @@ public class PlankExercise extends BaseExercise {
                 || newVal > 1.0f
                 || Float.isNaN(newVal)
                 || Float.isInfinite(newVal)) return prev;
-        if (prev < 0) return newVal; // первое значение без сглаживания
+        if (prev < 0) return newVal;
         return prev + EMA_ALPHA * (newVal - prev);
     }
 
     private void resetEMA() {
         emaShoulderY     = emaShoulderX     = -1f;
         emaLShoulderY    = emaRShoulderY    = -1f;
-        emaHipY          = -1f;              // ← новое поле
+        emaHipY          = -1f;
         emaKneeY         = emaKneeX         = -1f;
         emaLKneeY        = emaRKneeY        = -1f;
         emaAnkleY        = emaAnkleX        = -1f;

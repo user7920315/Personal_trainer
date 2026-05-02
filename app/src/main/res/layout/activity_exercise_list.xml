@@ -6,7 +6,6 @@
     android:orientation="vertical"
     android:background="#1A1A2E">
 
-    <!-- Шапка -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -38,7 +37,7 @@
 
         </LinearLayout>
 
-        <!-- Иконка профиля -->
+
         <androidx.cardview.widget.CardView
             android:id="@+id/btnProfile"
             android:layout_width="48dp"
@@ -58,7 +57,7 @@
 
     </LinearLayout>
 
-    <!-- Поиск -->
+
     <EditText
         android:id="@+id/etSearch"
         android:layout_width="match_parent"
@@ -72,7 +71,7 @@
         android:paddingHorizontal="16dp"
         android:inputType="text"/>
 
-    <!-- Список упражнений -->
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerExercises"
         android:layout_width="match_parent"

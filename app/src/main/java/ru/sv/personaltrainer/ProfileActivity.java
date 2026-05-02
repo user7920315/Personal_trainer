@@ -38,14 +38,14 @@ import java.util.Locale;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    // ── SharedPreferences ─────────────────────────────
+
     public static final String PREFS_NAME      = "PersonalTrainerPrefs";
     public static final String KEY_HEIGHT      = "height";
     public static final String KEY_WEIGHT      = "weight";
-    public static final String KEY_WEIGHT_LOG  = "weight_log";  // JSON список
-    public static final String KEY_WORKOUTS    = "workouts";    // JSON список
+    public static final String KEY_WEIGHT_LOG  = "weight_log";
+    public static final String KEY_WORKOUTS    = "workouts";
 
-    // ── UI ───────────────────────────────────────────
+
     private TextInputEditText etHeight, etWeight;
     private Button            btnCalculateBmi;
     private View              layoutBmiResult;
@@ -61,21 +61,21 @@ public class ProfileActivity extends AppCompatActivity {
     private RecyclerView      rvHistory;
     private Button            btnClearHistory;
 
-    // ── Данные ───────────────────────────────────────
+
     private SharedPreferences prefs;
     private Gson              gson;
     private List<WorkoutRecord>  workoutHistory;
     private List<WeightRecord>   weightLog;
     private WorkoutHistoryAdapter adapter;
 
-    // ── Модели данных ─────────────────────────────────
+
 
     public static class WorkoutRecord {
-        public String exerciseId;   // "SQUAT", "PUSHUP", "PLANK"
-        public String exerciseName; // "Приседания"
-        public String icon;         // "🏋"
-        public int    reps;         // повторений
-        public long   timestamp;    // System.currentTimeMillis()
+        public String exerciseId;
+        public String exerciseName;
+        public String icon;
+        public int    reps;
+        public long   timestamp;
 
         public WorkoutRecord(String exerciseId, String exerciseName,
                              String icon, int reps, long timestamp) {
@@ -97,9 +97,8 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    // ═════════════════════════════════════════════════
-    //  onCreate
-    // ═════════════════════════════════════════════════
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -115,9 +114,8 @@ public class ProfileActivity extends AppCompatActivity {
         updateHistoryList();
     }
 
-    // ═════════════════════════════════════════════════
-    //  Инициализация UI
-    // ═════════════════════════════════════════════════
+
+
     private void initViews() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
@@ -137,22 +135,20 @@ public class ProfileActivity extends AppCompatActivity {
         rvHistory           = findViewById(R.id.rvHistory);
         btnClearHistory     = findViewById(R.id.btnClearHistory);
 
-        // Кнопка рассчитать ИМТ
+
         btnCalculateBmi.setOnClickListener(v -> calculateBmi());
 
-        // Кнопка очистить историю
+
         btnClearHistory.setOnClickListener(v -> confirmClearHistory());
 
-        // Настраиваем RecyclerView
+
         rvHistory.setLayoutManager(new LinearLayoutManager(this));
     }
 
-    // ═════════════════════════════════════════════════
-    //  Загрузка данных из SharedPreferences
-    // ═════════════════════════════════════════════════
+
     private void loadData() {
 
-        // Рост и вес
+
         float savedHeight = prefs.getFloat(KEY_HEIGHT, 0f);
         float savedWeight = prefs.getFloat(KEY_WEIGHT, 0f);
 
@@ -160,37 +156,26 @@ public class ProfileActivity extends AppCompatActivity {
         if (savedWeight > 0) etWeight.setText(String.format(Locale.US,
                 "%.1f", savedWeight));
 
-        // Если есть сохранённые данные — показываем ИМТ
+
         if (savedHeight > 0 && savedWeight > 0) {
             showBmiResult(savedHeight, savedWeight);
         }
 
-        // История веса
+
         String weightJson = prefs.getString(KEY_WEIGHT_LOG, "[]");
         Type   weightType = new TypeToken<List<WeightRecord>>(){}.getType();
         weightLog = gson.fromJson(weightJson, weightType);
         if (weightLog == null) weightLog = new ArrayList<>();
 
-        // История тренировок
+
         String workoutsJson = prefs.getString(KEY_WORKOUTS, "[]");
         Type   workoutsType = new TypeToken<List<WorkoutRecord>>(){}.getType();
         workoutHistory = gson.fromJson(workoutsJson, workoutsType);
         if (workoutHistory == null) workoutHistory = new ArrayList<>();
     }
 
-    // ═════════════════════════════════════════════════
-    //  Расчёт ИМТ
-    //
-    //  ИМТ = вес(кг) / рост(м)²
-    //
-    //  < 16.0  → Выраженный дефицит
-    //  16–18.5 → Недостаточный вес
-    //  18.5–25 → Норма ✅
-    //  25–30   → Избыточный вес
-    //  30–35   → Ожирение I
-    //  35–40   → Ожирение II
-    //  > 40    → Ожирение III
-    // ═════════════════════════════════════════════════
+
+
     private void calculateBmi() {
         String heightStr = etHeight.getText() != null
                 ? etHeight.getText().toString().trim() : "";
@@ -227,19 +212,19 @@ public class ProfileActivity extends AppCompatActivity {
             return;
         }
 
-        // Сохраняем
+
         prefs.edit()
                 .putFloat(KEY_HEIGHT, height)
                 .putFloat(KEY_WEIGHT, weight)
                 .apply();
 
-        // Добавляем точку в лог веса
+
         addWeightRecord(weight);
 
-        // Показываем результат
+
         showBmiResult(height, weight);
 
-        // Обновляем график
+
         setupChart();
 
         Toast.makeText(this, "Данные сохранены", Toast.LENGTH_SHORT).show();
@@ -249,7 +234,7 @@ public class ProfileActivity extends AppCompatActivity {
         float heightM = height / 100f;
         float bmi     = weight / (heightM * heightM);
 
-        // Категория и цвет
+
         String category;
         int    color;
 
@@ -276,7 +261,7 @@ public class ProfileActivity extends AppCompatActivity {
             color    = Color.parseColor("#CC0000");
         }
 
-        // Обновляем UI
+
         tvBmiValue.setText(String.format(Locale.US, "%.1f", bmi));
         tvBmiResultCategory.setText(category);
         tvBmiResultCategory.setTextColor(color);
@@ -286,13 +271,10 @@ public class ProfileActivity extends AppCompatActivity {
         layoutBmiResult.setVisibility(View.VISIBLE);
     }
 
-    // ═════════════════════════════════════════════════
-    //  Добавление записи веса в лог
-    // ═════════════════════════════════════════════════
+
     private void addWeightRecord(float weight) {
         long now = System.currentTimeMillis();
 
-        // Проверяем: если сегодня уже есть запись — обновляем
         Calendar cal = Calendar.getInstance();
         cal.setTimeInMillis(now);
         int todayDay  = cal.get(Calendar.DAY_OF_YEAR);
@@ -302,17 +284,16 @@ public class ProfileActivity extends AppCompatActivity {
             cal.setTimeInMillis(weightLog.get(i).timestamp);
             if (cal.get(Calendar.DAY_OF_YEAR) == todayDay
                     && cal.get(Calendar.YEAR) == todayYear) {
-                // Обновляем существующую запись за сегодня
                 weightLog.get(i).weight = weight;
                 saveWeightLog();
                 return;
             }
         }
 
-        // Новая запись
+
         weightLog.add(new WeightRecord(weight, now));
 
-        // Держим максимум 30 записей
+
         if (weightLog.size() > 30) {
             weightLog.remove(0);
         }
@@ -326,9 +307,7 @@ public class ProfileActivity extends AppCompatActivity {
                 .apply();
     }
 
-    // ═════════════════════════════════════════════════
-    //  График динамики веса
-    // ═════════════════════════════════════════════════
+
     private void setupChart() {
         if (weightLog.size() < 2) {
             tvNoWeightData.setVisibility(View.VISIBLE);
@@ -339,18 +318,15 @@ public class ProfileActivity extends AppCompatActivity {
         tvNoWeightData.setVisibility(View.GONE);
         weightChart.setVisibility(View.VISIBLE);
 
-        // Сортируем по времени
         List<WeightRecord> sorted = new ArrayList<>(weightLog);
         Collections.sort(sorted, (a, b) ->
                 Long.compare(a.timestamp, b.timestamp));
 
-        // Формируем точки графика
         List<Entry> entries = new ArrayList<>();
         for (int i = 0; i < sorted.size(); i++) {
             entries.add(new Entry(i, sorted.get(i).weight));
         }
 
-        // Датасет
         LineDataSet dataSet = new LineDataSet(entries, "Вес (кг)");
         dataSet.setColor(Color.parseColor("#E94560"));
         dataSet.setCircleColor(Color.parseColor("#E94560"));
@@ -363,11 +339,9 @@ public class ProfileActivity extends AppCompatActivity {
         dataSet.setDrawFilled(true);
         dataSet.setFillColor(Color.parseColor("#33E94560"));
 
-        // Форматтер оси X — даты
         final List<WeightRecord> finalSorted = sorted;
         final SimpleDateFormat   sdf = new SimpleDateFormat("dd.MM", Locale.US);
 
-        // Настройка графика
         weightChart.setData(new LineData(dataSet));
         weightChart.setBackgroundColor(Color.TRANSPARENT);
         weightChart.getDescription().setEnabled(false);
@@ -376,7 +350,6 @@ public class ProfileActivity extends AppCompatActivity {
         weightChart.setDragEnabled(false);
         weightChart.setScaleEnabled(false);
 
-        // Ось X
         XAxis xAxis = weightChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
         xAxis.setTextColor(Color.parseColor("#AAAAAA"));
@@ -393,22 +366,17 @@ public class ProfileActivity extends AppCompatActivity {
             }
         });
 
-        // Ось Y левая
         YAxis yAxisLeft = weightChart.getAxisLeft();
         yAxisLeft.setTextColor(Color.parseColor("#AAAAAA"));
         yAxisLeft.setTextSize(10f);
         yAxisLeft.setGridColor(Color.parseColor("#22FFFFFF"));
         yAxisLeft.setAxisLineColor(Color.parseColor("#33FFFFFF"));
 
-        // Ось Y правая — скрываем
         weightChart.getAxisRight().setEnabled(false);
 
         weightChart.invalidate();
     }
 
-    // ═════════════════════════════════════════════════
-    //  Статистика тренировок
-    // ═════════════════════════════════════════════════
     private void updateStats() {
         int total     = workoutHistory.size();
         int streak    = calcStreak();
@@ -419,11 +387,9 @@ public class ProfileActivity extends AppCompatActivity {
         tvWeekWorkouts.setText(String.valueOf(weekCount));
     }
 
-    // Подсчёт дней подряд
     private int calcStreak() {
         if (workoutHistory.isEmpty()) return 0;
 
-        // Получаем уникальные дни тренировок
         List<Long> days = new ArrayList<>();
         SimpleDateFormat dayFmt =
                 new SimpleDateFormat("yyyyMMdd", Locale.US);
@@ -439,7 +405,6 @@ public class ProfileActivity extends AppCompatActivity {
 
         if (days.isEmpty()) return 0;
 
-        // Сортируем по убыванию
         Collections.sort(days, Collections.reverseOrder());
 
         Calendar cal    = Calendar.getInstance();
@@ -453,11 +418,9 @@ public class ProfileActivity extends AppCompatActivity {
             Calendar check = Calendar.getInstance();
             check.setTimeInMillis(checkTime);
 
-            // Совпадают ли дни?
             if (cal.get(Calendar.YEAR)        == check.get(Calendar.YEAR)
                     && cal.get(Calendar.DAY_OF_YEAR) == check.get(Calendar.DAY_OF_YEAR)) {
                 streak++;
-                // Переходим к предыдущему дню
                 check.add(Calendar.DAY_OF_YEAR, -1);
                 checkTime = check.getTimeInMillis();
             } else {
@@ -468,7 +431,6 @@ public class ProfileActivity extends AppCompatActivity {
         return streak;
     }
 
-    // Тренировок на этой неделе
     private int calcWeekWorkouts() {
         Calendar startOfWeek = Calendar.getInstance();
         startOfWeek.set(Calendar.DAY_OF_WEEK,
@@ -487,9 +449,6 @@ public class ProfileActivity extends AppCompatActivity {
         return count;
     }
 
-    // ═════════════════════════════════════════════════
-    //  Список истории тренировок
-    // ═════════════════════════════════════════════════
     private void updateHistoryList() {
         if (workoutHistory.isEmpty()) {
             tvNoHistory.setVisibility(View.VISIBLE);
@@ -500,11 +459,9 @@ public class ProfileActivity extends AppCompatActivity {
         tvNoHistory.setVisibility(View.GONE);
         rvHistory.setVisibility(View.VISIBLE);
 
-        // Показываем в обратном порядке (новые сверху)
         List<WorkoutRecord> reversed = new ArrayList<>(workoutHistory);
         Collections.reverse(reversed);
 
-        // Показываем максимум 20 последних
         if (reversed.size() > 20) {
             reversed = reversed.subList(0, 20);
         }
@@ -513,9 +470,6 @@ public class ProfileActivity extends AppCompatActivity {
         rvHistory.setAdapter(adapter);
     }
 
-    // ═════════════════════════════════════════════════
-    //  Диалог подтверждения очистки истории
-    // ═════════════════════════════════════════════════
     private void confirmClearHistory() {
         if (workoutHistory.isEmpty()) {
             Toast.makeText(this,
@@ -540,27 +494,22 @@ public class ProfileActivity extends AppCompatActivity {
                 .show();
     }
 
-    // ═════════════════════════════════════════════════
-    //  Сохранение тренировки (вызывается из ExerciseActivity)
-    // ═════════════════════════════════════════════════
     public static void saveWorkout(Context context,
                                    String exerciseId,
                                    String exerciseName,
                                    String icon,
                                    int reps) {
-        if (reps <= 0) return; // не сохраняем пустые тренировки
+        if (reps <= 0) return;
 
         SharedPreferences prefs =
                 context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
         Gson gson = new Gson();
 
-        // Загружаем существующую историю
         String json = prefs.getString(KEY_WORKOUTS, "[]");
         Type   type = new TypeToken<List<WorkoutRecord>>(){}.getType();
         List<WorkoutRecord> history = gson.fromJson(json, type);
         if (history == null) history = new ArrayList<>();
 
-        // Добавляем новую запись
         history.add(new WorkoutRecord(
                 exerciseId,
                 exerciseName,
@@ -569,7 +518,6 @@ public class ProfileActivity extends AppCompatActivity {
                 System.currentTimeMillis()
         ));
 
-        // Держим максимум 100 записей
         if (history.size() > 100) {
             history.remove(0);
         }
@@ -579,9 +527,6 @@ public class ProfileActivity extends AppCompatActivity {
                 .apply();
     }
 
-    // ═════════════════════════════════════════════════
-    //  RecyclerView адаптер для истории
-    // ═════════════════════════════════════════════════
     private static class WorkoutHistoryAdapter
             extends RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder> {
 

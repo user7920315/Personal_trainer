@@ -30,7 +30,6 @@ android {
         targetCompatibility = JavaVersion.VERSION_11
     }
 
-    // Важно для MediaPipe — не сжимать файл модели
     androidResources {
         noCompress += "task"
     }
@@ -48,10 +47,8 @@ dependencies {
     implementation("androidx.camera:camera-view:1.3.4")
     implementation("androidx.cardview:cardview:1.0.0")
 
-    // ← График
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
 
-    // ← JSON для истории тренировок
     implementation("com.google.code.gson:gson:2.10.1")
 
     testImplementation(libs.junit)

@@ -1,18 +1,14 @@
 package ru.sv.personaltrainer.model;
 
-/**
- * Модель данных одного упражнения
- * Добавляй новые упражнения просто создав новый объект!
- */
 public class ExerciseInfo {
 
-    private final String id;           // уникальный ID
-    private final String title;        // название
-    private final String description;  // описание
-    private final String emoji;        // иконка
-    private final String difficulty;   // сложность
-    private final int    color;        // цвет карточки
-    private final String muscleGroup;  // группа мышц
+    private final String id;
+    private final String title;
+    private final String description;
+    private final String emoji;
+    private final String difficulty;
+    private final int    color;
+    private final String muscleGroup;
 
     public ExerciseInfo(String id,
                         String title,

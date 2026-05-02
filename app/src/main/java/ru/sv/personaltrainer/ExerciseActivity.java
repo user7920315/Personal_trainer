@@ -41,7 +41,6 @@ public class ExerciseActivity extends AppCompatActivity {
     private static final String TAG        = "ExerciseActivity";
     private static final String MODEL_FILE = "pose_landmarker_full.task";
 
-    // ── UI элементы ───────────────────────────────────
     private PreviewView   previewView;
     private PoseOverlayView poseOverlay;
     private TextView      tvRepCount;
@@ -54,30 +53,22 @@ public class ExerciseActivity extends AppCompatActivity {
     private Button        btnBack;
     private Button        btnReset;
 
-    // ── MediaPipe ─────────────────────────────────────
     private PoseLandmarker poseLandmarker;
 
-    // ── Упражнение ────────────────────────────────────
     private BaseExercise currentExercise;
     private String       exerciseId;
 
-    // ── Потоки ───────────────────────────────────────
     private ExecutorService cameraExecutor;
     private final Handler   mainHandler = new Handler(Looper.getMainLooper());
 
-    // ═════════════════════════════════════════════════
-    //  onCreate
-    // ═════════════════════════════════════════════════
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exercise);
 
-        // Получаем данные из Intent
         exerciseId = getIntent().getStringExtra("EXERCISE_ID");
         if (exerciseId == null) exerciseId = "SQUAT"; // fallback
 
-        // Создаём упражнение через реестр
         try {
             currentExercise = ExerciseRegistry.createExercise(exerciseId);
         } catch (Exception e) {
@@ -93,9 +84,6 @@ public class ExerciseActivity extends AppCompatActivity {
         startCamera();
     }
 
-    // ═════════════════════════════════════════════════
-    //  Инициализация UI
-    // ═════════════════════════════════════════════════
     private void initViews() {
         previewView    = findViewById(R.id.previewView);
         poseOverlay    = findViewById(R.id.poseOverlay);
@@ -109,13 +97,10 @@ public class ExerciseActivity extends AppCompatActivity {
         btnBack        = findViewById(R.id.btnBack);
         btnReset       = findViewById(R.id.btnReset);
 
-        // Название упражнения
         tvExerciseName.setText(currentExercise.getName());
 
-        // Кнопка назад
         btnBack.setOnClickListener(v -> finish());
 
-        // Кнопка сброс счётчика
         btnReset.setOnClickListener(v -> {
             currentExercise.reset();
             tvRepCount.setText("Повторений: 0");
@@ -128,9 +113,6 @@ public class ExerciseActivity extends AppCompatActivity {
         });
     }
 
-    // ═════════════════════════════════════════════════
-    //  Инициализация MediaPipe
-    // ═════════════════════════════════════════════════
     private void initMediaPipe() {
         try {
             BaseOptions baseOptions = BaseOptions.builder()
@@ -162,9 +144,6 @@ public class ExerciseActivity extends AppCompatActivity {
         }
     }
 
-    // ═════════════════════════════════════════════════
-    //  Запуск камеры
-    // ═════════════════════════════════════════════════
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> future =
                 ProcessCameraProvider.getInstance(this);
@@ -173,11 +152,9 @@ public class ExerciseActivity extends AppCompatActivity {
             try {
                 ProcessCameraProvider provider = future.get();
 
-                // Preview
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(previewView.getSurfaceProvider());
 
-                // Анализ кадров
                 ImageAnalysis imageAnalysis = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(
                                 ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -187,7 +164,6 @@ public class ExerciseActivity extends AppCompatActivity {
 
                 imageAnalysis.setAnalyzer(cameraExecutor, this::analyzeFrame);
 
-                // Используем фронтальную камеру
                 CameraSelector cameraSelector =
                         CameraSelector.DEFAULT_FRONT_CAMERA;
 
@@ -212,18 +188,12 @@ public class ExerciseActivity extends AppCompatActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
-    // ═════════════════════════════════════════════════
-    //  Анализ кадра с камеры
-    // ═════════════════════════════════════════════════
     private void analyzeFrame(ImageProxy imageProxy) {
         try {
-            // Получаем поворот кадра от сенсора камеры
             int rotationDegrees = imageProxy.getImageInfo().getRotationDegrees();
 
-            // Конвертируем в Bitmap
             Bitmap bitmap = imageProxy.toBitmap();
 
-            // Поворачиваем и зеркалим для фронтальной камеры
             Matrix matrix = new Matrix();
             matrix.postRotate(rotationDegrees);
             matrix.postScale(
@@ -241,7 +211,6 @@ public class ExerciseActivity extends AppCompatActivity {
                     true
             );
 
-            // Отправляем в MediaPipe
             MPImage mpImage = new BitmapImageBuilder(rotatedBitmap).build();
             long frameTime = imageProxy.getImageInfo().getTimestamp();
             poseLandmarker.detectAsync(mpImage, frameTime);
@@ -253,12 +222,8 @@ public class ExerciseActivity extends AppCompatActivity {
         }
     }
 
-    // ═════════════════════════════════════════════════
-    //  Получение результата от MediaPipe
-    // ═════════════════════════════════════════════════
     private void onPoseResult(PoseLandmarkerResult result, MPImage input) {
 
-        // Человек не найден в кадре
         if (result == null || result.landmarks().isEmpty()) {
             mainHandler.post(() -> {
                 tvFeedback.setText("Встаньте полностью в кадр");
@@ -270,36 +235,25 @@ public class ExerciseActivity extends AppCompatActivity {
             return;
         }
 
-        // Анализируем позу через текущее упражнение
         BaseExercise.AnalysisResult analysis =
                 currentExercise.analyze(result.landmarks().get(0));
 
-        // Обновляем UI в главном потоке
         mainHandler.post(() -> updateUI(result, analysis));
     }
 
-    // ═════════════════════════════════════════════════
-    //  Обновление UI
-    // ═════════════════════════════════════════════════
     private void updateUI(PoseLandmarkerResult result,
                           BaseExercise.AnalysisResult analysis) {
 
-        // Счётчик повторений
         tvRepCount.setText("Повторений: " + analysis.repCount);
 
-        // Главная подсказка
         tvFeedback.setText(analysis.mainFeedback);
 
-        // Фаза движения
         updatePhaseIndicator(analysis.phase);
 
-        // Индикатор качества техники
         updateQualityIndicator(analysis.errors.size());
 
-        // Дополнительные ошибки
         updateErrorsBlock(analysis);
 
-        // Обновляем отрисовку скелета
         poseOverlay.updateResults(
                 result,
                 previewView.getWidth(),
@@ -308,7 +262,6 @@ public class ExerciseActivity extends AppCompatActivity {
         );
     }
 
-    // ── Индикатор фазы ────────────────────────────────
     private void updatePhaseIndicator(String phase) {
         switch (phase) {
             case "DOWN":
@@ -329,33 +282,32 @@ public class ExerciseActivity extends AppCompatActivity {
         }
     }
 
-    // ── Индикатор качества ────────────────────────────
     private void updateQualityIndicator(int errorCount) {
         String quality;
         int    color;
 
         if (errorCount == 0) {
             quality = "●●●●●";
-            color   = 0xFF00FF88; // зелёный — отлично
+            color   = 0xFF00FF88;
         } else if (errorCount == 1) {
             quality = "●●●●○";
-            color   = 0xFF88FF00; // светло-зелёный
+            color   = 0xFF88FF00;
         } else if (errorCount == 2) {
             quality = "●●●○○";
-            color   = 0xFFFFFF00; // жёлтый
+            color   = 0xFFFFFF00;
         } else if (errorCount == 3) {
             quality = "●●○○○";
-            color   = 0xFFFF8800; // оранжевый
+            color   = 0xFFFF8800;
         } else {
             quality = "●○○○○";
-            color   = 0xFFFF0000; // красный — много ошибок
+            color   = 0xFFFF0000;
         }
 
         tvQuality.setText(quality);
         tvQuality.setTextColor(color);
     }
 
-    // ── Блок дополнительных ошибок ────────────────────
+
     private void updateErrorsBlock(BaseExercise.AnalysisResult analysis) {
         if (analysis.errors.size() > 1) {
             layoutErrors.setVisibility(View.VISIBLE);
@@ -373,14 +325,12 @@ public class ExerciseActivity extends AppCompatActivity {
         }
     }
 
-    // ═════════════════════════════════════════════════
-    //  Lifecycle
-    // ═════════════════════════════════════════════════
+
     @Override
     protected void onPause() {
         super.onPause();
 
-        // Сохраняем тренировку если были повторения
+
         if (currentExercise != null && currentExercise.getRepCount() > 0) {
             String icon = "💪";
             if (exerciseId.equals("SQUAT"))  icon = "🏋";
@@ -404,12 +354,11 @@ public class ExerciseActivity extends AppCompatActivity {
     protected void onDestroy() {
         super.onDestroy();
 
-        // Останавливаем камеру
+
         if (cameraExecutor != null) {
             cameraExecutor.shutdown();
         }
 
-        // Закрываем MediaPipe
         if (poseLandmarker != null) {
             poseLandmarker.close();
         }

@@ -7,17 +7,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-/**
- * Реестр всех упражнений
- * Чтобы добавить новое упражнение:
- * 1. Создай класс extends BaseExercise
- * 2. Добавь ExerciseInfo в getAll()
- * 3. Добавь case в createExercise()
- * Больше ничего менять не нужно!
- */
 public class ExerciseRegistry {
 
-    // ── Список всех упражнений ────────────────────────
     public static List<ExerciseInfo> getAll() {
         List<ExerciseInfo> list = new ArrayList<>();
 
@@ -51,18 +42,15 @@ public class ExerciseRegistry {
                 "Пресс · Спина · Всё тело"
         ));
 
-        // ← Добавляй новые упражнения сюда!
 
         return list;
     }
 
-    // ── Создание экземпляра упражнения по ID ─────────
     public static BaseExercise createExercise(String id) {
         switch (id) {
             case "PUSH_UP": return new PushUpExercise();
             case "SQUAT":   return new SquatExercise();
             case "PLANK":   return new PlankExercise();
-            // ← Добавляй новые case сюда!
             default: throw new IllegalArgumentException(
                     "Неизвестное упражнение: " + id);
         }
