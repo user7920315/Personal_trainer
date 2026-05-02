@@ -41,18 +41,18 @@ dependencies {
     implementation(libs.material)
     implementation(libs.constraintlayout)
     implementation("androidx.recyclerview:recyclerview:1.3.2")
-
-
     implementation("com.google.mediapipe:tasks-vision:0.10.14")
-
-
     implementation("androidx.camera:camera-core:1.3.4")
     implementation("androidx.camera:camera-camera2:1.3.4")
     implementation("androidx.camera:camera-lifecycle:1.3.4")
     implementation("androidx.camera:camera-view:1.3.4")
-
-
     implementation("androidx.cardview:cardview:1.0.0")
+
+    // ← График
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
+
+    // ← JSON для истории тренировок
+    implementation("com.google.code.gson:gson:2.10.1")
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.ext.junit)

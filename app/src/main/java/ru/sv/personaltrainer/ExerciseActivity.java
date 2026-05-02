@@ -379,7 +379,22 @@ public class ExerciseActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        // Сбрасываем при сворачивании
+
+        // Сохраняем тренировку если были повторения
+        if (currentExercise != null && currentExercise.getRepCount() > 0) {
+            String icon = "💪";
+            if (exerciseId.equals("SQUAT"))  icon = "🏋";
+            if (exerciseId.equals("PLANK"))  icon = "🧘";
+
+            ProfileActivity.saveWorkout(
+                    this,
+                    exerciseId,
+                    currentExercise.getName(),
+                    icon,
+                    currentExercise.getRepCount()
+            );
+        }
+
         if (currentExercise != null) {
             currentExercise.reset();
         }

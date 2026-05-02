@@ -3,21 +3,14 @@
     <!-- Основная тема приложения -->
     <style name="Theme.Personaltrainer"
         parent="Theme.MaterialComponents.DayNight.DarkActionBar">
-
-        <!-- Основные цвета -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorOnSecondary">@color/white</item>
-
-        <!-- Статус бар -->
         <item name="android:statusBarColor">@color/primary_dark</item>
-
-        <!-- Без ActionBar на экране тренировки -->
         <item name="windowActionBar">true</item>
         <item name="windowNoTitle">false</item>
-
     </style>
 
     <!-- Тема без ActionBar (для ExerciseActivity) -->
@@ -26,6 +19,21 @@
         <item name="windowActionBar">false</item>
         <item name="windowNoTitle">true</item>
         <item name="android:windowFullscreen">true</item>
+    </style>
+
+    <!-- ════════════════════════════════════════════
+         Тема для TextInputLayout в ProfileActivity
+         Переопределяет цвета обводки и текста
+         чтобы корректно отображалось на тёмном фоне
+         ════════════════════════════════════════════ -->
+    <style name="ThemeOverlay.Profile.Input"
+        parent="ThemeOverlay.MaterialComponents">
+        <!-- Цвет обводки и лейбла в фокусе -->
+        <item name="colorPrimary">@color/primary</item>
+        <!-- Цвет текста внутри поля -->
+        <item name="colorOnSurface">@color/white</item>
+        <!-- Цвет обводки без фокуса -->
+        <item name="colorOutline">#444466</item>
     </style>
 
 </resources>

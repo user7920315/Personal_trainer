@@ -58,13 +58,7 @@ public abstract class BaseExercise {
 
     public int getRepCount() { return repCount; }
 
-    // ═══════════════════════════════════════════
-    //  Проверка видимости точек
-    // ═══════════════════════════════════════════
 
-    /**
-     * Видима ли одна точка
-     */
     protected boolean isVisible(List<NormalizedLandmark> lm, int idx) {
         if (idx >= lm.size()) return false;
         NormalizedLandmark point = lm.get(idx);
@@ -74,10 +68,6 @@ public abstract class BaseExercise {
         return false;
     }
 
-    /**
-     * Видимы ли ВСЕ перечисленные точки
-     * Используй перед каждой проверкой ошибки!
-     */
     protected boolean allVisible(List<NormalizedLandmark> lm, int... indices) {
         for (int idx : indices) {
             if (!isVisible(lm, idx)) return false;

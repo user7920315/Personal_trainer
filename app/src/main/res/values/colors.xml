@@ -6,4 +6,11 @@
     <color name="primary_dark">#1A1A2E</color>
     <color name="secondary">#0F3460</color>
     <color name="accent">#00FF88</color>
+
+    <color name="background_card">#0F3460</color>
+    <color name="background_dark">#1A1A2E</color>
+    <color name="text_hint">#666666</color>
+    <color name="text_secondary">#AAAAAA</color>
+    <color name="input_outline">#444466</color>
+    <color name="divider">#1AFFFFFF</color>
 </resources>
