@@ -122,6 +122,84 @@
                         android:textColor="#FFFFFF"
                         android:layout_marginBottom="16dp"/>
 
+                    <!-- Пол -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Пол"
+                        android:textSize="12sp"
+                        android:textColor="#AAAAAA"
+                        android:layout_marginBottom="8dp"/>
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="16dp">
+
+                        <!-- Мужской -->
+                        <LinearLayout
+                            android:id="@+id/btnGenderMale"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:gravity="center"
+                            android:background="@drawable/bg_gender_selected"
+                            android:layout_marginEnd="6dp"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="♂ "
+                                android:textSize="16sp"
+                                android:textColor="#FFFFFF"/>
+
+                            <TextView
+                                android:id="@+id/tvGenderMaleLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Мужской"
+                                android:textSize="14sp"
+                                android:textColor="#FFFFFF"
+                                android:textStyle="bold"/>
+
+                        </LinearLayout>
+
+                        <!-- Женский -->
+                        <LinearLayout
+                            android:id="@+id/btnGenderFemale"
+                            android:layout_width="0dp"
+                            android:layout_height="44dp"
+                            android:layout_weight="1"
+                            android:orientation="horizontal"
+                            android:gravity="center"
+                            android:background="@drawable/bg_gender_unselected"
+                            android:layout_marginStart="6dp"
+                            android:clickable="true"
+                            android:focusable="true">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="♀ "
+                                android:textSize="16sp"
+                                android:textColor="#AAAAAA"/>
+
+                            <TextView
+                                android:id="@+id/tvGenderFemaleLabel"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:text="Женский"
+                                android:textSize="14sp"
+                                android:textColor="#AAAAAA"/>
+
+                        </LinearLayout>
+
+                    </LinearLayout>
+
                     <!-- Рост + Вес в одну строку -->
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -200,6 +278,33 @@
 
                     </LinearLayout>
 
+                    <!-- Возраст (влияет на норму ИМТ) -->
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Возраст"
+                        android:textSize="12sp"
+                        android:textColor="#AAAAAA"
+                        android:layout_marginTop="12dp"
+                        android:layout_marginBottom="4dp"/>
+
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                        android:theme="@style/ThemeOverlay.Profile.Input">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etAge"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:hint="25"
+                            android:textColor="#FFFFFF"
+                            android:textColorHint="#666666"/>
+
+                    </com.google.android.material.textfield.TextInputLayout>
+
                     <!-- Кнопка рассчитать -->
                     <Button
                         android:id="@+id/btnCalculateBmi"
@@ -210,73 +315,92 @@
                         android:textColor="#FFFFFF"
                         android:backgroundTint="#E94560"/>
 
-                    <!-- Результат ИМТ (скрыт до расчёта) -->
+                    <!-- Результат ИМТ -->
                     <LinearLayout
                         android:id="@+id/layoutBmiResult"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
-                        android:gravity="center"
+                        android:orientation="vertical"
                         android:layout_marginTop="16dp"
                         android:padding="12dp"
                         android:background="@drawable/bg_bmi_result"
                         android:visibility="gone">
 
+                        <!-- Строка: ИМТ + Категория -->
                         <LinearLayout
-                            android:layout_width="0dp"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
+                            android:orientation="horizontal"
                             android:gravity="center">
 
-                            <TextView
-                                android:layout_width="wrap_content"
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="ИМТ"
-                                android:textSize="12sp"
-                                android:textColor="#AAAAAA"/>
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
 
-                            <TextView
-                                android:id="@+id/tvBmiValue"
-                                android:layout_width="wrap_content"
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="ИМТ"
+                                    android:textSize="12sp"
+                                    android:textColor="#AAAAAA"/>
+
+                                <TextView
+                                    android:id="@+id/tvBmiValue"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="—"
+                                    android:textSize="32sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#FFFFFF"/>
+
+                            </LinearLayout>
+
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="50dp"
+                                android:background="#33FFFFFF"/>
+
+                            <LinearLayout
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:text="—"
-                                android:textSize="32sp"
-                                android:textStyle="bold"
-                                android:textColor="#FFFFFF"/>
+                                android:layout_weight="1"
+                                android:orientation="vertical"
+                                android:gravity="center">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="Категория"
+                                    android:textSize="12sp"
+                                    android:textColor="#AAAAAA"/>
+
+                                <TextView
+                                    android:id="@+id/tvBmiResultCategory"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="—"
+                                    android:textSize="14sp"
+                                    android:textStyle="bold"
+                                    android:textColor="#00FF88"
+                                    android:gravity="center"/>
+
+                            </LinearLayout>
 
                         </LinearLayout>
 
-                        <View
-                            android:layout_width="1dp"
-                            android:layout_height="50dp"
-                            android:background="#33FFFFFF"/>
-
-                        <LinearLayout
-                            android:layout_width="0dp"
+                        <!-- Норма для пола -->
+                        <TextView
+                            android:id="@+id/tvBmiNorm"
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_weight="1"
-                            android:orientation="vertical"
-                            android:gravity="center">
-
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="Категория"
-                                android:textSize="12sp"
-                                android:textColor="#AAAAAA"/>
-
-                            <TextView
-                                android:id="@+id/tvBmiResultCategory"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:text="—"
-                                android:textSize="14sp"
-                                android:textStyle="bold"
-                                android:textColor="#00FF88"
-                                android:gravity="center"/>
-
-                        </LinearLayout>
+                            android:text=""
+                            android:textSize="12sp"
+                            android:textColor="#AAAAAA"
+                            android:gravity="center"
+                            android:layout_marginTop="8dp"/>
 
                     </LinearLayout>
 

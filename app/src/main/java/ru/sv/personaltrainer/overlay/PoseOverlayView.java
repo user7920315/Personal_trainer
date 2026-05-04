@@ -4,7 +4,6 @@ import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
-import android.graphics.Path;
 import android.graphics.RadialGradient;
 import android.graphics.Shader;
 import android.util.AttributeSet;
@@ -17,79 +16,50 @@ import java.util.List;
 
 public class PoseOverlayView extends View {
 
-    private final Paint pointPaint    = new Paint();
-
-    private final Paint linePaint     = new Paint();
-
-    private final Paint errorPaint    = new Paint();
-
-    private final Paint errorStroke   = new Paint();
-
+    private final Paint pointPaint     = new Paint();
+    private final Paint linePaint      = new Paint();
+    private final Paint errorPaint     = new Paint();
+    private final Paint errorStroke    = new Paint();
     private final Paint errorLinePaint = new Paint();
-
-    private final Paint glowPaint     = new Paint();
+    private final Paint glowPaint      = new Paint();
 
     private PoseLandmarkerResult poseResult;
     private List<Integer>        errorLandmarks;
 
-    private float pulseRadius = 0f;
+    private float   pulseRadius  = 0f;
     private boolean pulseGrowing = true;
-    private static final float PULSE_MIN = 14f;
-    private static final float PULSE_MAX = 22f;
+
+    private static final float PULSE_MIN  = 14f;
+    private static final float PULSE_MAX  = 22f;
     private static final float PULSE_STEP = 0.5f;
 
     private static final int[][] POSE_CONNECTIONS = {
-
             // Голова
             {0, 1}, {1, 2}, {2, 3}, {3, 7},
             {0, 4}, {4, 5}, {5, 6}, {6, 8},
             {9, 10},
-
             // Торс
-            {11, 12},
-            {11, 23},
-            {12, 24},
-            {23, 24},
-
+            {11, 12}, {11, 23}, {12, 24}, {23, 24},
             // Левая рука
-            {11, 13},
-            {13, 15},
-            {15, 17},
-            {15, 19},
-            {15, 21},
-            {17, 19},
-
+            {11, 13}, {13, 15}, {15, 17},
+            {15, 19}, {15, 21}, {17, 19},
             // Правая рука
-            {12, 14},
-            {14, 16},
-            {16, 18},
-            {16, 20},
-            {16, 22},
-            {18, 20},
-
+            {12, 14}, {14, 16}, {16, 18},
+            {16, 20}, {16, 22}, {18, 20},
             // Левая нога
-            {23, 25},
-            {25, 27},
-            {27, 29},
-            {27, 31},
-            {29, 31},
-
+            {23, 25}, {25, 27}, {27, 29}, {27, 31}, {29, 31},
             // Правая нога
-            {24, 26},
-            {26, 28},
-            {28, 30},
-            {28, 32},
-            {30, 32}
+            {24, 26}, {26, 28}, {28, 30}, {28, 32}, {30, 32}
     };
 
-    // Левая сторона голубой
-    private static final int[] LEFT_LANDMARKS  = {
+    private static final int[] LEFT_LANDMARKS = {
             11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31
     };
-    // Правая сторона жёлтый
+
     private static final int[] RIGHT_LANDMARKS = {
             12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32
     };
+
 
     public PoseOverlayView(Context context) {
         super(context);
@@ -101,46 +71,42 @@ public class PoseOverlayView extends View {
         initPaints();
     }
 
-    public PoseOverlayView(Context context, AttributeSet attrs, int defStyleAttr) {
+    public PoseOverlayView(Context context, AttributeSet attrs,
+                           int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initPaints();
     }
 
-    private void initPaints() {
 
-        // Обычные точки
+    private void initPaints() {
         pointPaint.setColor(Color.WHITE);
         pointPaint.setStyle(Paint.Style.FILL);
         pointPaint.setAntiAlias(true);
 
-        // Линии скелета
         linePaint.setColor(Color.GREEN);
         linePaint.setStrokeWidth(5f);
         linePaint.setStyle(Paint.Style.STROKE);
         linePaint.setAntiAlias(true);
         linePaint.setStrokeCap(Paint.Cap.ROUND);
 
-        // Ошибочные точки — заливка
         errorPaint.setColor(Color.RED);
         errorPaint.setStyle(Paint.Style.FILL);
         errorPaint.setAntiAlias(true);
 
-        // Ошибочные точки — обводка
         errorStroke.setColor(Color.WHITE);
         errorStroke.setStyle(Paint.Style.STROKE);
         errorStroke.setStrokeWidth(2.5f);
         errorStroke.setAntiAlias(true);
 
-        // Линии между ошибочными точками
         errorLinePaint.setColor(Color.RED);
         errorLinePaint.setStrokeWidth(6f);
         errorLinePaint.setStyle(Paint.Style.STROKE);
         errorLinePaint.setAntiAlias(true);
         errorLinePaint.setStrokeCap(Paint.Cap.ROUND);
 
-        // Свечение вокруг ошибочных точек
         glowPaint.setStyle(Paint.Style.FILL);
         glowPaint.setAntiAlias(true);
+
         pulseRadius = PULSE_MIN;
     }
 
@@ -153,27 +119,48 @@ public class PoseOverlayView extends View {
         invalidate();
     }
 
+    public void drawOnCanvas(Canvas canvas,
+                             PoseLandmarkerResult result,
+                             int frameWidth,
+                             int frameHeight,
+                             List<Integer> errors) {
+
+        if (result == null || result.landmarks().isEmpty()) return;
+
+        List<NormalizedLandmark> landmarks = result.landmarks().get(0);
+
+        List<Integer> savedErrors = this.errorLandmarks;
+        this.errorLandmarks = errors;
+
+        drawConnections(canvas, landmarks, frameWidth, frameHeight);
+        drawLandmarks(canvas,  landmarks, frameWidth, frameHeight);
+
+        this.errorLandmarks = savedErrors;
+    }
+
+
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (poseResult == null || poseResult.landmarks().isEmpty()) return;
+        if (poseResult == null
+                || poseResult.landmarks().isEmpty()) return;
 
-        List<NormalizedLandmark> landmarks = poseResult.landmarks().get(0);
+        List<NormalizedLandmark> landmarks =
+                poseResult.landmarks().get(0);
 
         float viewW = getWidth();
         float viewH = getHeight();
 
         updatePulse();
-
         drawConnections(canvas, landmarks, viewW, viewH);
-
-        drawLandmarks(canvas, landmarks, viewW, viewH);
+        drawLandmarks(canvas,  landmarks, viewW, viewH);
 
         if (errorLandmarks != null && !errorLandmarks.isEmpty()) {
             postInvalidateDelayed(16);
         }
     }
+
 
     private void drawConnections(Canvas canvas,
                                  List<NormalizedLandmark> landmarks,
@@ -182,8 +169,8 @@ public class PoseOverlayView extends View {
             int startIdx = connection[0];
             int endIdx   = connection[1];
 
-            if (startIdx >= landmarks.size() ||
-                    endIdx   >= landmarks.size()) continue;
+            if (startIdx >= landmarks.size()
+                    || endIdx >= landmarks.size()) continue;
 
             NormalizedLandmark start = landmarks.get(startIdx);
             NormalizedLandmark end   = landmarks.get(endIdx);
@@ -199,20 +186,23 @@ public class PoseOverlayView extends View {
             boolean endIsError   = isErrorLandmark(endIdx);
 
             if (startIsError || endIsError) {
-                canvas.drawLine(startX, startY, endX, endY, errorLinePaint);
+                canvas.drawLine(startX, startY,
+                        endX, endY, errorLinePaint);
             } else {
-                linePaint.setColor(getConnectionColor(startIdx, endIdx));
-                canvas.drawLine(startX, startY, endX, endY, linePaint);
+                linePaint.setColor(
+                        getConnectionColor(startIdx, endIdx));
+                canvas.drawLine(startX, startY,
+                        endX, endY, linePaint);
             }
         }
     }
+
 
     private void drawLandmarks(Canvas canvas,
                                List<NormalizedLandmark> landmarks,
                                float viewW, float viewH) {
         for (int i = 0; i < landmarks.size(); i++) {
             NormalizedLandmark lm = landmarks.get(i);
-
             if (!isVisible(lm)) continue;
 
             float x = lm.x() * viewW;
@@ -226,7 +216,8 @@ public class PoseOverlayView extends View {
         }
     }
 
-    private void drawNormalPoint(Canvas canvas, float x, float y, int index) {
+    private void drawNormalPoint(Canvas canvas,
+                                 float x, float y, int index) {
         float radius = isKeyLandmark(index) ? 10f : 7f;
 
         pointPaint.setColor(0x44000000);
@@ -236,23 +227,21 @@ public class PoseOverlayView extends View {
         canvas.drawCircle(x, y, radius, pointPaint);
 
         pointPaint.setColor(0xAAFFFFFF);
-        canvas.drawCircle(x - radius * 0.3f, y - radius * 0.3f,
-                radius * 0.3f, pointPaint);
+        canvas.drawCircle(
+                x - radius * 0.3f,
+                y - radius * 0.3f,
+                radius * 0.3f,
+                pointPaint);
     }
 
-    private void drawErrorPoint(Canvas canvas, float x, float y) {
 
+    private void drawErrorPoint(Canvas canvas, float x, float y) {
         RadialGradient gradient = new RadialGradient(
                 x, y,
                 pulseRadius * 1.5f,
-                new int[]{
-                        0x88FF0000,
-                        0x44FF0000,
-                        0x00FF0000
-                },
+                new int[]{0x88FF0000, 0x44FF0000, 0x00FF0000},
                 new float[]{0f, 0.5f, 1f},
-                Shader.TileMode.CLAMP
-        );
+                Shader.TileMode.CLAMP);
         glowPaint.setShader(gradient);
         canvas.drawCircle(x, y, pulseRadius * 1.5f, glowPaint);
 
@@ -267,16 +256,21 @@ public class PoseOverlayView extends View {
         drawCross(canvas, x, y, 7f);
     }
 
-    private void drawCross(Canvas canvas, float x, float y, float size) {
+
+    private void drawCross(Canvas canvas,
+                           float x, float y, float size) {
         Paint crossPaint = new Paint();
         crossPaint.setColor(Color.WHITE);
         crossPaint.setStrokeWidth(2.5f);
         crossPaint.setAntiAlias(true);
         crossPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        canvas.drawLine(x - size, y - size, x + size, y + size, crossPaint);
-        canvas.drawLine(x + size, y - size, x - size, y + size, crossPaint);
+        canvas.drawLine(x - size, y - size,
+                x + size, y + size, crossPaint);
+        canvas.drawLine(x + size, y - size,
+                x - size, y + size, crossPaint);
     }
+
 
     private void updatePulse() {
         if (pulseGrowing) {
@@ -297,14 +291,15 @@ public class PoseOverlayView extends View {
     }
 
     private boolean isErrorLandmark(int index) {
-        return errorLandmarks != null && errorLandmarks.contains(index);
+        return errorLandmarks != null
+                && errorLandmarks.contains(index);
     }
 
     private boolean isKeyLandmark(int index) {
-        return index == 11 || index == 12 || // плечи
-                index == 23 || index == 24 || // бёдра
-                index == 25 || index == 26 || // колени
-                index == 13 || index == 14;   // локти
+        return index == 11 || index == 12
+                || index == 23 || index == 24
+                || index == 25 || index == 26
+                || index == 13 || index == 14;
     }
 
     private int getConnectionColor(int startIdx, int endIdx) {

@@ -24,6 +24,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Счётчик повторений -->
     <TextView
         android:id="@+id/tvRepCount"
         android:layout_width="wrap_content"
@@ -39,6 +40,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <!-- Название упражнения -->
     <TextView
         android:id="@+id/tvExerciseName"
         android:layout_width="wrap_content"
@@ -54,6 +56,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Фаза -->
     <TextView
         android:id="@+id/tvPhase"
         android:layout_width="wrap_content"
@@ -69,6 +72,45 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- ════════════════════════════════════════
+         Индикатор записи (виден только при записи)
+         Мигающий красный кружок + таймер
+         ════════════════════════════════════════ -->
+    <LinearLayout
+        android:id="@+id/layoutRecordingIndicator"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:background="#BB000000"
+        android:padding="8dp"
+        android:layout_marginTop="64dp"
+        android:layout_marginStart="16dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <!-- Красный кружок -->
+        <View
+            android:id="@+id/viewRecordingDot"
+            android:layout_width="10dp"
+            android:layout_height="10dp"
+            android:background="@drawable/bg_recording_dot"
+            android:layout_marginEnd="6dp"/>
+
+        <!-- Таймер -->
+        <TextView
+            android:id="@+id/tvRecordingTimer"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="00:00"
+            android:textSize="13sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"/>
+
+    </LinearLayout>
+
+    <!-- Кнопка Сброс -->
     <Button
         android:id="@+id/btnReset"
         android:layout_width="wrap_content"
@@ -82,6 +124,26 @@
         app:layout_constraintBottom_toTopOf="@id/cardFeedback"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <!-- ════════════════════════════════════════
+         Кнопка записи видео
+         Состояния:
+         - Не записывает: серая, текст "⏺ Запись"
+         - Записывает:    красная, текст "⏹ Стоп"
+         ════════════════════════════════════════ -->
+    <Button
+        android:id="@+id/btnRecord"
+        android:layout_width="wrap_content"
+        android:layout_height="40dp"
+        android:text="⏺ Запись"
+        android:textColor="#FFFFFF"
+        android:textSize="13sp"
+        android:backgroundTint="#88CC0000"
+        android:layout_marginBottom="8dp"
+        app:layout_constraintBottom_toTopOf="@id/cardFeedback"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"/>
+
+    <!-- Кнопка Назад -->
     <Button
         android:id="@+id/btnBack"
         android:layout_width="wrap_content"
@@ -95,6 +157,7 @@
         app:layout_constraintBottom_toTopOf="@id/cardFeedback"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Карточка обратной связи -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardFeedback"
         android:layout_width="match_parent"

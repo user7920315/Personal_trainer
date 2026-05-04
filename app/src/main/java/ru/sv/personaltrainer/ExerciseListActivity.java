@@ -93,7 +93,6 @@ public class ExerciseListActivity extends AppCompatActivity {
         startActivity(intent);
     }
 
-    // ── Adapter ───────────────────────────────────────
     static class ExerciseAdapter
             extends RecyclerView.Adapter<ExerciseAdapter.ViewHolder> {
 
