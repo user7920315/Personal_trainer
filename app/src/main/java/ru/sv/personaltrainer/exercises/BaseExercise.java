@@ -36,6 +36,7 @@ public abstract class BaseExercise {
         public String        mainFeedback   = "";
         public String        phase          = "";
         public int           repCount       = 0;
+        public int           holdSeconds    = -1;
 
         public void addError(String message, int... landmarks) {
             errors.add(message);
@@ -44,6 +45,7 @@ public abstract class BaseExercise {
     }
 
     public abstract AnalysisResult analyze(List<NormalizedLandmark> landmarks);
+
     public abstract String getName();
 
     public void reset() {

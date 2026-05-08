@@ -42,8 +42,10 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
 import ru.sv.personaltrainer.exercises.BaseExercise;
 import ru.sv.personaltrainer.exercises.ExerciseRegistry;
+import ru.sv.personaltrainer.exercises.PlankExercise;
 import ru.sv.personaltrainer.overlay.PoseOverlayView;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -93,6 +95,8 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private ScreenRecordService recordService;
     private boolean             serviceBound = false;
+
+    private final ErrorDebouncer errorDebouncer = new ErrorDebouncer();
 
     private final ServiceConnection serviceConnection =
             new ServiceConnection() {
@@ -206,12 +210,16 @@ public class ExerciseActivity extends AppCompatActivity {
         btnBack                  = findViewById(R.id.btnBack);
         btnReset                 = findViewById(R.id.btnReset);
         btnRecord                = findViewById(R.id.btnRecord);
-        layoutRecordingIndicator = findViewById(
-                R.id.layoutRecordingIndicator);
+        layoutRecordingIndicator = findViewById(R.id.layoutRecordingIndicator);
         viewRecordingDot         = findViewById(R.id.viewRecordingDot);
         tvRecordingTimer         = findViewById(R.id.tvRecordingTimer);
 
         tvExerciseName.setText(currentExercise.getName());
+
+        if ("PLANK".equals(exerciseId)) {
+            tvRepCount.setText("⏱ Время: 0с");
+        }
+
         btnBack.setOnClickListener(v -> finish());
         btnReset.setOnClickListener(v -> resetExercise());
         btnRecord.setOnClickListener(v -> onRecordClick());
@@ -219,17 +227,25 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void resetExercise() {
         currentExercise.reset();
-        tvRepCount.setText("Повторений: 0");
+        errorDebouncer.reset();
+
+        if ("PLANK".equals(exerciseId)) {
+            tvRepCount.setText("⏱ Время: 0с");
+            lastRepText = "⏱ Время: 0с";
+        } else {
+            tvRepCount.setText("Повторений: 0");
+            lastRepText = "Повторений: 0";
+        }
+
         tvFeedback.setText("Встаньте в кадр для начала");
         tvPhase.setText("● ГОТОВ");
         tvPhase.setTextColor(0xFFFFFFFF);
         tvQuality.setText("●●●●●");
         tvQuality.setTextColor(0xFF00FF88);
         layoutErrors.setVisibility(View.GONE);
-        lastRepText     = "Повторений: 0";
-        lastPhaseText   = "● ГОТОВ";
+        lastPhaseText    = "● ГОТОВ";
         lastFeedbackText = "";
-        lastPhaseColor  = 0xFFFFFFFF;
+        lastPhaseColor   = 0xFFFFFFFF;
     }
 
     private void initBlinkAnimation() {
@@ -370,6 +386,13 @@ public class ExerciseActivity extends AppCompatActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
+    private String formatHoldTime(int seconds) {
+        if (seconds == 0) {
+            return "⏱ Время: 0с";
+        }
+        return "⏱ Время: " + seconds + "с";
+    }
+
 
     private void analyzeFrame(ImageProxy imageProxy) {
         try {
@@ -418,6 +441,42 @@ public class ExerciseActivity extends AppCompatActivity {
         }
     }
 
+    private BaseExercise.AnalysisResult buildFilteredAnalysis(
+            BaseExercise.AnalysisResult raw,
+            List<String> filteredErrors) {
+
+        BaseExercise.AnalysisResult filtered =
+                new BaseExercise.AnalysisResult();
+
+        filtered.phase    = raw.phase;
+        filtered.repCount = raw.repCount;
+
+        if (filteredErrors.isEmpty()) {
+            filtered.mainFeedback = raw.mainFeedback.startsWith("⚠")
+                    ? buildPositiveFeedback(raw.phase)
+                    : raw.mainFeedback;
+            return filtered;
+        }
+
+        filtered.errors.addAll(filteredErrors);
+
+        filtered.errorLandmarks.addAll(raw.errorLandmarks);
+
+        filtered.mainFeedback = filteredErrors.get(0);
+
+        return filtered;
+    }
+
+
+    private String buildPositiveFeedback(String phase) {
+        switch (phase) {
+            case "DOWN": return "✅ Хорошо! Держите позицию";
+            case "UP":   return "✅ Отлично!";
+            case "HOLD": return "✅ Держите!";
+            default:     return "✅ Начните упражнение";
+        }
+    }
+
 
     private void onPoseResult(PoseLandmarkerResult result,
                               MPImage input) {
@@ -430,24 +489,32 @@ public class ExerciseActivity extends AppCompatActivity {
                 layoutErrors.setVisibility(View.GONE);
                 poseOverlay.updateResults(null, 0, 0, null);
             });
-
             lastPoseResult     = null;
             lastErrorLandmarks = null;
             return;
         }
 
-        BaseExercise.AnalysisResult analysis =
+        BaseExercise.AnalysisResult rawAnalysis =
                 currentExercise.analyze(result.landmarks().get(0));
 
+        long nowMs = System.currentTimeMillis();
+        List<String> filteredErrors =
+                errorDebouncer.filter(rawAnalysis.errors, nowMs);
+
+        BaseExercise.AnalysisResult filteredAnalysis = buildFilteredAnalysis(rawAnalysis, filteredErrors);
 
         lastPoseResult     = result;
-        lastErrorLandmarks = analysis.errorLandmarks;
-        lastRepText        = "Повторений: " + analysis.repCount;
-        lastPhaseText      = phaseToText(analysis.phase);
-        lastPhaseColor     = phaseToColor(analysis.phase);
-        lastFeedbackText   = analysis.mainFeedback;
+        lastErrorLandmarks = filteredAnalysis.errorLandmarks;
+        if (filteredAnalysis.holdSeconds >= 0) {
+            lastRepText = formatHoldTime(filteredAnalysis.holdSeconds);
+        } else {
+            lastRepText = "Повторений: " + filteredAnalysis.repCount;
+        }
+        lastPhaseText      = phaseToText(filteredAnalysis.phase);
+        lastPhaseColor     = phaseToColor(filteredAnalysis.phase);
+        lastFeedbackText   = filteredAnalysis.mainFeedback;
 
-        mainHandler.post(() -> updateUI(result, analysis));
+        mainHandler.post(() -> updateUI(result, filteredAnalysis));
     }
 
 
@@ -517,15 +584,33 @@ public class ExerciseActivity extends AppCompatActivity {
     protected void onPause() {
         super.onPause();
         if (isRecording) stopRecording();
-        if (currentExercise != null
-                && currentExercise.getRepCount() > 0) {
-            String icon = exerciseId.equals("SQUAT") ? "🏋"
-                    : exerciseId.equals("PLANK") ? "🧘" : "💪";
-            ProfileActivity.saveWorkout(this, exerciseId,
-                    currentExercise.getName(), icon,
-                    currentExercise.getRepCount());
+
+        if (currentExercise != null) {
+            if ("PLANK".equals(exerciseId)) {
+                PlankExercise plank = (PlankExercise) currentExercise;
+                if (plank.getBestHoldSeconds() > 0) {
+                    ProfileActivity.saveWorkout(
+                            this, exerciseId,
+                            currentExercise.getName(), "🧘",
+                            plank.getBestHoldSeconds());
+                }
+            } else if (currentExercise.getRepCount() > 0) {
+                String icon;
+                switch (exerciseId) {
+                    case "SQUAT":        icon = "🏋"; break;
+                    case "LUNGE":        icon = "🦵"; break;
+                    case "GLUTE_BRIDGE": icon = "🍑"; break;
+                    case "BURPEE":       icon = "🔥"; break;
+                    case "PULL_UP":      icon = "🏅"; break;
+                    default:             icon = "💪"; break;
+                }
+                ProfileActivity.saveWorkout(
+                        this, exerciseId,
+                        currentExercise.getName(), icon,
+                        currentExercise.getRepCount());
+            }
+            currentExercise.reset();
         }
-        if (currentExercise != null) currentExercise.reset();
     }
 
     @Override
@@ -548,5 +633,49 @@ public class ExerciseActivity extends AppCompatActivity {
         }
         if (cameraExecutor != null) cameraExecutor.shutdown();
         if (poseLandmarker != null) poseLandmarker.close();
+    }
+
+    private static class ErrorDebouncer {
+
+        private static final long DEBOUNCE_MS = 250L;
+
+
+        private final java.util.HashMap<String, Long> firstSeenMap
+                = new java.util.HashMap<>();
+
+        private final java.util.HashSet<String> confirmedErrors
+                = new java.util.HashSet<>();
+
+        public List<String> filter(List<String> rawErrors, long nowMs) {
+
+            firstSeenMap.keySet().retainAll(rawErrors);
+            confirmedErrors.retainAll(rawErrors);
+
+
+            for (String error : rawErrors) {
+                if (!firstSeenMap.containsKey(error)) {
+                    firstSeenMap.put(error, nowMs);
+                }
+            }
+
+
+            List<String> result = new ArrayList<>();
+            for (String error : rawErrors) {
+                Long firstSeen = firstSeenMap.get(error);
+                if (firstSeen != null
+                        && (nowMs - firstSeen) >= DEBOUNCE_MS) {
+                    confirmedErrors.add(error);
+                    result.add(error);
+                }
+            }
+
+            return result;
+        }
+
+
+        public void reset() {
+            firstSeenMap.clear();
+            confirmedErrors.clear();
+        }
     }
 }
