@@ -13,10 +13,6 @@ public class SquatExercise extends BaseExercise {
     private static final float DEPTH_TOO_DEEP_ERR = 0.15f;
     private static final float DEPTH_TOO_DEEP_WARN = 0.07f;
 
-    private static final float DEPTH_ACTIVE = 160f;
-
-    private static final float STANDING_ANGLE = 155f;
-
     private static final float BACK_DIFF_WARN  = 20f;
     private static final float BACK_DIFF_ERROR = 35f;
 
@@ -503,7 +499,6 @@ public class SquatExercise extends BaseExercise {
         s.kneeIdx     = left ? LEFT_KNEE       : RIGHT_KNEE;
         s.ankleIdx    = left ? LEFT_ANKLE      : RIGHT_ANKLE;
         s.heelIdx     = left ? LEFT_HEEL       : RIGHT_HEEL;
-        // toeIdx = foot_index (31 для LEFT, 32 для RIGHT)
         s.toeIdx      = left ? LEFT_FOOT_INDEX : RIGHT_FOOT_INDEX;
 
         s.hasShoulder = isVisible(lm, s.shoulderIdx);

@@ -7,7 +7,6 @@
     android:orientation="vertical"
     android:background="#1A1A2E">
 
-    <!-- ── Шапка ───────────────────────────────────── -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -39,7 +38,6 @@
 
     </LinearLayout>
 
-    <!-- ── Контент (прокручиваемый) ───────────────── -->
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -52,7 +50,6 @@
             android:orientation="vertical"
             android:paddingBottom="32dp">
 
-            <!-- ── Аватар ───────────────────────────── -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -96,7 +93,6 @@
 
             </LinearLayout>
 
-            <!-- ── Карточка ИМТ ─────────────────────── -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -112,7 +108,6 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Заголовок -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -122,7 +117,6 @@
                         android:textColor="#FFFFFF"
                         android:layout_marginBottom="16dp"/>
 
-                    <!-- Пол -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -137,7 +131,6 @@
                         android:orientation="horizontal"
                         android:layout_marginBottom="16dp">
 
-                        <!-- Мужской -->
                         <LinearLayout
                             android:id="@+id/btnGenderMale"
                             android:layout_width="0dp"
@@ -168,7 +161,6 @@
 
                         </LinearLayout>
 
-                        <!-- Женский -->
                         <LinearLayout
                             android:id="@+id/btnGenderFemale"
                             android:layout_width="0dp"
@@ -200,13 +192,11 @@
 
                     </LinearLayout>
 
-                    <!-- Рост + Вес в одну строку -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <!-- Рост -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -241,7 +231,6 @@
 
                         </LinearLayout>
 
-                        <!-- Вес -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -278,7 +267,6 @@
 
                     </LinearLayout>
 
-                    <!-- Возраст (влияет на норму ИМТ) -->
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
@@ -305,7 +293,6 @@
 
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Кнопка рассчитать -->
                     <Button
                         android:id="@+id/btnCalculateBmi"
                         android:layout_width="match_parent"
@@ -315,7 +302,6 @@
                         android:textColor="#FFFFFF"
                         android:backgroundTint="#E94560"/>
 
-                    <!-- Результат ИМТ -->
                     <LinearLayout
                         android:id="@+id/layoutBmiResult"
                         android:layout_width="match_parent"
@@ -326,7 +312,6 @@
                         android:background="@drawable/bg_bmi_result"
                         android:visibility="gone">
 
-                        <!-- Строка: ИМТ + Категория -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -391,7 +376,6 @@
 
                         </LinearLayout>
 
-                        <!-- Норма для пола -->
                         <TextView
                             android:id="@+id/tvBmiNorm"
                             android:layout_width="match_parent"
@@ -408,7 +392,7 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- ── График веса ───────────────────────── -->
+
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -433,7 +417,7 @@
                         android:textColor="#FFFFFF"
                         android:layout_marginBottom="12dp"/>
 
-                    <!-- Нет данных -->
+
                     <TextView
                         android:id="@+id/tvNoWeightData"
                         android:layout_width="match_parent"
@@ -445,7 +429,7 @@
                         android:padding="24dp"
                         android:visibility="visible"/>
 
-                    <!-- График -->
+
                     <com.github.mikephil.charting.charts.LineChart
                         android:id="@+id/weightChart"
                         android:layout_width="match_parent"
@@ -456,7 +440,6 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- ── Статистика тренировок ─────────────── -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -481,13 +464,11 @@
                         android:textColor="#FFFFFF"
                         android:layout_marginBottom="16dp"/>
 
-                    <!-- Карточки статистики -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
 
-                        <!-- Всего тренировок -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -516,7 +497,6 @@
 
                         </LinearLayout>
 
-                        <!-- Лучшая серия -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -546,7 +526,6 @@
 
                         </LinearLayout>
 
-                        <!-- Эта неделя -->
                         <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -581,7 +560,6 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- ── История тренировок ────────────────── -->
             <androidx.cardview.widget.CardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -597,7 +575,6 @@
                     android:orientation="vertical"
                     android:padding="20dp">
 
-                    <!-- Заголовок + кнопка очистить -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -626,7 +603,6 @@
 
                     </LinearLayout>
 
-                    <!-- Нет истории -->
                     <TextView
                         android:id="@+id/tvNoHistory"
                         android:layout_width="match_parent"
@@ -638,7 +614,6 @@
                         android:padding="24dp"
                         android:visibility="visible"/>
 
-                    <!-- Список истории -->
                     <androidx.recyclerview.widget.RecyclerView
                         android:id="@+id/rvHistory"
                         android:layout_width="match_parent"

@@ -8,50 +8,31 @@ public class PullUpExercise extends BaseExercise {
 
     private static final String TAG = "PullUpExercise";
 
-    // ── Пороги фаз ───────────────────────────────────
-
-    // Верхняя точка: подбородок выше запястий
-    // (chin Y < wrist Y в системе MediaPipe, где Y растёт вниз)
     private static final float CHIN_ABOVE_WRIST_MIN = 0.02f;
 
-    // Нижняя точка: руки почти прямые (угол в локте)
     private static final float ELBOW_EXTENDED_ANGLE = 155f;
     private static final float ELBOW_DOWN_ANGLE     = 135f;
 
-    // ── Пороги ошибок ────────────────────────────────
-
-    // Не полное разгибание рук внизу
     private static final float ELBOW_FULL_EXTEND_WARN  = 150f;
     private static final float ELBOW_FULL_EXTEND_ERROR = 140f;
 
-    // Не подтянулся достаточно (подбородок не выше перекладины)
-    // Косвенно: запястья должны быть значительно ниже плеч
-    private static final float CHIN_HEIGHT_WARN = 0.0f;   // подбородок на уровне запястий
-    private static final float CHIN_HEIGHT_ERROR = -0.03f; // подбородок ниже запястий
 
-    // Раскачка (горизонтальное смещение плеч)
     private static final float SWING_WARN  = 0.05f;
     private static final float SWING_ERROR = 0.10f;
 
-    // Локти не разводятся слишком широко
     private static final float ELBOW_WIDTH_RATIO_MAX = 1.8f;
 
-    // Скрещенные ноги (бёдра не отклоняются назад)
     private static final float LEG_SWING_WARN  = 0.06f;
     private static final float LEG_SWING_ERROR = 0.12f;
 
-    // Симметрия рук
     private static final float ELBOW_ASYMMETRY_WARN  = 15f;
     private static final float ELBOW_ASYMMETRY_ERROR = 25f;
 
-    // ViewMode
     private static final float SIDE_THRESHOLD = 0.12f;
     private static final int   STABLE_FRAMES  = 8;
 
-    // EMA
     private static final float EMA_ALPHA = 0.15f;
 
-    // ── EMA переменные ───────────────────────────────
     private float emaNoseY = -1f, emaNoseX = -1f;
     private float emaLShoulderY = -1f, emaLShoulderX = -1f;
     private float emaRShoulderY = -1f, emaRShoulderX = -1f;
@@ -66,16 +47,13 @@ public class PullUpExercise extends BaseExercise {
 
     private float emaShoulderWidth = -1f;
 
-    // Позиция перекладины (фиксируем по запястьям в начале)
     private float barY = -1f;
     private int   barFrameCount = 0;
     private static final int BAR_CAPTURE_FRAMES = 15;
 
-    // Предыдущий X плеч для определения раскачки
     private float prevShoulderX = -1f;
     private float emaSwingX     = -1f;
 
-    // ViewMode
     private ViewMode currentView   = ViewMode.UNKNOWN;
     private ViewMode candidateView = ViewMode.UNKNOWN;
     private int candidateCount     = 0;
@@ -85,7 +63,6 @@ public class PullUpExercise extends BaseExercise {
     @Override
     public String getName() { return "🏅 Подтягивания"; }
 
-    // ═════════════════════════════════════════════════
     @Override
     public AnalysisResult analyze(List<NormalizedLandmark> lm) {
         AnalysisResult result = new AnalysisResult();
@@ -107,7 +84,6 @@ public class PullUpExercise extends BaseExercise {
 
         ViewMode view = updateView();
 
-        // Угол в локте — основной показатель фазы
         float avgElbowAngle = getAvgElbowAngle(lm);
 
         if (avgElbowAngle < 0) {
@@ -122,7 +98,6 @@ public class PullUpExercise extends BaseExercise {
                 + " elbow=" + String.format("%.1f°", avgElbowAngle)
                 + " phase=" + result.phase);
 
-        // Проверки
         checkFullExtension(result, avgElbowAngle);
         checkChinAboveBar(result, lm);
         checkElbowSymmetry(result, lm);
@@ -142,26 +117,17 @@ public class PullUpExercise extends BaseExercise {
         return result;
     }
 
-    // ═════════════════════════════════════════════════
-    //  Фаза
-    // ═════════════════════════════════════════════════
     private void updatePhase(AnalysisResult r,
                              List<NormalizedLandmark> lm,
                              float elbowAngle) {
-        // DOWN = руки прямые (висим на перекладине)
-        // UP   = подтянулись
 
         if (elbowAngle > ELBOW_EXTENDED_ANGLE) {
-            // Руки прямые — нижняя точка
             if (isDown) {
-                // Только что опустились — повторение не засчитываем здесь
             }
             isDown  = true;
             r.phase = "DOWN";
 
         } else if (elbowAngle < ELBOW_DOWN_ANGLE && isDown) {
-            // Подтянулись
-            // Проверяем: подбородок выше запястий?
             boolean chinOver = checkChinOverBar(lm);
             if (chinOver) {
                 isDown = false;
@@ -173,11 +139,7 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-    // ═════════════════════════════════════════════════
-    //  Проверки
-    // ═════════════════════════════════════════════════
 
-    /** Полное разгибание рук в нижней точке */
     private void checkFullExtension(AnalysisResult result,
                                     float angle) {
         if (!result.phase.equals("DOWN")) return;
@@ -194,7 +156,7 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-    /** Подбородок выше перекладины */
+
     private void checkChinAboveBar(AnalysisResult result,
                                    List<NormalizedLandmark> lm) {
         if (!result.phase.equals("UP")) return;
@@ -206,16 +168,15 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-    /** Проверка: подбородок над запястьями */
+
     private boolean checkChinOverBar(List<NormalizedLandmark> lm) {
         if (emaNoseY < 0) return false;
         float wristY = getAvgWristY();
         if (wristY < 0) return false;
-        // noseY < wristY → нос выше запястий (Y растёт вниз)
         return (wristY - emaNoseY) > CHIN_ABOVE_WRIST_MIN;
     }
 
-    /** Симметрия сгибания рук */
+
     private void checkElbowSymmetry(AnalysisResult result,
                                     List<NormalizedLandmark> lm) {
         float lA = getAngle(lm, LEFT_SHOULDER,  LEFT_ELBOW,  LEFT_WRIST);
@@ -238,7 +199,7 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-    /** Раскачка корпуса */
+
     private void checkSwing(AnalysisResult result) {
         if (emaSwingX < 0) return;
 
@@ -255,7 +216,7 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-    /** Ширина локтей */
+
     private void checkElbowWidth(AnalysisResult result,
                                  List<NormalizedLandmark> lm) {
         if (!allVisible(lm, LEFT_ELBOW, RIGHT_ELBOW,
@@ -275,7 +236,7 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-    /** Ноги не раскачиваются */
+
     private void checkLegSwing(AnalysisResult result,
                                List<NormalizedLandmark> lm) {
         float shX  = getAvgShoulderX();
@@ -296,9 +257,7 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-    // ═════════════════════════════════════════════════
-    //  Позиция перекладины
-    // ═════════════════════════════════════════════════
+
     private void captureBarPosition() {
         if (barFrameCount >= BAR_CAPTURE_FRAMES) return;
         float wY = getAvgWristY();
@@ -310,9 +269,7 @@ public class PullUpExercise extends BaseExercise {
                 + " frame=" + barFrameCount);
     }
 
-    // ═════════════════════════════════════════════════
-    //  Раскачка
-    // ═════════════════════════════════════════════════
+
     private void updateSwing() {
         float shX = getAvgShoulderX();
         if (shX < 0) return;
@@ -324,9 +281,7 @@ public class PullUpExercise extends BaseExercise {
         prevShoulderX = shX;
     }
 
-    // ═════════════════════════════════════════════════
-    //  Вспомогательные
-    // ═════════════════════════════════════════════════
+
     private float getAvgElbowAngle(List<NormalizedLandmark> lm) {
         float lA = getAngle(lm, LEFT_SHOULDER,  LEFT_ELBOW,  LEFT_WRIST);
         float rA = getAngle(lm, RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST);
@@ -368,9 +323,7 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-    // ═════════════════════════════════════════════════
-    //  EMA и ViewMode
-    // ═════════════════════════════════════════════════
+
     private void updateEMA(List<NormalizedLandmark> lm) {
         if (isVisible(lm, NOSE)) {
             emaNoseY = emaVal(emaNoseY, lm.get(NOSE).y());

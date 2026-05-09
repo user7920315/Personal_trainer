@@ -9,18 +9,20 @@ public class BurpeeExercise extends BaseExercise {
     public String getName() { return "Берпи"; }
 
     private enum Stage {
-        STAND,         // стоим
-        PLANK_UP,      // в планке, руки прямые — нужно опуститься
-        PLANK_DOWN,    // внизу — нужно выжаться
-        PLANK_UP_DONE, // выжались — нужно прыгнуть
-        JUMP           // в прыжке — нужно приземлиться
+        STAND,
+        PLANK,
+        PLANK_DONE,
+        JUMP
     }
 
-    private Stage stage = Stage.STAND;
+    private Stage stage    = Stage.STAND;
+    private boolean isDown = false;
 
-    // Порог: тело горизонтально (в планке)
-    // Разница Y между плечами и лодыжками
-    private static final float BODY_FLAT_THRESHOLD = 0.20f;
+    // Порог горизонтальности тела
+    // Используем плечи + бёдра (они видны лучше чем лодыжки)
+    private static final float BODY_FLAT_HIP_THRESHOLD     = 0.10f;
+    // Запасной вариант через лодыжки (если всё же видны)
+    private static final float BODY_FLAT_ANKLE_THRESHOLD   = 0.35f;
 
     @Override
     public AnalysisResult analyze(List<NormalizedLandmark> lm) {
@@ -33,12 +35,12 @@ public class BurpeeExercise extends BaseExercise {
         }
 
         boolean hasShoulders = allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
-        boolean hasElbows    = allVisible(lm, LEFT_ELBOW, RIGHT_ELBOW);
-        boolean hasWrists    = allVisible(lm, LEFT_WRIST,  RIGHT_WRIST);
-        boolean hasHips      = allVisible(lm, LEFT_HIP,    RIGHT_HIP);
-        boolean hasKnees     = allVisible(lm, LEFT_KNEE,   RIGHT_KNEE);
-        boolean hasAnkles    = allVisible(lm, LEFT_ANKLE,  RIGHT_ANKLE);
-        boolean hasNose      = isVisible(lm, NOSE);
+        boolean hasElbows    = allVisible(lm, LEFT_ELBOW,    RIGHT_ELBOW);
+        boolean hasWrists    = allVisible(lm, LEFT_WRIST,    RIGHT_WRIST);
+        boolean hasHips      = allVisible(lm, LEFT_HIP,      RIGHT_HIP);
+        boolean hasKnees     = allVisible(lm, LEFT_KNEE,     RIGHT_KNEE);
+        boolean hasAnkles    = allVisible(lm, LEFT_ANKLE,    RIGHT_ANKLE);
+        boolean hasNose      = isVisible(lm,  NOSE);
 
         if (!hasShoulders) {
             result.mainFeedback = "Направьте камеру — должны быть видны плечи";
@@ -58,13 +60,34 @@ public class BurpeeExercise extends BaseExercise {
         else if (rightElbow < 0)                  avgElbow = leftElbow;
         else                                      avgElbow = (leftElbow + rightElbow) / 2f;
 
-        // ── Тело горизонтально (лежит в планке) ─────────────────
-        // Используем Y плеч и Y лодыжек — если близко, человек лежит
+        // ── Определяем горизонтальность тела (планка) ────────────
+        // Приоритет 1: плечи + бёдра (самые надёжные точки)
+        // Приоритет 2: плечи + лодыжки (если видны)
         boolean bodyFlat = false;
-        if (hasShoulders && hasAnkles) {
+
+        if (hasShoulders && hasHips) {
+            float shY  = avgY(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
+            float hipY = avgY(lm, LEFT_HIP,      RIGHT_HIP);
+            float diff = Math.abs(shY - hipY);
+
+            bodyFlat = diff < BODY_FLAT_HIP_THRESHOLD;
+
+            android.util.Log.d("BURPEE",
+                    "shY=" + shY + " hipY=" + hipY +
+                            " diff=" + diff + " bodyFlat=" + bodyFlat +
+                            " stage=" + stage);
+
+        } else if (hasShoulders && hasAnkles) {
+            // Запасной вариант
             float shY  = avgY(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
             float ankY = avgY(lm, LEFT_ANKLE,    RIGHT_ANKLE);
-            bodyFlat = Math.abs(shY - ankY) < BODY_FLAT_THRESHOLD;
+            float diff = Math.abs(shY - ankY);
+
+            bodyFlat = diff < BODY_FLAT_ANKLE_THRESHOLD;
+
+            android.util.Log.d("BURPEE",
+                    "[ankle fallback] shY=" + shY + " ankY=" + ankY +
+                            " diff=" + diff + " bodyFlat=" + bodyFlat);
         }
 
         // ── Запястья выше плеч (прыжок) ─────────────────────────
@@ -72,20 +95,21 @@ public class BurpeeExercise extends BaseExercise {
         if (hasShoulders && hasWrists) {
             float shY = avgY(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
             float wrY = avgY(lm, LEFT_WRIST,    RIGHT_WRIST);
-            wristsUp = (shY - wrY) > 0.06f;
+            // В MediaPipe Y растёт вниз, поэтому
+            // руки подняты = запястья имеют МЕНЬШИЙ Y чем плечи
+            wristsUp  = (shY - wrY) > 0.06f;
         }
 
         // ── Машина состояний ─────────────────────────────────────
         updateStage(avgElbow, bodyFlat, wristsUp, hasElbows);
 
         // ── phase для UI ─────────────────────────────────────────
-        result.phase = stageToPhaseLabel(stage);
+        result.phase = stageToPhaseLabel(stage, isDown);
 
-        // ── Ошибки ───────────────────────────────────────────────
+        // ── Анализ ошибок ─────────────────────────────────────────
         switch (stage) {
-            case PLANK_UP:
-            case PLANK_DOWN:
-            case PLANK_UP_DONE:
+            case PLANK:
+            case PLANK_DONE:
                 analyzePushUp(lm, result, avgElbow,
                         hasShoulders, hasElbows,
                         hasHips, hasKnees, hasNose);
@@ -113,51 +137,60 @@ public class BurpeeExercise extends BaseExercise {
         switch (stage) {
 
             case STAND:
-                // Переходим в планку только если тело горизонтально
-                // Это надёжнее чем угол локтя — стоя локти тоже прямые
                 if (bodyFlat) {
-                    stage = Stage.PLANK_UP;
+                    stage  = Stage.PLANK;
+                    isDown = false;
+                    android.util.Log.d("BURPEE", "→ PLANK");
                 }
                 break;
 
-            case PLANK_UP:
-                // Ждём опускания: локоть < 90°
-                if (hasElbows && avgElbow > 0 && avgElbow < 90f) {
-                    stage = Stage.PLANK_DOWN;
+            case PLANK:
+                if (hasElbows && avgElbow > 0) {
+                    // Опустились вниз
+                    if (avgElbow < 90f && !isDown) {
+                        isDown = true;
+                        android.util.Log.d("BURPEE", "isDown = true, elbow=" + avgElbow);
+                    }
+                    // Выжались вверх — отжимание засчитано
+                    if (isDown && avgElbow > 160f) {
+                        isDown = false;
+                        stage  = Stage.PLANK_DONE;
+                        android.util.Log.d("BURPEE", "→ PLANK_DONE");
+                    }
+                }
+                // Если встали (тело больше не горизонтально)
+                // но отжимание ещё не сделали — сбрасываем в STAND
+                if (!bodyFlat && !isDown) {
+                    stage = Stage.STAND;
+                    android.util.Log.d("BURPEE", "→ STAND (встали без отжимания)");
                 }
                 break;
 
-            case PLANK_DOWN:
-                // Ждём подъёма: локоть > 160°
-                if (hasElbows && avgElbow > 160f) {
-                    stage = Stage.PLANK_UP_DONE;
-                }
-                break;
-
-            case PLANK_UP_DONE:
-                // Два варианта выхода:
-                // 1. Прыжок — руки вверх
+            case PLANK_DONE:
                 if (wristsUp) {
                     stage = Stage.JUMP;
+                    android.util.Log.d("BURPEE", "→ JUMP");
                 }
-                // 2. Ещё одно отжимание — снова вниз
-                else if (hasElbows && avgElbow > 0 && avgElbow < 90f) {
-                    stage = Stage.PLANK_DOWN;
+                // Если лёг снова — вернуть в планку для ещё одного отжимания
+                if (bodyFlat && !wristsUp) {
+                    stage  = Stage.PLANK;
+                    isDown = false;
                 }
                 break;
 
             case JUMP:
-                // Приземлились — руки опустили
                 if (!wristsUp) {
                     repCount++;
-                    stage = Stage.STAND;
+                    stage  = Stage.STAND;
+                    isDown = false;
+                    android.util.Log.d("BURPEE", "→ STAND repCount=" + repCount);
                 }
                 break;
         }
     }
 
     // ═════════════════════════════════════════════════════════════
-    //  Ошибки отжимания (из PushUpExercise)
+    //  Ошибки отжимания — та же логика что в PushUpExercise
     // ═════════════════════════════════════════════════════════════
     private void analyzePushUp(List<NormalizedLandmark> lm,
                                AnalysisResult result,
@@ -178,14 +211,13 @@ public class BurpeeExercise extends BaseExercise {
             }
         }
 
-        if ((stage == Stage.PLANK_UP || stage == Stage.PLANK_UP_DONE)
-                && avgElbow > 0 && avgElbow < 150f) {
+        if (!isDown && avgElbow > 0 && avgElbow < 150f) {
             result.addError(
                     "⚠ Полностью разгибайте руки в верхней точке",
                     LEFT_ELBOW, RIGHT_ELBOW);
         }
 
-        if (stage == Stage.PLANK_DOWN && avgElbow > 0 && avgElbow > 110f) {
+        if (isDown && avgElbow > 0 && avgElbow > 110f) {
             result.addError(
                     "⚠ Опускайтесь ниже — грудь ближе к полу",
                     LEFT_ELBOW, RIGHT_ELBOW);
@@ -202,6 +234,7 @@ public class BurpeeExercise extends BaseExercise {
                                     boolean hasHips,
                                     boolean hasKnees,
                                     boolean hasNose) {
+
         if (hasElbows && hasHips) {
             float elbowY = avgY(lm, LEFT_ELBOW, RIGHT_ELBOW);
             float hipY   = avgY(lm, LEFT_HIP,   RIGHT_HIP);
@@ -246,8 +279,7 @@ public class BurpeeExercise extends BaseExercise {
                                 "⚠ Держите голову прямо — не опускайте подбородок",
                                 NOSE);
                     } else if (noseY < shoulderY - 0.08f) {
-                        result.addError(
-                                "⚠ Не запрокидывайте голову", NOSE);
+                        result.addError("⚠ Не запрокидывайте голову", NOSE);
                     }
                 }
             }
@@ -292,7 +324,6 @@ public class BurpeeExercise extends BaseExercise {
                     "⚠ Поднимите руки выше при прыжке!",
                     LEFT_WRIST, RIGHT_WRIST);
         }
-
         float tilt = Math.abs(
                 lm.get(LEFT_SHOULDER).y() - lm.get(RIGHT_SHOULDER).y());
         if (tilt > 0.06f) {
@@ -305,31 +336,24 @@ public class BurpeeExercise extends BaseExercise {
     // ═════════════════════════════════════════════════════════════
     //  Вспомогательные
     // ═════════════════════════════════════════════════════════════
-    private String stageToPhaseLabel(Stage s) {
+    private String stageToPhaseLabel(Stage s, boolean down) {
         switch (s) {
-            case PLANK_DOWN: return "DOWN";
-            case PLANK_UP:
-            case PLANK_UP_DONE:
-            case JUMP:       return "UP";
-            default:         return "UP";
+            case PLANK: return down ? "DOWN" : "UP";
+            case PLANK_DONE:
+            case JUMP:  return "UP";
+            default:    return "UP";
         }
     }
 
-    // Подсказка — что нужно сделать СЕЙЧАС в текущем состоянии
     private String buildFeedback() {
         switch (stage) {
             case STAND:
                 return repCount == 0
                         ? "✅ Упадите в планку"
                         : "✅ Повторений: " + repCount + " — упадите в планку";
-            case PLANK_UP:
-                // Попали в планку — просим опуститься
-                return "✅ Опуститесь грудью к полу";
-            case PLANK_DOWN:
-                // Внизу — просим выжаться
-                return "✅ Выжимайтесь вверх";
-            case PLANK_UP_DONE:
-                // Выжались — просим прыгнуть
+            case PLANK:
+                return "✅ Сделайте одно отжимание";
+            case PLANK_DONE:
                 return "✅ Вставайте и прыгайте!";
             case JUMP:
                 return "✅ Прыжок! Руки вверх!";
@@ -341,6 +365,7 @@ public class BurpeeExercise extends BaseExercise {
     @Override
     public void reset() {
         super.reset();
-        stage = Stage.STAND;
+        stage  = Stage.STAND;
+        isDown = false;
     }
 }
