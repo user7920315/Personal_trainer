@@ -14,12 +14,6 @@ public class PlankExercise extends BaseExercise {
     private static final float HIP_HIGH_ERROR = -0.35f;
 
 
-    private static final float KNEE_ONLY_SAG_WARN  =  0.08f;
-    private static final float KNEE_ONLY_SAG_ERROR =  0.14f;
-    private static final float KNEE_ONLY_HIGH_WARN  = -0.14f;
-    private static final float KNEE_ONLY_HIGH_ERROR = -0.22f;
-
-
     private static final float HEAD_NEUTRAL    = 0.15f;
     private static final float HEAD_DROP_WARN  = 0.25f;
     private static final float HEAD_DROP_ERROR = 0.40f;
@@ -61,7 +55,7 @@ public class PlankExercise extends BaseExercise {
 
     private ViewMode currentView   = ViewMode.UNKNOWN;
     private ViewMode candidateView = ViewMode.UNKNOWN;
-    private int      candidateCount = 0;
+    private int candidateCount = 0;
 
     private enum ViewMode { SIDE, FRONT, UNKNOWN }
 
@@ -342,7 +336,6 @@ public class PlankExercise extends BaseExercise {
     public int getBestHoldSeconds() { return bestHoldSeconds; }
 
 
-    public int getCurrentSeconds()  { return currentSeconds; }
 
 
     private void updateEMA(List<NormalizedLandmark> lm) {

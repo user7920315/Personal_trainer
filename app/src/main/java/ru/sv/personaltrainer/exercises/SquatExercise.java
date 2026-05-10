@@ -28,21 +28,21 @@ public class SquatExercise extends BaseExercise {
     private static final float KNEE_ASYMMETRY = 14f;
 
     private static final float SIDE_THRESHOLD = 0.12f;
-    private static final int   STABLE_FRAMES  = 8;
+    private static final int STABLE_FRAMES = 8;
 
     private static final float EMA_ALPHA = 0.15f;
 
-    private float emaLHeelY      = -1f;
-    private float emaLFootIdxY   = -1f;
-    private float emaLAnkleY     = -1f;
-    private float emaLHipY       = -1f;
-    private float emaLKneeY      = -1f;
+    private float emaLHeelY = -1f;
+    private float emaLFootIdxY = -1f;
+    private float emaLAnkleY = -1f;
+    private float emaLHipY = -1f;
+    private float emaLKneeY = -1f;
 
-    private float emaRHeelY      = -1f;
-    private float emaRFootIdxY   = -1f;
-    private float emaRAnkleY     = -1f;
-    private float emaRHipY       = -1f;
-    private float emaRKneeY      = -1f;
+    private float emaRHeelY = -1f;
+    private float emaRFootIdxY = -1f;
+    private float emaRAnkleY = -1f;
+    private float emaRHipY = -1f;
+    private float emaRKneeY = -1f;
 
     private float emaShX = -1f, emaShY = -1f;
     private float emaHiX = -1f, emaHiY = -1f;
@@ -51,9 +51,9 @@ public class SquatExercise extends BaseExercise {
 
     private float emaShoulderWidth = -1f;
 
-    private ViewMode currentView    = ViewMode.UNKNOWN;
-    private ViewMode candidateView  = ViewMode.UNKNOWN;
-    private int      candidateCount = 0;
+    private ViewMode currentView = ViewMode.UNKNOWN;
+    private ViewMode candidateView = ViewMode.UNKNOWN;
+    private int candidateCount = 0;
 
     private enum ViewMode { SIDE, FRONT, UNKNOWN }
 

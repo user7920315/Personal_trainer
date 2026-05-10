@@ -39,7 +39,6 @@ public class ExerciseRegistry {
                 "Пресс · Спина · Всё тело"
         ));
 
-        // ── Новые упражнения ──────────────────────────
 
         list.add(new ExerciseInfo(
                 "LUNGE",

@@ -8,11 +8,6 @@ public class GluteBridgeExercise extends BaseExercise {
 
     private static final String TAG = "GluteBridgeExercise";
 
-    private static final int LEFT_PINKY  = 17;
-    private static final int RIGHT_PINKY = 18;
-    private static final int LEFT_INDEX  = 19;
-    private static final int RIGHT_INDEX = 20;
-
     private static final float PHASE_UP_ENTER  = 0.07f;
     private static final float PHASE_DOWN_EXIT = 0.03f;
 
@@ -217,7 +212,6 @@ public class GluteBridgeExercise extends BaseExercise {
         float currentShY = getAvgShoulderY();
         if (currentShY < 0) return;
 
-        // Плечи поднялись → Y стало меньше
         float lift = baseShoulderY - currentShY;
 
         Log.d(TAG, String.format(

@@ -152,7 +152,6 @@ public class PushUpExercise extends BaseExercise {
         if (hasElbows && hasShoulders) {
 
             float shoulderY = avgY(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
-            float elbowY    = avgY(lm, LEFT_ELBOW,    RIGHT_ELBOW);
 
             float leftShoulderY  = lm.get(LEFT_SHOULDER).y();
             float rightShoulderY = lm.get(RIGHT_SHOULDER).y();

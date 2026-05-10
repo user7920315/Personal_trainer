@@ -40,13 +40,11 @@ dependencies {
     implementation(libs.material)
     implementation(libs.constraintlayout)
 
-    // ✅ Явно указываем core — нужен для foreground service на API 34+
     implementation("androidx.core:core:1.13.1")
 
     implementation("androidx.recyclerview:recyclerview:1.3.2")
     implementation("com.google.mediapipe:tasks-vision:0.10.14")
 
-    // CameraX
     implementation("androidx.camera:camera-core:1.3.4")
     implementation("androidx.camera:camera-camera2:1.3.4")
     implementation("androidx.camera:camera-lifecycle:1.3.4")

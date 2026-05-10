@@ -7,9 +7,8 @@ import java.util.List;
 public class LungeExercise extends BaseExercise {
 
     private static final String TAG = "LungeExercise";
-    //Константы
+
     private static final float SIDE_FRONT_KNEE_TOO_DEEP   = 75f;
-    private static final float SIDE_FRONT_KNEE_IDEAL_MIN  = 80f;
     private static final float SIDE_FRONT_KNEE_IDEAL_MAX  = 100f;
     private static final float SIDE_FRONT_KNEE_SHALLOW    = 115f;
 
@@ -17,7 +16,6 @@ public class LungeExercise extends BaseExercise {
     private static final float SIDE_BACK_KNEE_SHALLOW     = 120f;
 
     private static final float FRONT_KNEE_TOO_DEEP        = 75f;
-    private static final float FRONT_KNEE_IDEAL_MIN       = 80f;
     private static final float FRONT_KNEE_IDEAL_MAX       = 100f;
     private static final float FRONT_KNEE_SHALLOW         = 115f;
 
