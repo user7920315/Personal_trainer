@@ -9,6 +9,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -36,6 +37,8 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
+
+import ru.sv.personaltrainer.overlay.ProfileOnboardingOverlay;
 
 public class ProfileActivity extends AppCompatActivity {
 
@@ -69,6 +72,7 @@ public class ProfileActivity extends AppCompatActivity {
     private List<WorkoutRecord>  workoutHistory;
     private List<WeightRecord>   weightLog;
     private WorkoutHistoryAdapter adapter;
+    private ProfileOnboardingOverlay profileOnboarding;
 
     private boolean isMale = true;
 
@@ -113,6 +117,10 @@ public class ProfileActivity extends AppCompatActivity {
         setupChart();
         updateStats();
         updateHistoryList();
+
+        ScrollView scrollView = findViewById(R.id.scrollViewProfile);
+        profileOnboarding = new ProfileOnboardingOverlay(this, scrollView);
+        profileOnboarding.startIfNeeded();
     }
 
     private void initViews() {

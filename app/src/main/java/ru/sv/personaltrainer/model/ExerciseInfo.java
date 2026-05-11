@@ -4,33 +4,39 @@ public class ExerciseInfo {
 
     private final String id;
     private final String title;
-    private final String description;
     private final String emoji;
+    private final String muscleGroup;
     private final String difficulty;
     private final int    color;
-    private final String muscleGroup;
 
-    public ExerciseInfo(String id,
-                        String title,
-                        String description,
-                        String emoji,
-                        String difficulty,
+    // ── НОВЫЕ поля ───────────────────────────────────────────────────
+    private final String description;    // текстовое описание техники
+    private final String videoFileName;  // имя файла в assets/videos/
+
+    // ── Конструктор (полный) ──────────────────────────────────────────
+    public ExerciseInfo(String id, String title, String emoji,
+                        String muscleGroup, String difficulty,
                         int color,
-                        String muscleGroup) {
-        this.id          = id;
-        this.title       = title;
-        this.description = description;
-        this.emoji       = emoji;
-        this.difficulty  = difficulty;
-        this.color       = color;
-        this.muscleGroup = muscleGroup;
+                        String description, String videoFileName) {
+        this.id            = id;
+        this.title         = title;
+        this.emoji         = emoji;
+        this.muscleGroup   = muscleGroup;
+        this.difficulty    = difficulty;
+        this.color         = color;
+        this.description   = description;
+        this.videoFileName = videoFileName;
     }
 
+    // ── Геттеры (старые) ─────────────────────────────────────────────
     public String getId()          { return id; }
     public String getTitle()       { return title; }
-    public String getDescription() { return description; }
     public String getEmoji()       { return emoji; }
+    public String getMuscleGroup() { return muscleGroup; }
     public String getDifficulty()  { return difficulty; }
     public int    getColor()       { return color; }
-    public String getMuscleGroup() { return muscleGroup; }
+
+    // ── Геттеры (новые) ──────────────────────────────────────────────
+    public String getDescription()   { return description; }
+    public String getVideoFileName() { return videoFileName; }
 }

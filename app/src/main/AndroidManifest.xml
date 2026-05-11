@@ -23,6 +23,7 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Personaltrainer">
 
+        <!-- LAUNCHER — без изменений -->
         <activity
             android:name=".MainActivity"
             android:exported="true"
@@ -33,10 +34,23 @@
             </intent-filter>
         </activity>
 
+        <!-- НОВОЕ: OnBoarding -->
+        <activity
+            android:name=".OnBoardingActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"/>
+
         <activity
             android:name=".ExerciseListActivity"
             android:exported="false"
             android:screenOrientation="portrait"/>
+
+        <!-- НОВОЕ: Экран детали упражнения -->
+        <activity
+            android:name=".ExerciseDetailActivity"
+            android:exported="false"
+            android:screenOrientation="portrait"
+            android:theme="@style/Theme.Personaltrainer.NoActionBar"/>
 
         <activity
             android:name=".ExerciseActivity"

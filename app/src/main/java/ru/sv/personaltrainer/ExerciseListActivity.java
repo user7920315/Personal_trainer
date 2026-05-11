@@ -87,9 +87,8 @@ public class ExerciseListActivity extends AppCompatActivity {
     }
 
     private void onExerciseClick(ExerciseInfo exercise) {
-        Intent intent = new Intent(this, ExerciseActivity.class);
+        Intent intent = new Intent(this, ExerciseDetailActivity.class);
         intent.putExtra("EXERCISE_ID", exercise.getId());
-        intent.putExtra("EXERCISE_NAME", exercise.getTitle());
         startActivity(intent);
     }
 
