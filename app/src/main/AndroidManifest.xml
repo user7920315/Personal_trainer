@@ -11,10 +11,7 @@
         android:name="android.permission.READ_EXTERNAL_STORAGE"
         android:maxSdkVersion="28"/>
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
-    <!--
-        FOREGROUND_SERVICE_CAMERA — для сервиса который работает
-        пока открыта камера. Без страшных диалогов.
-    -->
+    <uses-permission android:name="android.permission.WAKE_LOCK" />
     <uses-permission
         android:name="android.permission.FOREGROUND_SERVICE_CAMERA"/>
 

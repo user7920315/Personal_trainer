@@ -1,0 +1,36 @@
+plugins {
+    id("com.android.application")
+}
+
+android {
+    namespace = "ru.sv.wear" // ← Должно совпадать с package в MainActivity.java!
+    compileSdk = 34
+
+    defaultConfig {
+        applicationId = "ru.sv.wear"
+        minSdk = 30      // Wear OS 3.0+
+        targetSdk = 34
+        versionCode = 1
+        versionName = "1.0"
+    }
+
+    buildTypes {
+        release {
+            isMinifyEnabled = false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_11
+        targetCompatibility = JavaVersion.VERSION_11
+    }
+}
+
+dependencies {
+    implementation("androidx.wear:wear:1.3.0")
+    implementation("com.google.android.gms:play-services-wearable:18.1.0")
+    implementation("androidx.percentlayout:percentlayout:1.0.0")
+    implementation("androidx.legacy:legacy-support-v4:1.0.0")
+
+
+}

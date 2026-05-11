@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.wear.widget.BoxInsetLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/black">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:padding="8dp">
+
+        <!-- Подключение -->
+        <TextView
+            android:id="@+id/tvConnection"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="○○○"
+            android:textSize="10sp"
+            android:textColor="#FF5555"
+            android:layout_marginBottom="4dp"/>
+
+        <!-- Фаза -->
+        <TextView
+            android:id="@+id/tvPhase"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="ГОТОВ"
+            android:textSize="18sp"
+            android:textColor="#FFFFFF"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:maxLines="2"/>
+
+        <!-- ✅ Счётчик повторений -->
+        <TextView
+            android:id="@+id/tvRepCount"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="0"
+            android:textSize="14sp"
+            android:textColor="#AAAAAA"
+            android:gravity="center"
+            android:layout_marginTop="4dp"/>
+
+        <!-- Ошибка -->
+        <TextView
+            android:id="@+id/tvError"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:textSize="12sp"
+            android:textColor="#FF5555"
+            android:gravity="center"
+            android:layout_marginTop="6dp"
+            android:visibility="gone"
+            android:maxLines="3"
+            android:ellipsize="end"/>
+
+    </LinearLayout>
+</androidx.wear.widget.BoxInsetLayout>

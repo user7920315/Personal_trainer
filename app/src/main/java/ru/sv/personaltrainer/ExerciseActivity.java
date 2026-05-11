@@ -44,12 +44,17 @@ import ru.sv.personaltrainer.exercises.BaseExercise;
 import ru.sv.personaltrainer.exercises.ExerciseRegistry;
 import ru.sv.personaltrainer.exercises.PlankExercise;
 import ru.sv.personaltrainer.overlay.PoseOverlayView;
+import ru.sv.personaltrainer.wear.WearHelper;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
+
+
 
 public class ExerciseActivity extends AppCompatActivity {
 
@@ -77,6 +82,8 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private PoseLandmarker poseLandmarker;
 
+    private WearHelper wearHelper;
+    private String lastSentError = null;
 
     private BaseExercise currentExercise;
     private String       exerciseId;
@@ -97,6 +104,15 @@ public class ExerciseActivity extends AppCompatActivity {
     private boolean             serviceBound = false;
 
     private final ErrorDebouncer errorDebouncer = new ErrorDebouncer();
+
+    private TextToSpeech textToSpeech;
+    private boolean ttsInitialized = false;
+    private String lastSpokenError = null;
+    private long lastErrorStartTime = 0;
+    private long lastSpeechTime = 0;
+    private static final long TTS_THRESHOLD_MS = 500L;
+    private static final long MIN_SPEECH_INTERVAL_MS = 2500L; // Мин. интервал между фразами
+
 
     private final ServiceConnection serviceConnection =
             new ServiceConnection() {
@@ -140,6 +156,31 @@ public class ExerciseActivity extends AppCompatActivity {
     private final Handler   mainHandler =
             new Handler(Looper.getMainLooper());
 
+    private void initTextToSpeech() {
+        textToSpeech = new TextToSpeech(this, status -> {
+            if (status == TextToSpeech.SUCCESS) {
+                int result = textToSpeech.setLanguage(new Locale("ru", "RU"));
+                if (result == TextToSpeech.LANG_MISSING_DATA ||
+                        result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e(TAG, "TTS: язык не поддерживается");
+                } else {
+                    ttsInitialized = true;
+                    textToSpeech.setSpeechRate(0.9f);
+                    textToSpeech.setPitch(1.0f);
+
+                    textToSpeech.setOnUtteranceProgressListener(
+                            new UtteranceProgressListener() {
+                                @Override public void onStart(String id) {}
+                                @Override public void onDone(String id) {}
+                                @Override public void onError(String id) {}
+                            });
+                }
+            } else {
+                Log.e(TAG, "TTS: ошибка инициализации, статус=" + status);
+            }
+        });
+    }
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,6 +199,7 @@ public class ExerciseActivity extends AppCompatActivity {
         }
 
         initViews();
+        initTextToSpeech();
         initMediaPipe();
         initBlinkAnimation();
         initVideoRecorder();
@@ -165,6 +207,10 @@ public class ExerciseActivity extends AppCompatActivity {
 
         cameraExecutor = Executors.newSingleThreadExecutor();
         startCamera();
+        wearHelper = new WearHelper(this);
+        if (!wearHelper.isAvailable()) {
+            Log.w(TAG, "⌚ Часы не подключены. Приложение работает в локальном режиме.");
+        }
     }
 
     private void initVideoRecorder() {
@@ -236,6 +282,10 @@ public class ExerciseActivity extends AppCompatActivity {
             tvRepCount.setText("Повторений: 0");
             lastRepText = "Повторений: 0";
         }
+        if (wearHelper != null) {
+            wearHelper.sendReset();
+        }
+        lastSentError = null;
 
         tvFeedback.setText("Встаньте в кадр для начала");
         tvPhase.setText("● ГОТОВ");
@@ -503,6 +553,39 @@ public class ExerciseActivity extends AppCompatActivity {
 
         BaseExercise.AnalysisResult filteredAnalysis = buildFilteredAnalysis(rawAnalysis, filteredErrors);
 
+        if (!filteredAnalysis.errors.isEmpty() && ttsInitialized) {
+            String currentError = filteredAnalysis.errors.get(0);
+            long now = System.currentTimeMillis();
+
+            // Если это новая ошибка — сбрасываем таймер
+            if (!currentError.equals(lastSpokenError)) {
+                lastErrorStartTime = now;
+                lastSpokenError = currentError;
+            }
+            // Озвучиваем если:
+            // 1. Ошибка длится > 500мс
+            // 2. TTS сейчас НЕ говорит (ждем завершения текущей фразы)
+            // 3. Прошло достаточно времени с последней озвучки
+            else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS
+                    && !textToSpeech.isSpeaking()
+                    && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
+
+                String cleanMessage = currentError.replace("⚠ ", "").replace("✅ ", "");
+
+                Bundle params = new Bundle();
+                params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "error_feedback");
+
+                textToSpeech.speak(cleanMessage, TextToSpeech.QUEUE_FLUSH, params, "error_feedback");
+
+                lastSpeechTime = now;
+                // Сбросим таймер чтобы не озвучивать ту же ошибку сразу после завершения
+                lastErrorStartTime = now + MIN_SPEECH_INTERVAL_MS;
+            }
+        } else if (filteredAnalysis.errors.isEmpty()) {
+            lastSpokenError = null;
+            lastErrorStartTime = 0;
+        }
+
         lastPoseResult     = result;
         lastErrorLandmarks = filteredAnalysis.errorLandmarks;
         if (filteredAnalysis.holdSeconds >= 0) {
@@ -515,6 +598,7 @@ public class ExerciseActivity extends AppCompatActivity {
         lastFeedbackText   = filteredAnalysis.mainFeedback;
 
         mainHandler.post(() -> updateUI(result, filteredAnalysis));
+        sendDataToWear(filteredAnalysis);
     }
 
 
@@ -632,7 +716,39 @@ public class ExerciseActivity extends AppCompatActivity {
             recordService = null;
         }
         if (cameraExecutor != null) cameraExecutor.shutdown();
+        if (textToSpeech != null) {
+            textToSpeech.stop();
+            textToSpeech.shutdown();
+            textToSpeech = null;
+        }
+        ttsInitialized = false;
         if (poseLandmarker != null) poseLandmarker.close();
+
+    }
+
+    private void sendDataToWear(BaseExercise.AnalysisResult analysis) {
+        if (wearHelper == null || !wearHelper.isAvailable()) return;
+
+        wearHelper.sendPhase(lastPhaseText, lastPhaseColor);
+        wearHelper.sendRepCount(lastRepText);
+
+        if (!analysis.errors.isEmpty()) {
+            String currentError = analysis.errors.get(0);
+            if (!currentError.equals(lastSentError)) {
+
+                String cleanError = currentError
+                        .replace("⚠ ", "")
+                        .replace("✅ ", "")
+                        .trim();
+                wearHelper.sendError(cleanError);
+                lastSentError = currentError;
+            }
+        } else {
+            if (lastSentError != null) {
+                wearHelper.sendError("");
+                lastSentError = null;
+            }
+        }
     }
 
     private static class ErrorDebouncer {
