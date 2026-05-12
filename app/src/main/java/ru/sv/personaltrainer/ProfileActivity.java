@@ -74,6 +74,7 @@ public class ProfileActivity extends AppCompatActivity {
     private WorkoutHistoryAdapter adapter;
     private ProfileOnboardingOverlay profileOnboarding;
 
+
     private boolean isMale = true;
 
 

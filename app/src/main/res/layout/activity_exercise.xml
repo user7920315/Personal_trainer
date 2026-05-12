@@ -58,16 +58,16 @@
         android:id="@+id/tvPhase"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="● ГОТОВ"
-        android:textSize="14sp"
-        android:textStyle="bold"
-        android:textColor="#00FF88"
+        android:layout_marginTop="16dp"
         android:background="#BB003322"
         android:padding="8dp"
-        android:layout_marginTop="16dp"
-        app:layout_constraintTop_toTopOf="parent"
+        android:text="● ГОТОВ"
+        android:textColor="#00FF88"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintTop_toTopOf="parent" />
 
     <LinearLayout
         android:id="@+id/layoutRecordingIndicator"

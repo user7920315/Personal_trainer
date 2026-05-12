@@ -36,7 +36,7 @@
 
         <!-- НОВОЕ: OnBoarding -->
         <activity
-            android:name=".OnBoardingActivity"
+            android:name=".onboarding.OnBoardingActivity"
             android:exported="false"
             android:screenOrientation="portrait"/>
 

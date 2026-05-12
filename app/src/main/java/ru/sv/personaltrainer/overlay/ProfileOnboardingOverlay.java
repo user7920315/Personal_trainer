@@ -2,34 +2,31 @@ package ru.sv.personaltrainer.overlay;
 
 import android.app.Activity;
 import android.content.SharedPreferences;
+import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.Rect;
-import android.view.Gravity;
+import android.graphics.Paint;
+import android.graphics.PorterDuff;
+import android.graphics.PorterDuffXfermode;
+import android.graphics.RectF;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver;
 import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.LinearLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import ru.sv.personaltrainer.MainActivity;
 import ru.sv.personaltrainer.R;
 
-/**
- * Пошаговый онбординг поверх ProfileActivity.
- * Показывает затемнение + карточку с подсказкой рядом с целевым View.
- * Не требует сторонних библиотек.
- */
 public class ProfileOnboardingOverlay {
 
-    // ── Ключ в SharedPreferences ──────────────────────────────────────
-    private static final String KEY_PROFILE_ONBOARDING_DONE =
-            "profile_onboarding_done";
+    private static final String KEY_DONE = "profile_onboarding_done";
 
-    // ── Данные шагов ──────────────────────────────────────────────────
-    private static final String[] STEP_TITLES = {
+    // ── Шаги ─────────────────────────────────────────────────────────
+    private static final String[] TITLES = {
             "⚖ Индекс массы тела",
             "🧮 Рассчитать ИМТ",
             "📈 Динамика веса",
@@ -37,7 +34,7 @@ public class ProfileOnboardingOverlay {
             "📋 История тренировок"
     };
 
-    private static final String[] STEP_TEXTS = {
+    private static final String[] TEXTS = {
             "Введите ваш пол, рост, вес и возраст.\n\n"
                     + "Эти данные используются для расчёта\n"
                     + "индекса массы тела (ИМТ) и отслеживания\n"
@@ -63,216 +60,296 @@ public class ProfileOnboardingOverlay {
                     + "Кнопка «Очистить» удаляет всю историю."
     };
 
-    // id целевых View из activity_profile.xml
-    private static final int[] STEP_TARGET_IDS = {
-            R.id.btnGenderMale,       // шаг 1 — секция ИМТ (якорь — кнопка пола)
-            R.id.btnCalculateBmi,     // шаг 2 — кнопка расчёта
-            R.id.tvNoWeightData,      // шаг 3 — секция графика
-            R.id.tvTotalWorkouts,     // шаг 4 — статистика
-            R.id.tvNoHistory          // шаг 5 — история
+    private static final int[] TARGET_IDS = {
+            R.id.btnGenderMale,
+            R.id.btnCalculateBmi,
+            R.id.tvNoWeightData,
+            R.id.tvTotalWorkouts,
+            R.id.tvNoHistory
     };
 
-    // ── Поля ─────────────────────────────────────────────────────────
-    private final Activity      activity;
-    private final ScrollView    scrollView;   // ScrollView профиля
-    private final FrameLayout   overlay;      // контейнер для затемнения
-    private       int           currentStep = 0;
+    private static final int HIGHLIGHT_PADDING_DP = 10;
+    private static final int CARD_MARGIN_DP       = 12;
 
-    // Вью текущего шага
-    private View dimView;
-    private View cardView;
+    // ── Поля ──────────────────────────────────────────────────────────
+    private final Activity     activity;
+    private final ScrollView   scrollView;
+    private final FrameLayout  root;       // android.R.id.content
+
+    private SpotlightView spotlight;
+    private View          card;
+    private int           step = 0;
 
     // ── Конструктор ───────────────────────────────────────────────────
     public ProfileOnboardingOverlay(Activity activity,
                                     ScrollView scrollView) {
         this.activity   = activity;
         this.scrollView = scrollView;
-
-        // Создаём FrameLayout-оверлей и добавляем его поверх контента
-        overlay = new FrameLayout(activity);
-        overlay.setLayoutParams(new ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT));
-
-        ViewGroup root = activity.findViewById(android.R.id.content);
-        root.addView(overlay);
+        this.root       = activity.findViewById(android.R.id.content);
     }
 
-    // ── Публичный метод запуска ───────────────────────────────────────
+    // ── Точка входа ───────────────────────────────────────────────────
     public void startIfNeeded() {
-        SharedPreferences prefs =
-                activity.getSharedPreferences(
-                        MainActivity.PREFS_NAME,
-                        Activity.MODE_PRIVATE);
-
-        if (!prefs.getBoolean(KEY_PROFILE_ONBOARDING_DONE, false)) {
-            currentStep = 0;
-            // Ждём первый layout-проход чтобы View были измерены
-            overlay.post(this::showCurrentStep);
+        SharedPreferences prefs = activity.getSharedPreferences(
+                MainActivity.PREFS_NAME, Activity.MODE_PRIVATE);
+        if (!prefs.getBoolean(KEY_DONE, false)) {
+            step = 0;
+            // Ждём первый layout-проход
+            root.post(this::showStep);
         }
     }
 
-    // ── Показ текущего шага ───────────────────────────────────────────
-    private void showCurrentStep() {
-        if (currentStep >= STEP_TARGET_IDS.length) {
-            finish();
+    // ── Показ шага ────────────────────────────────────────────────────
+    private void showStep() {
+        if (step >= TARGET_IDS.length) {
+            markDone();
             return;
         }
 
-        View target = activity.findViewById(STEP_TARGET_IDS[currentStep]);
-
+        View target = activity.findViewById(TARGET_IDS[step]);
         if (target == null) {
-            // View не найдена — пропускаем шаг
-            currentStep++;
-            showCurrentStep();
+            step++;
+            showStep();
             return;
         }
 
-        // Прокручиваем ScrollView к целевому View
-        scrollToTarget(target, () -> {
-            removeCurrentViews();
-            buildAndShowStep(target);
+        // Прокручиваем к target, затем рисуем
+        scrollToView(target, () -> {
+            // После прокрутки пересчитываем позицию
+            RectF rect = computeHighlightRect(target);
+            removeViews();
+            attachSpotlight(rect);
+            attachCard(rect);
         });
     }
 
-    // ── Прокрутка к View, затем callback ─────────────────────────────
-    private void scrollToTarget(View target, Runnable afterScroll) {
-        // Вычисляем позицию target относительно ScrollView
-        int[] targetPos = new int[2];
-        target.getLocationOnScreen(targetPos);
+    // ── Прокрутка ScrollView к target ────────────────────────────────
+    private void scrollToView(View target, Runnable then) {
+        // Позиция target внутри ScrollView
+        int[] tLoc = new int[2];
+        target.getLocationInWindow(tLoc);
 
-        int[] scrollPos = new int[2];
-        scrollView.getLocationOnScreen(scrollPos);
+        int[] sLoc = new int[2];
+        scrollView.getLocationInWindow(sLoc);
 
-        int scrollY = scrollView.getScrollY()
-                + (targetPos[1] - scrollPos[1])
-                - 120; // отступ сверху
+        int dy = tLoc[1] - sLoc[1] - dpToPx(100);
+        int newY = Math.max(0, scrollView.getScrollY() + dy);
 
-        scrollView.smoothScrollTo(0, Math.max(0, scrollY));
-
-        // Ждём завершения прокрутки (~400мс)
-        overlay.postDelayed(afterScroll, 420);
+        scrollView.smoothScrollTo(0, newY);
+        // 500 мс — запас для завершения анимации прокрутки
+        root.postDelayed(then, 500);
     }
 
-    // ── Построение шага: затемнение + карточка ────────────────────────
-    private void buildAndShowStep(View target) {
-        // 1. Затемняющий фон
-        dimView = new View(activity);
-        dimView.setLayoutParams(new FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.MATCH_PARENT,
-                FrameLayout.LayoutParams.MATCH_PARENT));
-        dimView.setBackgroundColor(Color.parseColor("#BB000000"));
+    // ── Вычисляем RectF подсветки в координатах root ──────────────────
+    private RectF computeHighlightRect(View target) {
+        // Ищем CardView-родителя чтобы подсветить всю секцию
+        View highlight = findParentCard(target);
 
-        // Клик на фон — пропустить весь онбординг
-        dimView.setOnClickListener(v -> finish());
-        overlay.addView(dimView);
+        int[] hLoc   = new int[2];
+        int[] rLoc   = new int[2];
+        highlight.getLocationInWindow(hLoc);
+        root.getLocationInWindow(rLoc);
 
-        // 2. Карточка подсказки
-        cardView = LayoutInflater.from(activity)
+        int pad = dpToPx(HIGHLIGHT_PADDING_DP);
+
+        float l = hLoc[0] - rLoc[0] - pad;
+        float t = hLoc[1] - rLoc[1] - pad;
+        float r = l + highlight.getWidth()  + pad * 2;
+        float b = t + highlight.getHeight() + pad * 2;
+
+        return new RectF(l, t, r, b);
+    }
+
+    // Поднимаемся по иерархии пока не найдём CardView
+    private View findParentCard(View v) {
+        View current = v;
+        while (current != null) {
+            if (current instanceof androidx.cardview.widget.CardView) {
+                return current;
+            }
+            if (current.getParent() instanceof View) {
+                current = (View) current.getParent();
+            } else {
+                break;
+            }
+        }
+        return v; // не нашли — возвращаем исходный
+    }
+
+    // ── Создаём и добавляем SpotlightView ────────────────────────────
+    private void attachSpotlight(RectF rect) {
+        spotlight = new SpotlightView(activity, rect);
+
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT);
+
+        // ВАЖНО: перехватываем ВСЕ касания — ничего не проходит сквозь overlay
+        spotlight.setOnTouchListener((v, e) -> true);
+
+        root.addView(spotlight, lp);
+
+        spotlight.setAlpha(0f);
+        spotlight.animate().alpha(1f).setDuration(300).start();
+    }
+
+    // ── Создаём и добавляем карточку ─────────────────────────────────
+    private void attachCard(RectF rect) {
+        card = LayoutInflater.from(activity)
                 .inflate(R.layout.item_profile_onboarding_card,
-                        overlay, false);
+                        root, false);
 
         // Заполняем текст
-        ((TextView) cardView.findViewById(R.id.tvOnbTitle))
-                .setText(STEP_TITLES[currentStep]);
-        ((TextView) cardView.findViewById(R.id.tvOnbText))
-                .setText(STEP_TEXTS[currentStep]);
+        ((TextView) card.findViewById(R.id.tvOnbTitle)).setText(TITLES[step]);
+        ((TextView) card.findViewById(R.id.tvOnbText)).setText(TEXTS[step]);
+        ((TextView) card.findViewById(R.id.tvOnbCounter))
+                .setText((step + 1) + " / " + TARGET_IDS.length);
 
-        // Счётчик шагов
-        ((TextView) cardView.findViewById(R.id.tvOnbCounter))
-                .setText((currentStep + 1) + " / " + STEP_TARGET_IDS.length);
+        Button btnNext = card.findViewById(R.id.btnOnbNext);
+        Button btnSkip = card.findViewById(R.id.btnOnbSkip);
 
-        // Кнопки
-        Button btnNext = cardView.findViewById(R.id.btnOnbNext);
-        Button btnSkip = cardView.findViewById(R.id.btnOnbSkip);
+        boolean last = (step == TARGET_IDS.length - 1);
+        btnNext.setText(last ? "Готово!" : "Далее →");
+        btnSkip.setVisibility(last ? View.GONE : View.VISIBLE);
 
-        boolean isLast = (currentStep == STEP_TARGET_IDS.length - 1);
-        btnNext.setText(isLast ? "Готово!" : "Далее →");
-        btnSkip.setVisibility(isLast ? View.GONE : View.VISIBLE);
+        btnNext.setOnClickListener(v -> { step++; showStep(); });
+        btnSkip.setOnClickListener(v -> markDone());
 
-        btnNext.setOnClickListener(v -> {
-            currentStep++;
-            showCurrentStep();
-        });
-        btnSkip.setOnClickListener(v -> finish());
+        // Добавляем в root, но пока невидимую — нужен layout-проход
+        // чтобы знать высоту карточки
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
+                dpToPx(300),
+                ViewGroup.LayoutParams.WRAP_CONTENT);
+        card.setLayoutParams(lp);
+        card.setAlpha(0f);
+        root.addView(card);
 
-        // Позиционируем карточку рядом с target
-        positionCard(target);
-
-        overlay.addView(cardView);
-
-        // Анимация появления
-        cardView.setAlpha(0f);
-        cardView.animate().alpha(1f).setDuration(200).start();
+        // После измерения позиционируем карточку
+        card.getViewTreeObserver().addOnPreDrawListener(
+                new ViewTreeObserver.OnPreDrawListener() {
+                    @Override
+                    public boolean onPreDraw() {
+                        card.getViewTreeObserver()
+                                .removeOnPreDrawListener(this);
+                        placeCard(rect, card);
+                        card.animate().alpha(1f).setDuration(300).start();
+                        return true;
+                    }
+                });
     }
 
-    // ── Позиционирование карточки относительно target ─────────────────
-    private void positionCard(View target) {
-        // Координаты target на экране
-        int[] targetScreenPos = new int[2];
-        target.getLocationOnScreen(targetScreenPos);
+    // ── Позиционирование карточки строго ВНЕ зоны подсветки ──────────
+    private void placeCard(RectF rect, View card) {
+        int rootH     = root.getHeight();
+        int rootW     = root.getWidth();
+        int cardW     = dpToPx(300);
+        int cardH     = card.getMeasuredHeight();
+        int margin    = dpToPx(CARD_MARGIN_DP);
 
-        // Координаты overlay на экране
-        int[] overlayScreenPos = new int[2];
-        overlay.getLocationOnScreen(overlayScreenPos);
+        // Горизонтально — по центру экрана, с проверкой границ
+        int leftMargin = (rootW - cardW) / 2;
+        leftMargin = Math.max(margin, Math.min(rootW - cardW - margin, leftMargin));
 
-        // Позиция target относительно overlay
-        int targetTop  = targetScreenPos[1] - overlayScreenPos[1];
-        int targetBottom = targetTop + target.getHeight();
+        // Вертикально: сначала пробуем снизу, потом сверху
+        int topMargin;
 
-        int screenHeight = overlay.getHeight();
-        int cardWidth    = dpToPx(300);
-        int cardMargin   = dpToPx(16);
+        float spaceBelow = rootH - rect.bottom - margin;
+        float spaceAbove = rect.top - margin;
 
-        FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(
-                cardWidth,
-                ViewGroup.LayoutParams.WRAP_CONTENT);
-        params.gravity = Gravity.NO_GRAVITY;
-
-        // Горизонтально — по центру экрана
-        params.leftMargin = (overlay.getWidth() - cardWidth) / 2;
-
-        // Вертикально — под target если места достаточно, иначе над ним
-        int spaceBelow = screenHeight - targetBottom - cardMargin;
-        if (spaceBelow >= dpToPx(180)) {
-            // Ставим карточку ПОД целевым View
-            params.topMargin = targetBottom + cardMargin;
+        if (spaceBelow >= cardH + margin) {
+            // Места снизу достаточно
+            topMargin = (int) rect.bottom + margin;
+        } else if (spaceAbove >= cardH + margin) {
+            // Места сверху достаточно
+            topMargin = (int) rect.top - cardH - margin;
+        } else if (spaceBelow >= spaceAbove) {
+            // Обоих не хватает — выбираем где больше места
+            topMargin = (int) rect.bottom + margin;
         } else {
-            // Ставим карточку НАД целевым View
-            params.topMargin = Math.max(
-                    cardMargin,
-                    targetTop - dpToPx(180) - cardMargin);
+            topMargin = Math.max(margin, (int) rect.top - cardH - margin);
         }
 
-        cardView.setLayoutParams(params);
+        // Гарантируем что карточка внутри экрана
+        topMargin = Math.max(margin, topMargin);
+        topMargin = Math.min(rootH - cardH - margin, topMargin);
+
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(cardW, cardH);
+        lp.leftMargin = leftMargin;
+        lp.topMargin  = topMargin;
+        card.setLayoutParams(lp);
     }
 
-    // ── Удаление текущих View шага ────────────────────────────────────
-    private void removeCurrentViews() {
-        if (dimView  != null) overlay.removeView(dimView);
-        if (cardView != null) overlay.removeView(cardView);
-        dimView  = null;
-        cardView = null;
+    // ── Удаляем View текущего шага ────────────────────────────────────
+    private void removeViews() {
+        if (spotlight != null) { root.removeView(spotlight); spotlight = null; }
+        if (card      != null) { root.removeView(card);      card      = null; }
     }
 
-    // ── Завершение онбординга ─────────────────────────────────────────
-    private void finish() {
-        removeCurrentViews();
-        overlay.setVisibility(View.GONE);
-
-        // Сохраняем флаг
+    // ── Завершение и сохранение флага ────────────────────────────────
+    private void markDone() {
+        removeViews();
         activity.getSharedPreferences(
-                        MainActivity.PREFS_NAME,
-                        Activity.MODE_PRIVATE)
+                        MainActivity.PREFS_NAME, Activity.MODE_PRIVATE)
                 .edit()
-                .putBoolean(KEY_PROFILE_ONBOARDING_DONE, true)
+                .putBoolean(KEY_DONE, true)
                 .apply();
     }
 
-    // ── Утилита: dp → px ─────────────────────────────────────────────
+    // ── dp → px ──────────────────────────────────────────────────────
     private int dpToPx(int dp) {
-        float density =
-                activity.getResources().getDisplayMetrics().density;
-        return Math.round(dp * density);
+        return Math.round(dp
+                * activity.getResources().getDisplayMetrics().density);
+    }
+
+
+    // ════════════════════════════════════════════════════════════════
+    //  SpotlightView
+    //  Рисует затемнение с прозрачным окном через PorterDuff.CLEAR
+    // ════════════════════════════════════════════════════════════════
+    private static class SpotlightView extends View {
+
+        private final Paint  dimPaint    = new Paint();
+        private final Paint  clearPaint  = new Paint();
+        private final Paint  borderPaint = new Paint();
+        private final RectF  hole;
+        private final float  radius;
+
+        SpotlightView(Activity ctx, RectF hole) {
+            super(ctx);
+            this.hole   = hole;
+            this.radius = 16f * ctx.getResources()
+                    .getDisplayMetrics().density;
+
+            // ОБЯЗАТЕЛЬНО для работы PorterDuff.CLEAR
+            setLayerType(LAYER_TYPE_SOFTWARE, null);
+
+            // Затемнение
+            dimPaint.setColor(Color.parseColor("#CC000000"));
+            dimPaint.setStyle(Paint.Style.FILL);
+
+            // «Ластик» — делает пиксели полностью прозрачными
+            clearPaint.setAntiAlias(true);
+            clearPaint.setXfermode(
+                    new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+
+            // Цветная рамка вокруг окна
+            borderPaint.setColor(Color.parseColor("#E94560"));
+            borderPaint.setStyle(Paint.Style.STROKE);
+            borderPaint.setStrokeWidth(
+                    3f * ctx.getResources().getDisplayMetrics().density);
+            borderPaint.setAntiAlias(true);
+        }
+
+        @Override
+        protected void onDraw(Canvas canvas) {
+            // 1. Заливаем весь экран тёмным
+            canvas.drawRect(0, 0, getWidth(), getHeight(), dimPaint);
+
+            // 2. Вырезаем прозрачное окно
+            canvas.drawRoundRect(hole, radius, radius, clearPaint);
+
+            // 3. Рисуем цветную рамку
+            canvas.drawRoundRect(hole, radius, radius, borderPaint);
+        }
     }
 }
