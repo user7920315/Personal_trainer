@@ -1,3 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <dimen name="fab_margin">48dp</dimen>
+
+    <!-- В горизонтальной ориентации высота экрана маленькая —
+         уменьшаем вертикальные отступы и карточку обратной связи -->
+
+    <dimen name="spacing_lg">12dp</dimen>
+    <dimen name="spacing_xl">16dp</dimen>
+
+    <!-- Кнопки ниже на экране тренировки -->
+    <dimen name="btn_exercise_height">32dp</dimen>
+    <dimen name="btn_exercise_text">11sp</dimen>
+
+    <!-- Карточка фидбека — компактнее -->
+    <dimen name="feedback_card_padding">8dp</dimen>
+    <dimen name="feedback_card_margin">6dp</dimen>
+    <dimen name="feedback_body_text">12sp</dimen>
+    <dimen name="feedback_title_text">12sp</dimen>
+    <dimen name="feedback_error_text">10sp</dimen>
+
+    <!-- Верхние элементы на экране камеры -->
+    <dimen name="exercise_top_margin">4dp</dimen>
+    <dimen name="rep_count_text">14sp</dimen>
+    <dimen name="phase_text_size">11sp</dimen>
+    <dimen name="exercise_name_text">12sp</dimen>
+
+    <!-- Профиль — аватар меньше в горизонтали -->
+    <dimen name="profile_avatar">60dp</dimen>
+    <dimen name="chart_height">140dp</dimen>
+    <dimen name="stat_min_height">52dp</dimen>
+
+    <!-- Онбординг — картинка меньше -->
+    <dimen name="onboarding_image">80dp</dimen>
 </resources>

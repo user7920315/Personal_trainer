@@ -1,0 +1,9 @@
+<!-- res/values-v27/themes.xml -->
+<resources>
+
+    <style name="Theme.Personaltrainer.NoActionBar">
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowLayoutInDisplayCutoutMode">shortEdges</item>
+    </style>
+
+</resources>

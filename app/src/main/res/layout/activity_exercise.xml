@@ -2,10 +2,12 @@
 <androidx.constraintlayout.widget.ConstraintLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#000000">
 
+    <!-- Камера — на весь экран -->
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
         android:layout_width="match_parent"
@@ -15,6 +17,7 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Скелет поверх камеры -->
     <ru.sv.personaltrainer.overlay.PoseOverlayView
         android:id="@+id/poseOverlay"
         android:layout_width="match_parent"
@@ -24,51 +27,63 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"/>
 
+    <!-- Счётчик повторений — левый верхний угол -->
     <TextView
         android:id="@+id/tvRepCount"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Повторений: 0"
-        android:textSize="20sp"
+        android:textSize="@dimen/rep_count_text"
         android:textStyle="bold"
         android:textColor="#FFFFFF"
         android:background="#BB000000"
-        android:padding="10dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginStart="16dp"
+        android:padding="@dimen/spacing_sm"
+        android:layout_marginStart="@dimen/exercise_side_margin"
+        android:layout_marginTop="@dimen/exercise_top_margin"
+        android:maxLines="1"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
+    <!-- Название упражнения — правый верхний угол -->
+    <!-- НА ТОЙ ЖЕ высоте что и tvRepCount -->
     <TextView
         android:id="@+id/tvExerciseName"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Упражнение"
-        android:textSize="16sp"
+        android:textSize="@dimen/exercise_name_text"
         android:textStyle="bold"
         android:textColor="#FFFFFF"
         android:background="#BBE94560"
-        android:padding="10dp"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="16dp"
+        android:padding="@dimen/spacing_sm"
+        android:gravity="center"
+        android:maxLines="1"
+        android:ellipsize="end"
+        android:layout_marginEnd="@dimen/exercise_side_margin"
+        android:layout_marginTop="@dimen/exercise_top_margin"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintWidth_max="160dp"/>
 
+    <!--
+        Фаза движения — ОТДЕЛЬНАЯ СТРОКА под счётчиком и названием
+        Привязываем к BOTTOM двух верхних элементов
+    -->
     <TextView
         android:id="@+id/tvPhase"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
         android:background="#BB003322"
-        android:padding="8dp"
+        android:padding="@dimen/spacing_sm"
         android:text="● ГОТОВ"
         android:textColor="#00FF88"
-        android:textSize="14sp"
+        android:textSize="@dimen/phase_text_size"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@+id/tvRepCount"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintStart_toStartOf="parent" />
 
+    <!-- Индикатор записи -->
     <LinearLayout
         android:id="@+id/layoutRecordingIndicator"
         android:layout_width="wrap_content"
@@ -76,86 +91,93 @@
         android:orientation="horizontal"
         android:gravity="center_vertical"
         android:background="#BB000000"
-        android:padding="8dp"
-        android:layout_marginTop="64dp"
-        android:layout_marginStart="16dp"
+        android:padding="@dimen/spacing_sm"
         android:visibility="gone"
-        app:layout_constraintTop_toTopOf="parent"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:layout_marginStart="@dimen/exercise_side_margin"
+        app:layout_constraintTop_toBottomOf="@id/tvPhase"
         app:layout_constraintStart_toStartOf="parent">
-
 
         <View
             android:id="@+id/viewRecordingDot"
-            android:layout_width="10dp"
-            android:layout_height="10dp"
+            android:layout_width="8dp"
+            android:layout_height="8dp"
             android:background="@drawable/bg_recording_dot"
             android:layout_marginEnd="6dp"/>
-
 
         <TextView
             android:id="@+id/tvRecordingTimer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="00:00"
-            android:textSize="13sp"
+            android:textSize="@dimen/text_sm"
             android:textColor="#FFFFFF"
             android:textStyle="bold"/>
 
     </LinearLayout>
 
-
-    <Button
-        android:id="@+id/btnReset"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="↺ Сброс"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:backgroundTint="#88E94560"
-        android:layout_marginBottom="8dp"
-        android:layout_marginStart="16dp"
-        app:layout_constraintBottom_toTopOf="@id/cardFeedback"
-        app:layout_constraintStart_toStartOf="parent"/>
-
-
-    <Button
-        android:id="@+id/btnRecord"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="⏺ Запись"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:backgroundTint="#88CC0000"
-        android:layout_marginBottom="8dp"
+    <!-- Нижняя панель кнопок -->
+    <LinearLayout
+        android:id="@+id/layoutButtons"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:layout_marginStart="@dimen/feedback_card_margin"
+        android:layout_marginEnd="@dimen/feedback_card_margin"
         app:layout_constraintBottom_toTopOf="@id/cardFeedback"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        app:layout_constraintEnd_toEndOf="parent">
 
+        <Button
+            android:id="@+id/btnReset"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/btn_exercise_height"
+            android:layout_weight="1"
+            android:text="↺ Сброс"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/btn_exercise_text"
+            android:backgroundTint="#88E94560"
+            android:layout_marginEnd="4dp"
+            android:maxLines="1"/>
 
-    <Button
-        android:id="@+id/btnBack"
-        android:layout_width="wrap_content"
-        android:layout_height="40dp"
-        android:text="← Назад"
-        android:textColor="#FFFFFF"
-        android:textSize="13sp"
-        android:backgroundTint="#88333333"
-        android:layout_marginBottom="8dp"
-        android:layout_marginEnd="16dp"
-        app:layout_constraintBottom_toTopOf="@id/cardFeedback"
-        app:layout_constraintEnd_toEndOf="parent"/>
+        <Button
+            android:id="@+id/btnRecord"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/btn_exercise_height"
+            android:layout_weight="1"
+            android:text="⏺ Запись"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/btn_exercise_text"
+            android:backgroundTint="#88CC0000"
+            android:layout_marginHorizontal="4dp"
+            android:maxLines="1"/>
 
+        <Button
+            android:id="@+id/btnBack"
+            android:layout_width="0dp"
+            android:layout_height="@dimen/btn_exercise_height"
+            android:layout_weight="1"
+            android:text="← Назад"
+            android:textColor="#FFFFFF"
+            android:textSize="@dimen/btn_exercise_text"
+            android:backgroundTint="#88333333"
+            android:layout_marginStart="4dp"
+            android:maxLines="1"/>
 
+    </LinearLayout>
+
+    <!-- Карточка обратной связи -->
     <androidx.cardview.widget.CardView
         android:id="@+id/cardFeedback"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
         app:cardBackgroundColor="#EE1A1A2E"
-        app:cardCornerRadius="16dp"
+        app:cardCornerRadius="@dimen/card_radius"
         app:cardElevation="8dp"
-        android:layout_marginBottom="16dp"
-        android:layout_marginStart="12dp"
-        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="@dimen/feedback_card_margin"
+        android:layout_marginStart="@dimen/feedback_card_margin"
+        android:layout_marginEnd="@dimen/feedback_card_margin"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -164,30 +186,31 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="@dimen/feedback_card_padding">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
                 android:gravity="center_vertical"
-                android:layout_marginBottom="10dp">
+                android:layout_marginBottom="@dimen/spacing_sm">
 
                 <TextView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:text="📊 Анализ техники"
-                    android:textSize="15sp"
+                    android:textSize="@dimen/feedback_title_text"
                     android:textStyle="bold"
-                    android:textColor="#E94560"/>
+                    android:textColor="#E94560"
+                    android:maxLines="1"/>
 
                 <TextView
                     android:id="@+id/tvQuality"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="●●●●●"
-                    android:textSize="14sp"
+                    android:textSize="@dimen/feedback_title_text"
                     android:textColor="#00FF88"/>
 
             </LinearLayout>
@@ -196,17 +219,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:background="#33FFFFFF"
-                android:layout_marginBottom="10dp"/>
+                android:layout_marginBottom="@dimen/spacing_sm"/>
 
             <TextView
                 android:id="@+id/tvFeedback"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Встаньте в кадр для начала анализа"
-                android:textSize="15sp"
+                android:textSize="@dimen/feedback_body_text"
                 android:textColor="#FFFFFF"
                 android:textStyle="bold"
-                android:layout_marginBottom="8dp"/>
+                android:maxLines="2"
+                android:ellipsize="end"
+                android:layout_marginBottom="@dimen/spacing_xs"/>
 
             <LinearLayout
                 android:id="@+id/layoutErrors"
@@ -219,24 +244,25 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:background="#33FF0000"
-                    android:layout_marginBottom="8dp"/>
+                    android:layout_marginBottom="@dimen/spacing_xs"/>
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Также исправьте:"
-                    android:textSize="12sp"
+                    android:textSize="@dimen/text_xs"
                     android:textColor="#AAAAAA"
-                    android:layout_marginBottom="4dp"/>
+                    android:layout_marginBottom="2dp"/>
 
                 <TextView
                     android:id="@+id/tvErrors"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text=""
-                    android:textSize="13sp"
+                    android:textSize="@dimen/feedback_error_text"
                     android:textColor="#FF6B6B"
-                    android:lineSpacingExtra="4dp"/>
+                    android:lineSpacingExtra="3dp"
+                    android:maxLines="3"
+                    android:ellipsize="end"/>
 
             </LinearLayout>
 

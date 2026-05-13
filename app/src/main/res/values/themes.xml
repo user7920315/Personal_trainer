@@ -1,31 +1,23 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <style name="Theme.Personaltrainer"
-        parent="Theme.MaterialComponents.DayNight.DarkActionBar">
+        parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryVariant">@color/primary_dark</item>
         <item name="colorOnPrimary">@color/white</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorOnSecondary">@color/white</item>
         <item name="android:statusBarColor">@color/primary_dark</item>
-        <item name="windowActionBar">true</item>
-        <item name="windowNoTitle">false</item>
     </style>
 
-    <style name="Theme.Personaltrainer.NoActionBar"
-        parent="Theme.Personaltrainer">
-        <item name="windowActionBar">false</item>
-        <item name="windowNoTitle">true</item>
+    <style name="Theme.Personaltrainer.NoActionBar">
         <item name="android:windowFullscreen">true</item>
     </style>
 
     <style name="ThemeOverlay.Profile.Input"
         parent="ThemeOverlay.MaterialComponents">
-
         <item name="colorPrimary">@color/primary</item>
-
         <item name="colorOnSurface">@color/white</item>
-
         <item name="colorOutline">#444466</item>
     </style>
 

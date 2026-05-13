@@ -14,6 +14,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.util.Log;
 import android.view.View;
+import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Button;
@@ -31,6 +32,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.view.WindowCompat;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
@@ -53,7 +55,10 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.core.graphics.Insets;
 
 
 public class ExerciseActivity extends AppCompatActivity {
@@ -185,20 +190,23 @@ public class ExerciseActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         setContentView(R.layout.activity_exercise);
 
         exerciseId = getIntent().getStringExtra("EXERCISE_ID");
         if (exerciseId == null) exerciseId = "SQUAT";
 
         try {
-            currentExercise =
-                    ExerciseRegistry.createExercise(exerciseId);
+            currentExercise = ExerciseRegistry.createExercise(exerciseId);
         } catch (Exception e) {
             finish();
             return;
         }
 
         initViews();
+        applyInsets(); // ← ДОБАВИТЬ ПОСЛЕ initViews()
         initTextToSpeech();
         initMediaPipe();
         initBlinkAnimation();
@@ -209,8 +217,52 @@ public class ExerciseActivity extends AppCompatActivity {
         startCamera();
         wearHelper = new WearHelper(this);
         if (!wearHelper.isAvailable()) {
-            Log.w(TAG, "⌚ Часы не подключены. Приложение работает в локальном режиме.");
+            Log.w(TAG, "⌚ Часы не подключены.");
         }
+    }
+
+    private void applyInsets() {
+        ViewCompat.setOnApplyWindowInsetsListener(
+                findViewById(R.id.previewView),
+                (view, windowInsets) -> {
+
+                    Insets insets = windowInsets.getInsets(
+                            WindowInsetsCompat.Type.systemBars() |
+                                    WindowInsetsCompat.Type.displayCutout()
+                    );
+
+                    int topOffset = insets.top +
+                            getResources().getDimensionPixelSize(
+                                    R.dimen.exercise_top_margin);
+
+                    int bottomOffset = insets.bottom +
+                            getResources().getDimensionPixelSize(
+                                    R.dimen.feedback_card_margin);
+
+                    // Только tvRepCount и tvExerciseName — первая строка
+                    // tvPhase автоматически опустится под них через constraint
+                    ViewGroup.MarginLayoutParams repParams =
+                            (ViewGroup.MarginLayoutParams)
+                                    tvRepCount.getLayoutParams();
+                    repParams.topMargin = topOffset;
+                    tvRepCount.setLayoutParams(repParams);
+
+                    ViewGroup.MarginLayoutParams nameParams =
+                            (ViewGroup.MarginLayoutParams)
+                                    tvExerciseName.getLayoutParams();
+                    nameParams.topMargin = topOffset;
+                    tvExerciseName.setLayoutParams(nameParams);
+
+                    // Карточка снизу
+                    View card = findViewById(R.id.cardFeedback);
+                    ViewGroup.MarginLayoutParams cardParams =
+                            (ViewGroup.MarginLayoutParams) card.getLayoutParams();
+                    cardParams.bottomMargin = bottomOffset;
+                    card.setLayoutParams(cardParams);
+
+                    return WindowInsetsCompat.CONSUMED;
+                }
+        );
     }
 
     private void initVideoRecorder() {

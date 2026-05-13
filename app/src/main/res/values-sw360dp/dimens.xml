@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- Переопределяем только то что нужно увеличить
+         для обычных телефонов (360dp-479dp) -->
+
+    <dimen name="spacing_md">14dp</dimen>
+    <dimen name="spacing_lg">18dp</dimen>
+    <dimen name="spacing_xl">28dp</dimen>
+
+    <dimen name="btn_height_sm">36dp</dimen>
+    <dimen name="btn_height_md">48dp</dimen>
+    <dimen name="btn_height_lg">56dp</dimen>
+
+    <dimen name="text_xs">11sp</dimen>
+    <dimen name="text_sm">13sp</dimen>
+    <dimen name="text_md">15sp</dimen>
+    <dimen name="text_lg">17sp</dimen>
+    <dimen name="text_xl">20sp</dimen>
+    <dimen name="text_xxl">24sp</dimen>
+
+    <dimen name="card_radius">14dp</dimen>
+    <dimen name="card_margin">12dp</dimen>
+    <dimen name="card_padding">16dp</dimen>
+
+    <dimen name="icon_sm">40dp</dimen>
+    <dimen name="icon_md">64dp</dimen>
+    <dimen name="icon_lg">88dp</dimen>
+    <dimen name="icon_xl">114dp</dimen>
+
+    <dimen name="exercise_top_margin">12dp</dimen>
+    <dimen name="exercise_side_margin">12dp</dimen>
+    <dimen name="rep_count_text">18sp</dimen>
+    <dimen name="exercise_name_text">14sp</dimen>
+    <dimen name="phase_text_size">13sp</dimen>
+    <dimen name="feedback_title_text">14sp</dimen>
+    <dimen name="feedback_body_text">14sp</dimen>
+    <dimen name="feedback_error_text">12sp</dimen>
+    <dimen name="feedback_card_padding">12dp</dimen>
+    <dimen name="feedback_card_margin">10dp</dimen>
+    <dimen name="btn_exercise_height">38dp</dimen>
+    <dimen name="btn_exercise_text">12sp</dimen>
+
+    <dimen name="profile_avatar">80dp</dimen>
+    <dimen name="profile_title_text">20sp</dimen>
+    <dimen name="bmi_value_text">30sp</dimen>
+    <dimen name="bmi_category_text">13sp</dimen>
+    <dimen name="stat_value_text">26sp</dimen>
+    <dimen name="stat_label_text">10sp</dimen>
+    <dimen name="stat_card_padding">10dp</dimen>
+    <dimen name="stat_min_height">68dp</dimen>
+    <dimen name="chart_height">180dp</dimen>
+
+    <dimen name="list_header_text">20sp</dimen>
+    <dimen name="list_item_emoji">24sp</dimen>
+    <dimen name="list_item_title">15sp</dimen>
+    <dimen name="list_item_muscle">12sp</dimen>
+    <dimen name="search_height">48dp</dimen>
+
+    <dimen name="onboarding_image">150dp</dimen>
+    <dimen name="onboarding_title">22sp</dimen>
+    <dimen name="onboarding_desc">14sp</dimen>
+
+</resources>
