@@ -71,7 +71,8 @@ public class WearHelper {
                     for (Node node : nodes) {
                         messageClient.sendMessage(node.getId(), path, msg.getBytes());
                     }
-                })
-                .addOnFailureListener(e -> Log.e(TAG, "Ошибка сети Wear", e));
+                });
+
+                //.addOnFailureListener(e -> Log.e(TAG, "Ошибка сети Wear", e));
     }
 }

@@ -134,7 +134,6 @@ public class PushUpExercise extends BaseExercise {
                             LEFT_HIP, RIGHT_HIP);
                 }
 
-
                 if (hasKnees) {
                     float backAngle = getAngle(lm,
                             LEFT_SHOULDER, LEFT_HIP, LEFT_KNEE);
