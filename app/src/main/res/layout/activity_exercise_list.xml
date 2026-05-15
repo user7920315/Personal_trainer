@@ -1,18 +1,16 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout
-    xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:background="#1A1A2E">
+    android:background="#1A1A2E"
+    android:orientation="vertical">
 
-    <!-- Шапка -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
         android:gravity="center_vertical"
+        android:orientation="horizontal"
         android:paddingHorizontal="@dimen/spacing_lg"
         android:paddingTop="@dimen/spacing_lg"
         android:paddingBottom="@dimen/spacing_md">
@@ -27,27 +25,26 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:text="Привет! 👋"
-                android:textSize="@dimen/text_sm"
-                android:textColor="#AAAAAA"/>
+                android:textColor="#AAAAAA"
+                android:textSize="@dimen/text_sm" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:maxLines="1"
                 android:text="Выбери упражнение"
-                android:textSize="@dimen/list_header_text"
-                android:textStyle="bold"
                 android:textColor="#FFFFFF"
-                android:maxLines="1"/>
+                android:textSize="@dimen/list_header_text"
+                android:textStyle="bold" />
 
         </LinearLayout>
 
-        <!-- Кнопка профиля -->
         <androidx.cardview.widget.CardView
             android:id="@+id/btnProfile"
             android:layout_width="@dimen/icon_sm"
             android:layout_height="@dimen/icon_sm"
-            app:cardCornerRadius="24dp"
             app:cardBackgroundColor="#E94560"
+            app:cardCornerRadius="24dp"
             app:cardElevation="4dp">
 
             <TextView
@@ -55,39 +52,34 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:text="👤"
-                android:textSize="@dimen/list_item_emoji"/>
+                android:textSize="@dimen/list_item_emoji" />
 
         </androidx.cardview.widget.CardView>
 
     </LinearLayout>
 
-    <!-- Поиск -->
     <EditText
         android:id="@+id/etSearch"
         android:layout_width="match_parent"
         android:layout_height="@dimen/search_height"
         android:layout_marginHorizontal="@dimen/spacing_lg"
         android:layout_marginBottom="@dimen/spacing_sm"
-        android:hint="🔍 Поиск упражнений..."
-        android:textColorHint="#666666"
-        android:textColor="#FFFFFF"
-        android:textSize="@dimen/text_md"
         android:background="@drawable/bg_search"
-        android:paddingHorizontal="@dimen/spacing_md"
-        android:inputType="text"
+        android:hint="🔍 Поиск упражнений..."
         android:imeOptions="actionSearch"
-        android:maxLines="1"/>
+        android:inputType="text"
+        android:maxLines="1"
+        android:paddingHorizontal="@dimen/spacing_md"
+        android:textColor="#FFFFFF"
+        android:textColorHint="#666666"
+        android:textSize="@dimen/text_md" />
 
-    <!--
-        layout_weight="1" + layout_height="0dp" — RecyclerView занимает
-        всё оставшееся место, не выезжает за экран
-    -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerExercises"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:paddingVertical="@dimen/spacing_sm"
-        android:clipToPadding="false"/>
+        android:clipToPadding="false"
+        android:paddingVertical="@dimen/spacing_sm" />
 
 </LinearLayout>

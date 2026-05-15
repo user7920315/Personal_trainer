@@ -2,6 +2,7 @@ package ru.sv.personaltrainer.wear;
 
 import android.content.Context;
 import android.util.Log;
+
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
 import com.google.android.gms.wearable.MessageClient;
@@ -18,7 +19,7 @@ public class WearHelper {
     private final Context context;
     private final MessageClient messageClient;
     private boolean apiReady = false;
-    public static final String PATH_REPS  = "/exercise/reps";
+    public static final String PATH_REPS = "/exercise/reps";
 
     public WearHelper(Context context) {
         this.context = context.getApplicationContext();
@@ -38,7 +39,9 @@ public class WearHelper {
         }
     }
 
-    public boolean isAvailable() { return apiReady; }
+    public boolean isAvailable() {
+        return apiReady;
+    }
 
     public void sendRepCount(String repText) {
         if (!apiReady) return;
@@ -73,6 +76,6 @@ public class WearHelper {
                     }
                 });
 
-                //.addOnFailureListener(e -> Log.e(TAG, "Ошибка сети Wear", e));
+        //.addOnFailureListener(e -> Log.e(TAG, "Ошибка сети Wear", e));
     }
 }

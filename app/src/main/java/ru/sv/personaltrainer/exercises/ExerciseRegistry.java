@@ -1,6 +1,7 @@
 package ru.sv.personaltrainer.exercises;
 
 import ru.sv.personaltrainer.model.ExerciseInfo;
+
 import java.util.Arrays;
 import java.util.List;
 
@@ -16,7 +17,6 @@ public class ExerciseRegistry {
                         "Грудь, Трицепс",
                         "Средний",
                         0xFFE94560,
-                        // ── описание техники ──────────────────────────────────
                         "Техника выполнения отжиманий:\n\n"
                                 + "1. Примите упор лёжа. Руки чуть шире плеч,\n"
                                 + "   пальцы смотрят вперёд.\n\n"
@@ -30,7 +30,6 @@ public class ExerciseRegistry {
                                 + "• Провисание таза вниз\n"
                                 + "• Неполная амплитуда движения\n"
                                 + "• Разведённые локти в стороны",
-                        // ── имя видео-файла в assets/videos/ ─────────────────
                         "push_up.mp4"
                 ),
 
@@ -175,18 +174,26 @@ public class ExerciseRegistry {
         );
     }
 
-    // Фабричный метод — без изменений
+
     public static BaseExercise createExercise(String id) {
         switch (id) {
-            case "PUSH_UP":      return new PushUpExercise();
-            case "SQUAT":        return new SquatExercise();
-            case "PLANK":        return new PlankExercise();
-            case "LUNGE":        return new LungeExercise();
-            case "GLUTE_BRIDGE": return new GluteBridgeExercise();
-            case "BURPEE":       return new BurpeeExercise();
-            case "PULL_UP":      return new PullUpExercise();
-            default: throw new IllegalArgumentException(
-                    "Неизвестное упражнение: " + id);
+            case "PUSH_UP":
+                return new PushUpExercise();
+            case "SQUAT":
+                return new SquatExercise();
+            case "PLANK":
+                return new PlankExercise();
+            case "LUNGE":
+                return new LungeExercise();
+            case "GLUTE_BRIDGE":
+                return new GluteBridgeExercise();
+            case "BURPEE":
+                return new BurpeeExercise();
+            case "PULL_UP":
+                return new PullUpExercise();
+            default:
+                throw new IllegalArgumentException(
+                        "Неизвестное упражнение: " + id);
         }
     }
 }

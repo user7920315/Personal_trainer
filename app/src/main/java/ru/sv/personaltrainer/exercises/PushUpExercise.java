@@ -7,7 +7,9 @@ import java.util.List;
 public class PushUpExercise extends BaseExercise {
 
     @Override
-    public String getName() { return "💪 Отжимания"; }
+    public String getName() {
+        return "💪 Отжимания";
+    }
 
     @Override
     public AnalysisResult analyze(List<NormalizedLandmark> lm) {
@@ -20,19 +22,19 @@ public class PushUpExercise extends BaseExercise {
 
         boolean hasShoulders = allVisible(lm,
                 LEFT_SHOULDER, RIGHT_SHOULDER);
-        boolean hasElbows    = allVisible(lm,
-                LEFT_ELBOW,    RIGHT_ELBOW);
-        boolean hasWrists    = allVisible(lm,
-                LEFT_WRIST,    RIGHT_WRIST);
-        boolean hasHips      = allVisible(lm,
-                LEFT_HIP,      RIGHT_HIP);
-        boolean hasKnees     = allVisible(lm,
-                LEFT_KNEE,     RIGHT_KNEE);
-        boolean hasAnkles    = allVisible(lm,
-                LEFT_ANKLE,    RIGHT_ANKLE);
-        boolean hasHeels     = allVisible(lm,
-                LEFT_HEEL,     RIGHT_HEEL);
-        boolean hasNose      = isVisible(lm, NOSE);
+        boolean hasElbows = allVisible(lm,
+                LEFT_ELBOW, RIGHT_ELBOW);
+        boolean hasWrists = allVisible(lm,
+                LEFT_WRIST, RIGHT_WRIST);
+        boolean hasHips = allVisible(lm,
+                LEFT_HIP, RIGHT_HIP);
+        boolean hasKnees = allVisible(lm,
+                LEFT_KNEE, RIGHT_KNEE);
+        boolean hasAnkles = allVisible(lm,
+                LEFT_ANKLE, RIGHT_ANKLE);
+        boolean hasHeels = allVisible(lm,
+                LEFT_HEEL, RIGHT_HEEL);
+        boolean hasNose = isVisible(lm, NOSE);
 
         if (!hasShoulders) {
             result.mainFeedback = "Направьте камеру — должны быть видны плечи";
@@ -40,8 +42,8 @@ public class PushUpExercise extends BaseExercise {
             return result;
         }
 
-        float leftElbow  = hasElbows
-                ? getAngle(lm, LEFT_SHOULDER,  LEFT_ELBOW,  LEFT_WRIST)
+        float leftElbow = hasElbows
+                ? getAngle(lm, LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST)
                 : -1f;
         float rightElbow = hasElbows
                 ? getAngle(lm, RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST)
@@ -51,8 +53,8 @@ public class PushUpExercise extends BaseExercise {
         if (leftElbow < 0 && rightElbow < 0) {
             result.mainFeedback = "Не видно локтей — отойдите от камеры";
             return result;
-        } else if (leftElbow  < 0) avgElbow = rightElbow;
-        else if   (rightElbow < 0) avgElbow = leftElbow;
+        } else if (leftElbow < 0) avgElbow = rightElbow;
+        else if (rightElbow < 0) avgElbow = leftElbow;
         else avgElbow = (leftElbow + rightElbow) / 2f;
 
         if (avgElbow < 90f) {
@@ -68,7 +70,7 @@ public class PushUpExercise extends BaseExercise {
 
         if (hasShoulders && hasElbows) {
             float shoulderW = distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
-            float elbowW    = distX(lm, LEFT_ELBOW,    RIGHT_ELBOW);
+            float elbowW = distX(lm, LEFT_ELBOW, RIGHT_ELBOW);
             if (shoulderW > 0 && elbowW > 0
                     && elbowW > shoulderW * 1.5f) {
                 result.addError(
@@ -93,7 +95,7 @@ public class PushUpExercise extends BaseExercise {
                 hasShoulders, hasHips, hasKnees,
                 hasAnkles, hasWrists, hasNose);
 
-        result.repCount     = repCount;
+        result.repCount = repCount;
         result.mainFeedback = result.errors.isEmpty()
                 ? (result.phase.equals("DOWN")
                 ? "✅ Хорошо! Опускайтесь ниже"
@@ -117,7 +119,7 @@ public class PushUpExercise extends BaseExercise {
         if (hasElbows && hasHips) {
 
             float elbowY = avgY(lm, LEFT_ELBOW, RIGHT_ELBOW);
-            float hipY   = avgY(lm, LEFT_HIP,   RIGHT_HIP);
+            float hipY = avgY(lm, LEFT_HIP, RIGHT_HIP);
 
             if (elbowY >= 0 && hipY >= 0) {
 
@@ -152,9 +154,9 @@ public class PushUpExercise extends BaseExercise {
 
             float shoulderY = avgY(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
 
-            float leftShoulderY  = lm.get(LEFT_SHOULDER).y();
+            float leftShoulderY = lm.get(LEFT_SHOULDER).y();
             float rightShoulderY = lm.get(RIGHT_SHOULDER).y();
-            float tilt           = Math.abs(leftShoulderY - rightShoulderY);
+            float tilt = Math.abs(leftShoulderY - rightShoulderY);
 
             if (tilt > 0.05f) {
                 result.addError(
@@ -163,7 +165,7 @@ public class PushUpExercise extends BaseExercise {
             }
 
             if (hasNose) {
-                float noseY     = lm.get(NOSE).y();
+                float noseY = lm.get(NOSE).y();
                 if (shoulderY >= 0) {
                     if (noseY > shoulderY + 0.08f) {
                         result.addError(
@@ -181,11 +183,11 @@ public class PushUpExercise extends BaseExercise {
 
         if (hasShoulders && hasNose) {
 
-            float leftShoulderY  = lm.get(LEFT_SHOULDER).y();
+            float leftShoulderY = lm.get(LEFT_SHOULDER).y();
             float rightShoulderY = lm.get(RIGHT_SHOULDER).y();
-            float shoulderY      = (leftShoulderY + rightShoulderY) / 2f;
-            float tilt           = Math.abs(leftShoulderY - rightShoulderY);
-            float noseY          = lm.get(NOSE).y();
+            float shoulderY = (leftShoulderY + rightShoulderY) / 2f;
+            float tilt = Math.abs(leftShoulderY - rightShoulderY);
+            float noseY = lm.get(NOSE).y();
 
             if (tilt > 0.05) {
                 result.addError(

@@ -2,7 +2,6 @@
 <shape xmlns:android="http://schemas.android.com/apk/res/android"
     android:shape="rectangle">
 
-    <!-- Тёмный фон в стиле приложения -->
     <solid android:color="#F01A1A2E" />
 
     <corners android:radius="16dp" />

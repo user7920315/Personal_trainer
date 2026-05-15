@@ -1,66 +1,70 @@
 package ru.sv.personaltrainer.exercises;
 
 import android.util.Log;
+
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
+
 import java.util.List;
 
 public class PlankExercise extends BaseExercise {
 
     private static final String TAG = "PlankExercise";
 
-    private static final float HIP_SAG_WARN   =  0.15f;
-    private static final float HIP_SAG_ERROR  =  0.25f;
-    private static final float HIP_HIGH_WARN  = -0.20f;
+    private static final float HIP_SAG_WARN = 0.15f;
+    private static final float HIP_SAG_ERROR = 0.25f;
+    private static final float HIP_HIGH_WARN = -0.20f;
     private static final float HIP_HIGH_ERROR = -0.35f;
 
 
-    private static final float HEAD_NEUTRAL    = 0.15f;
-    private static final float HEAD_DROP_WARN  = 0.25f;
+    private static final float HEAD_NEUTRAL = 0.15f;
+    private static final float HEAD_DROP_WARN = 0.25f;
     private static final float HEAD_DROP_ERROR = 0.40f;
-    private static final float HEAD_HIGH_WARN  = 0.25f;
+    private static final float HEAD_HIGH_WARN = 0.25f;
     private static final float HEAD_HIGH_ERROR = 0.40f;
 
 
-    private static final float ARM_BODY_ANGLE_WARN  = 15f;
+    private static final float ARM_BODY_ANGLE_WARN = 15f;
     private static final float ARM_BODY_ANGLE_ERROR = 25f;
 
 
-    private static final float SHOULDER_TILT_WARN  = 0.03f;
+    private static final float SHOULDER_TILT_WARN = 0.03f;
     private static final float SHOULDER_TILT_ERROR = 0.06f;
-    private static final float KNEE_TILT_WARN      = 0.05f;
-    private static final float KNEE_TILT_ERROR     = 0.10f;
+    private static final float KNEE_TILT_WARN = 0.05f;
+    private static final float KNEE_TILT_ERROR = 0.10f;
 
 
     private static final float SIDE_THRESHOLD = 0.12f;
-    private static final int   STABLE_FRAMES  = 8;
-    private static final float EMA_ALPHA      = 0.15f;
+    private static final int STABLE_FRAMES = 8;
+    private static final float EMA_ALPHA = 0.15f;
 
 
-    private long  cleanStreakStartMs = -1L;
-    private int   bestHoldSeconds   =  0;
-    private int   currentSeconds    =  0;
+    private long cleanStreakStartMs = -1L;
+    private int bestHoldSeconds = 0;
+    private int currentSeconds = 0;
 
 
-    private float emaShoulderY  = -1f, emaShoulderX = -1f;
+    private float emaShoulderY = -1f, emaShoulderX = -1f;
     private float emaLShoulderY = -1f, emaRShoulderY = -1f;
-    private float emaHipY       = -1f;
-    private float emaKneeY      = -1f, emaKneeX = -1f;
-    private float emaLKneeY     = -1f, emaRKneeY = -1f;
-    private boolean hasLKnee    = false, hasRKnee = false;
-    private float emaAnkleY     = -1f, emaAnkleX = -1f;
-    private float emaNoseY      = -1f;
-    private float emaWristX     = -1f, emaWristY = -1f;
+    private float emaHipY = -1f;
+    private float emaKneeY = -1f, emaKneeX = -1f;
+    private float emaLKneeY = -1f, emaRKneeY = -1f;
+    private boolean hasLKnee = false, hasRKnee = false;
+    private float emaAnkleY = -1f, emaAnkleX = -1f;
+    private float emaNoseY = -1f;
+    private float emaWristX = -1f, emaWristY = -1f;
     private float emaShoulderWidth = -1f;
 
 
-    private ViewMode currentView   = ViewMode.UNKNOWN;
+    private ViewMode currentView = ViewMode.UNKNOWN;
     private ViewMode candidateView = ViewMode.UNKNOWN;
     private int candidateCount = 0;
 
-    private enum ViewMode { SIDE, FRONT, UNKNOWN }
+    private enum ViewMode {SIDE, FRONT, UNKNOWN}
 
     @Override
-    public String getName() { return "🧘 Планка"; }
+    public String getName() {
+        return "🧘 Планка";
+    }
 
 
     @Override
@@ -101,8 +105,8 @@ public class PlankExercise extends BaseExercise {
 
         updateTimer(result);
 
-        result.repCount     = repCount;
-        result.holdSeconds  = currentSeconds;
+        result.repCount = repCount;
+        result.holdSeconds = currentSeconds;
         result.mainFeedback = result.errors.isEmpty()
                 ? buildFeedback()
                 : result.errors.get(0);
@@ -140,7 +144,7 @@ public class PlankExercise extends BaseExercise {
             Log.d(TAG, "Timer: серия прервана на " + currentSeconds + "с");
         }
         cleanStreakStartMs = -1L;
-        currentSeconds     = 0;
+        currentSeconds = 0;
     }
 
     private String buildFeedback() {
@@ -160,8 +164,8 @@ public class PlankExercise extends BaseExercise {
         }
 
         boolean hasWrist = emaWristX > 0 && emaWristY > 0;
-        boolean hasBody  = (emaAnkleX > 0 && emaAnkleY > 0)
-                || (emaKneeX  > 0 && emaKneeY  > 0);
+        boolean hasBody = (emaAnkleX > 0 && emaAnkleY > 0)
+                || (emaKneeX > 0 && emaKneeY > 0);
 
         if (emaShoulderX > 0 && emaShoulderY > 0
                 && hasWrist && hasBody) {
@@ -191,7 +195,7 @@ public class PlankExercise extends BaseExercise {
 
 
     private void checkBodyLineSide(AnalysisResult result) {
-        float diff  = emaHipY - emaShoulderY;
+        float diff = emaHipY - emaShoulderY;
         float scale = (emaKneeY > 0 && emaShoulderY > 0)
                 ? Math.abs(emaKneeY - emaShoulderY) : 0.20f;
         if (scale < 0.05f) scale = 0.10f;
@@ -229,15 +233,15 @@ public class PlankExercise extends BaseExercise {
 
         double bodyDx = bodyEndX - emaShoulderX;
         double bodyDy = bodyEndY - emaShoulderY;
-        double armDx  = emaShoulderX - emaWristX;
-        double armDy  = emaShoulderY - emaWristY;
+        double armDx = emaShoulderX - emaWristX;
+        double armDy = emaShoulderY - emaWristY;
 
-        double bodyLen = Math.sqrt(bodyDx*bodyDx + bodyDy*bodyDy);
-        double armLen  = Math.sqrt(armDx*armDx   + armDy*armDy);
+        double bodyLen = Math.sqrt(bodyDx * bodyDx + bodyDy * bodyDy);
+        double armLen = Math.sqrt(armDx * armDx + armDy * armDy);
         if (bodyLen < 0.01 || armLen < 0.01) return;
 
-        double bodyAngle    = Math.toDegrees(Math.atan2(bodyDy, bodyDx));
-        double armAngle     = Math.toDegrees(Math.atan2(armDy,  armDx));
+        double bodyAngle = Math.toDegrees(Math.atan2(bodyDy, bodyDx));
+        double armAngle = Math.toDegrees(Math.atan2(armDy, armDx));
         double angleBetween = Math.abs(bodyAngle - armAngle);
         if (angleBetween > 180.0) angleBetween = 360.0 - angleBetween;
         double diff = Math.abs(angleBetween - 90.0);
@@ -248,7 +252,7 @@ public class PlankExercise extends BaseExercise {
                             ? "⚠ Плечи ушли вперёд — поставьте руки под плечи"
                             : "⚠ Плечи ушли назад — поставьте руки под плечи",
                     LEFT_SHOULDER, RIGHT_SHOULDER,
-                    LEFT_WRIST,    RIGHT_WRIST);
+                    LEFT_WRIST, RIGHT_WRIST);
         } else if (diff > ARM_BODY_ANGLE_WARN) {
             result.addError(
                     "⚠ Поправьте положение рук — перпендикулярно телу",
@@ -258,9 +262,9 @@ public class PlankExercise extends BaseExercise {
 
 
     private void checkHead(AnalysisResult result) {
-        float scale     = emaShoulderWidth > 0.02f
+        float scale = emaShoulderWidth > 0.02f
                 ? emaShoulderWidth : 0.15f;
-        float headDiff  = emaNoseY - emaShoulderY;
+        float headDiff = emaNoseY - emaShoulderY;
         float deviation = headDiff / scale;
 
         if (Math.abs(deviation) <= HEAD_NEUTRAL) return;
@@ -317,11 +321,11 @@ public class PlankExercise extends BaseExercise {
 
     private void checkHeadCenter(List<NormalizedLandmark> lm,
                                  AnalysisResult result) {
-        float noseX        = lm.get(NOSE).x();
-        float lShX         = lm.get(LEFT_SHOULDER).x();
-        float rShX         = lm.get(RIGHT_SHOULDER).x();
+        float noseX = lm.get(NOSE).x();
+        float lShX = lm.get(LEFT_SHOULDER).x();
+        float rShX = lm.get(RIGHT_SHOULDER).x();
         float midShoulderX = (lShX + rShX) / 2f;
-        float shoulderW    = Math.abs(lShX - rShX);
+        float shoulderW = Math.abs(lShX - rShX);
         if (shoulderW < 0.02f) return;
 
         float offset = (noseX - midShoulderX) / shoulderW;
@@ -333,9 +337,9 @@ public class PlankExercise extends BaseExercise {
     }
 
 
-    public int getBestHoldSeconds() { return bestHoldSeconds; }
-
-
+    public int getBestHoldSeconds() {
+        return bestHoldSeconds;
+    }
 
 
     private void updateEMA(List<NormalizedLandmark> lm) {
@@ -353,10 +357,10 @@ public class PlankExercise extends BaseExercise {
             float rShY = lm.get(RIGHT_SHOULDER).y();
             float lShX = lm.get(LEFT_SHOULDER).x();
             float rShX = lm.get(RIGHT_SHOULDER).x();
-            emaShoulderY     = emaVal(emaShoulderY, (lShY + rShY) / 2f);
-            emaShoulderX     = emaVal(emaShoulderX, (lShX + rShX) / 2f);
-            emaLShoulderY    = emaVal(emaLShoulderY, lShY);
-            emaRShoulderY    = emaVal(emaRShoulderY, rShY);
+            emaShoulderY = emaVal(emaShoulderY, (lShY + rShY) / 2f);
+            emaShoulderX = emaVal(emaShoulderX, (lShX + rShX) / 2f);
+            emaLShoulderY = emaVal(emaLShoulderY, lShY);
+            emaRShoulderY = emaVal(emaRShoulderY, rShY);
             emaShoulderWidth = emaVal(emaShoulderWidth, Math.abs(lShX - rShX));
         }
 
@@ -365,21 +369,21 @@ public class PlankExercise extends BaseExercise {
             float rKnY = lm.get(RIGHT_KNEE).y();
             float lKnX = lm.get(LEFT_KNEE).x();
             float rKnX = lm.get(RIGHT_KNEE).x();
-            emaKneeY  = emaVal(emaKneeY,  (lKnY + rKnY) / 2f);
-            emaKneeX  = emaVal(emaKneeX,  (lKnX + rKnX) / 2f);
+            emaKneeY = emaVal(emaKneeY, (lKnY + rKnY) / 2f);
+            emaKneeX = emaVal(emaKneeX, (lKnX + rKnX) / 2f);
             emaLKneeY = emaVal(emaLKneeY, lKnY);
             emaRKneeY = emaVal(emaRKneeY, rKnY);
-            hasLKnee  = hasRKnee = true;
+            hasLKnee = hasRKnee = true;
         } else if (isVisible(lm, LEFT_KNEE)) {
-            emaKneeY  = emaVal(emaKneeY,  lm.get(LEFT_KNEE).y());
-            emaKneeX  = emaVal(emaKneeX,  lm.get(LEFT_KNEE).x());
+            emaKneeY = emaVal(emaKneeY, lm.get(LEFT_KNEE).y());
+            emaKneeX = emaVal(emaKneeX, lm.get(LEFT_KNEE).x());
             emaLKneeY = emaVal(emaLKneeY, lm.get(LEFT_KNEE).y());
-            hasLKnee  = true;
+            hasLKnee = true;
         } else if (isVisible(lm, RIGHT_KNEE)) {
-            emaKneeY  = emaVal(emaKneeY,  lm.get(RIGHT_KNEE).y());
-            emaKneeX  = emaVal(emaKneeX,  lm.get(RIGHT_KNEE).x());
+            emaKneeY = emaVal(emaKneeY, lm.get(RIGHT_KNEE).y());
+            emaKneeX = emaVal(emaKneeX, lm.get(RIGHT_KNEE).x());
             emaRKneeY = emaVal(emaRKneeY, lm.get(RIGHT_KNEE).y());
-            hasRKnee  = true;
+            hasRKnee = true;
         }
 
         if (allVisible(lm, LEFT_ANKLE, RIGHT_ANKLE)) {
@@ -429,7 +433,7 @@ public class PlankExercise extends BaseExercise {
         if (raw == candidateView) {
             candidateCount++;
         } else {
-            candidateView  = raw;
+            candidateView = raw;
             candidateCount = 1;
         }
         if (candidateCount >= STABLE_FRAMES
@@ -474,12 +478,12 @@ public class PlankExercise extends BaseExercise {
     public void reset() {
         super.reset();
         resetEMA();
-        emaShoulderWidth   = -1f;
-        currentView        = ViewMode.UNKNOWN;
-        candidateView      = ViewMode.UNKNOWN;
-        candidateCount     = 0;
+        emaShoulderWidth = -1f;
+        currentView = ViewMode.UNKNOWN;
+        candidateView = ViewMode.UNKNOWN;
+        candidateCount = 0;
         cleanStreakStartMs = -1L;
-        bestHoldSeconds    = 0;
-        currentSeconds     = 0;
+        bestHoldSeconds = 0;
+        currentSeconds = 0;
     }
 }

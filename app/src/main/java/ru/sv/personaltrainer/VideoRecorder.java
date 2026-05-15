@@ -41,55 +41,55 @@ import java.util.concurrent.TimeUnit;
 
 public class VideoRecorder {
 
-    private static final String TAG              = "VideoRecorder";
-    private static final String MIME_TYPE        = "video/avc";
-    private static final int    BIT_RATE         = 8_000_000;
-    private static final int    FRAME_RATE       = 30;
-    private static final int    I_FRAME_INTERVAL = 1;
-    private static final int    VIDEO_WIDTH      = 720;
-    private static final int    VIDEO_HEIGHT     = 1280;
+    private static final String TAG = "VideoRecorder";
+    private static final String MIME_TYPE = "video/avc";
+    private static final int BIT_RATE = 8_000_000;
+    private static final int FRAME_RATE = 30;
+    private static final int I_FRAME_INTERVAL = 1;
+    private static final int VIDEO_WIDTH = 720;
+    private static final int VIDEO_HEIGHT = 1280;
 
 
-    private static final int COLOR_LEFT_LIMB  = 0xFF00BFFF; // голубой
+    private static final int COLOR_LEFT_LIMB = 0xFF00BFFF; // голубой
     private static final int COLOR_RIGHT_LIMB = 0xFFFFD700; // жёлтый
-    private static final int COLOR_CENTER     = 0xFF00FF00; // зелёный
+    private static final int COLOR_CENTER = 0xFF00FF00; // зелёный
     private static final int COLOR_ERROR_LINE = 0xFFFF0000; // красный
 
 
     private static final int[][] POSE_CONNECTIONS = {
-            {0,1},{1,2},{2,3},{3,7},
-            {0,4},{4,5},{5,6},{6,8},
-            {9,10},
-            {11,12},{11,23},{12,24},{23,24},
-            {11,13},{13,15},{15,17},{15,19},{15,21},{17,19},
-            {12,14},{14,16},{16,18},{16,20},{16,22},{18,20},
-            {23,25},{25,27},{27,29},{27,31},{29,31},
-            {24,26},{26,28},{28,30},{28,32},{30,32}
+            {0, 1}, {1, 2}, {2, 3}, {3, 7},
+            {0, 4}, {4, 5}, {5, 6}, {6, 8},
+            {9, 10},
+            {11, 12}, {11, 23}, {12, 24}, {23, 24},
+            {11, 13}, {13, 15}, {15, 17}, {15, 19}, {15, 21}, {17, 19},
+            {12, 14}, {14, 16}, {16, 18}, {16, 20}, {16, 22}, {18, 20},
+            {23, 25}, {25, 27}, {27, 29}, {27, 31}, {29, 31},
+            {24, 26}, {26, 28}, {28, 30}, {28, 32}, {30, 32}
     };
 
     private static final int[] LEFT_LANDMARKS = {
-            11,13,15,17,19,21,23,25,27,29,31
+            11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31
     };
     private static final int[] RIGHT_LANDMARKS = {
-            12,14,16,18,20,22,24,26,28,30,32
+            12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32
     };
 
 
-    private volatile boolean isRecording     = false;
+    private volatile boolean isRecording = false;
     private volatile boolean acceptingFrames = false;
-    private volatile long    startTimeUs     = -1;
+    private volatile long startTimeUs = -1;
 
-    private boolean muxerStarted    = false;
-    private int     videoTrackIndex = -1;
+    private boolean muxerStarted = false;
+    private int videoTrackIndex = -1;
 
 
     private MediaCodec encoder;
     private android.view.Surface encoderSurface;
     private MediaMuxer muxer;
-    private String     outputFilePath;
+    private String outputFilePath;
 
     private HandlerThread encoderThread;
-    private Handler       encoderHandler;
+    private Handler encoderHandler;
 
     private final Paint paintBg;
     private final Paint paintText;
@@ -105,13 +105,15 @@ public class VideoRecorder {
     private final Context context;
 
     private volatile String exerciseNameForRecord = null;
-    private volatile String qualityForRecord      = "●●●●●";
-    private volatile int    qualityColorForRecord = 0xFF00FF88;
+    private volatile String qualityForRecord = "●●●●●";
+    private volatile int qualityColorForRecord = 0xFF00FF88;
 
 
     public interface RecordingCallback {
         void onRecordingStarted();
+
         void onRecordingSaved(String filePath);
+
         void onRecordingError(String error);
     }
 
@@ -178,9 +180,9 @@ public class VideoRecorder {
             encoderThread.start();
             encoderHandler = new Handler(encoderThread.getLooper());
 
-            isRecording     = true;
+            isRecording = true;
             acceptingFrames = true;
-            startTimeUs     = -1;
+            startTimeUs = -1;
 
             Log.d(TAG, "Запись начата: " + outputFilePath);
             if (callback != null) callback.onRecordingStarted();
@@ -199,8 +201,8 @@ public class VideoRecorder {
         format.setInteger(
                 MediaFormat.KEY_COLOR_FORMAT,
                 MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        format.setInteger(MediaFormat.KEY_BIT_RATE,    BIT_RATE);
-        format.setInteger(MediaFormat.KEY_FRAME_RATE,  FRAME_RATE);
+        format.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE);
+        format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
         format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL);
 
         encoder = MediaCodec.createEncoderByType(MIME_TYPE);
@@ -218,17 +220,17 @@ public class VideoRecorder {
 
 
     public void submitFrame(
-            Bitmap             cameraFrame,
+            Bitmap cameraFrame,
             PoseLandmarkerResult poseResult,
-            List<Integer>      errorLandmarks,
-            String             repText,
-            String             phaseText,
-            String             feedbackText,
-            int                phaseColor,
-            String             exerciseName,
-            String             quality,
-            int                qualityColor,
-            long               timestampNs) {
+            List<Integer> errorLandmarks,
+            String repText,
+            String phaseText,
+            String feedbackText,
+            int phaseColor,
+            String exerciseName,
+            String quality,
+            int qualityColor,
+            long timestampNs) {
 
         if (!isRecording || !acceptingFrames) return;
         if (encoder == null) return;
@@ -237,10 +239,10 @@ public class VideoRecorder {
 
 
         this.exerciseNameForRecord = exerciseName;
-        this.qualityForRecord      = quality;
+        this.qualityForRecord = quality;
         this.qualityColorForRecord = qualityColor;
 
-        final long   tsUs = timestampNs / 1000L;
+        final long tsUs = timestampNs / 1000L;
 
         final Bitmap copy;
         try {
@@ -257,13 +259,13 @@ public class VideoRecorder {
                 : null;
 
 
-        final String repSnap      = repText;
-        final String phaseSnap    = phaseText;
+        final String repSnap = repText;
+        final String phaseSnap = phaseText;
         final String feedbackSnap = feedbackText;
-        final int    colorSnap    = phaseColor;
-        final String qualitySnap  = quality;
-        final int    qualColorSnap= qualityColor;
-        final String nameSnap     = exerciseName;
+        final int colorSnap = phaseColor;
+        final String qualitySnap = quality;
+        final int qualColorSnap = qualityColor;
+        final String nameSnap = exerciseName;
 
         encoderHandler.post(() -> {
             if (!acceptingFrames) {
@@ -286,9 +288,9 @@ public class VideoRecorder {
 
 
     private void writeFrameToSurface(
-            Bitmap               cameraFrame,
+            Bitmap cameraFrame,
             PoseLandmarkerResult poseResult,
-            List<Integer>        errorLandmarks,
+            List<Integer> errorLandmarks,
             String repText, String phaseText,
             String feedbackText, int phaseColor,
             String exerciseName,
@@ -337,16 +339,16 @@ public class VideoRecorder {
     private void drawCameraFrame(Canvas canvas, Bitmap frame) {
         if (frame == null || frame.isRecycled()) return;
 
-        int   cW    = canvas.getWidth();
-        int   cH    = canvas.getHeight();
-        int   fW    = frame.getWidth();
-        int   fH    = frame.getHeight();
+        int cW = canvas.getWidth();
+        int cH = canvas.getHeight();
+        int fW = frame.getWidth();
+        int fH = frame.getHeight();
 
         float scale = Math.max((float) cW / fW, (float) cH / fH);
-        float sw    = fW * scale;
-        float sh    = fH * scale;
-        float dx    = (cW - sw) / 2f;
-        float dy    = (cH - sh) / 2f;
+        float sw = fW * scale;
+        float sh = fH * scale;
+        float dx = (cW - sw) / 2f;
+        float dy = (cH - sh) / 2f;
 
         canvas.drawBitmap(frame, null,
                 new RectF(dx, dy, dx + sw, dy + sh), null);
@@ -371,18 +373,18 @@ public class VideoRecorder {
                     || ei >= landmarks.size()) continue;
 
             NormalizedLandmark start = landmarks.get(si);
-            NormalizedLandmark end   = landmarks.get(ei);
+            NormalizedLandmark end = landmarks.get(ei);
 
             if (!isLandmarkVisible(start)
                     || !isLandmarkVisible(end)) continue;
 
             float x1 = start.x() * w;
             float y1 = start.y() * h;
-            float x2 = end.x()   * w;
-            float y2 = end.y()   * h;
+            float x2 = end.x() * w;
+            float y2 = end.y() * h;
 
             boolean startErr = isError(errorLandmarks, si);
-            boolean endErr   = isError(errorLandmarks, ei);
+            boolean endErr = isError(errorLandmarks, ei);
 
             if (startErr || endErr) {
                 paintLine.setColor(COLOR_ERROR_LINE);
@@ -479,7 +481,7 @@ public class VideoRecorder {
     }
 
     private int getConnectionColor(int si, int ei) {
-        if (isLeftLandmark(si)  || isLeftLandmark(ei))
+        if (isLeftLandmark(si) || isLeftLandmark(ei))
             return COLOR_LEFT_LIMB;
         if (isRightLandmark(si) || isRightLandmark(ei))
             return COLOR_RIGHT_LIMB;
@@ -502,11 +504,11 @@ public class VideoRecorder {
                         String repText,
                         String phaseText,
                         String feedbackText,
-                        int    phaseColor,
+                        int phaseColor,
                         String exerciseName,
                         String quality,
-                        int    qualityColor,
-                        long   tsUs) {
+                        int qualityColor,
+                        long tsUs) {
 
         final float density = VIDEO_WIDTH / 360f;
 
@@ -530,19 +532,19 @@ public class VideoRecorder {
                                 float density, int W) {
 
         float textSize = sp(20, density);
-        float padding  = dp(10, density);
-        float marginT  = dp(16, density);
-        float marginS  = dp(16, density);
+        float padding = dp(10, density);
+        float marginT = dp(16, density);
+        float marginS = dp(16, density);
 
         paintText.setTextSize(textSize);
         paintText.setColor(Color.WHITE);
         paintText.setTypeface(Typeface.DEFAULT_BOLD);
 
         float textW = paintText.measureText(text);
-        float left  = marginS;
-        float top   = marginT;
+        float left = marginS;
+        float top = marginT;
         float right = left + textW + padding * 2;
-        float bot   = top  + textSize + padding * 2;
+        float bot = top + textSize + padding * 2;
 
         paintBg.setColor(0xBB000000);
         canvas.drawRoundRect(left, top, right, bot,
@@ -550,7 +552,7 @@ public class VideoRecorder {
 
         canvas.drawText(text,
                 left + padding,
-                top  + padding + textSize * 0.85f,
+                top + padding + textSize * 0.85f,
                 paintText);
     }
 
@@ -559,9 +561,9 @@ public class VideoRecorder {
                                   float density, int W) {
         if (name == null || name.isEmpty()) return;
 
-        float textSize  = sp(16, density);
-        float padding   = dp(10, density);
-        float marginT   = dp(16, density);
+        float textSize = sp(16, density);
+        float padding = dp(10, density);
+        float marginT = dp(16, density);
         float marginEnd = dp(16, density);
 
         paintText.setTextSize(textSize);
@@ -570,9 +572,9 @@ public class VideoRecorder {
 
         float textW = paintText.measureText(name);
         float right = W - marginEnd;
-        float left  = right - textW - padding * 2;
-        float top   = marginT;
-        float bot   = top + textSize + padding * 2;
+        float left = right - textW - padding * 2;
+        float top = marginT;
+        float bot = top + textSize + padding * 2;
 
         paintBg.setColor(0xBBE94560);
         canvas.drawRoundRect(left, top, right, bot,
@@ -580,7 +582,7 @@ public class VideoRecorder {
 
         canvas.drawText(name,
                 left + padding,
-                top  + padding + textSize * 0.85f,
+                top + padding + textSize * 0.85f,
                 paintText);
     }
 
@@ -590,18 +592,18 @@ public class VideoRecorder {
         if (text == null || text.isEmpty()) return;
 
         float textSize = sp(14, density);
-        float padding  = dp(8, density);
-        float marginT  = dp(16, density);
+        float padding = dp(8, density);
+        float marginT = dp(16, density);
 
         paintText.setTextSize(textSize);
         paintText.setColor(color);
         paintText.setTypeface(Typeface.DEFAULT_BOLD);
 
         float textW = paintText.measureText(text);
-        float left  = (W - textW) / 2f - padding;
-        float top   = marginT;
+        float left = (W - textW) / 2f - padding;
+        float top = marginT;
         float right = left + textW + padding * 2;
-        float bot   = top  + textSize + padding * 2;
+        float bot = top + textSize + padding * 2;
 
         paintBg.setColor(0xBB003322);
         canvas.drawRoundRect(left, top, right, bot,
@@ -609,7 +611,7 @@ public class VideoRecorder {
 
         canvas.drawText(text,
                 left + padding,
-                top  + padding + textSize * 0.85f,
+                top + padding + textSize * 0.85f,
                 paintText);
     }
 
@@ -623,28 +625,28 @@ public class VideoRecorder {
 
         if (elapsed % 2 != 0) return;
 
-        float marginT      = dp(64, density);
-        float marginS      = dp(16, density);
-        float padding      = dp(8,  density);
-        float dotSize      = dp(10, density);
-        float dotMarginEnd = dp(6,  density);
-        float textSize     = sp(13, density);
+        float marginT = dp(64, density);
+        float marginS = dp(16, density);
+        float padding = dp(8, density);
+        float dotSize = dp(10, density);
+        float dotMarginEnd = dp(6, density);
+        float textSize = sp(13, density);
 
-        int   mm  = (int)(elapsed / 60);
-        int   ss  = (int)(elapsed % 60);
+        int mm = (int) (elapsed / 60);
+        int ss = (int) (elapsed % 60);
         String ts = String.format(Locale.US, "%02d:%02d", mm, ss);
 
         paintText.setTextSize(textSize);
         paintText.setColor(Color.WHITE);
         paintText.setTypeface(Typeface.DEFAULT_BOLD);
 
-        float timeW  = paintText.measureText(ts);
+        float timeW = paintText.measureText(ts);
         float blockW = padding + dotSize + dotMarginEnd
                 + timeW + padding;
         float blockH = Math.max(dotSize, textSize) + padding * 2;
 
         float left = marginS;
-        float top  = marginT;
+        float top = marginT;
 
         paintBg.setColor(0xBB000000);
         canvas.drawRoundRect(left, top,
@@ -654,13 +656,13 @@ public class VideoRecorder {
 
         paintRec.setColor(Color.RED);
         float dotCX = left + padding + dotSize / 2f;
-        float dotCY = top  + blockH / 2f;
+        float dotCY = top + blockH / 2f;
         canvas.drawCircle(dotCX, dotCY, dotSize / 2f, paintRec);
 
 
         canvas.drawText(ts,
                 left + padding + dotSize + dotMarginEnd,
-                top  + blockH / 2f + textSize * 0.35f,
+                top + blockH / 2f + textSize * 0.35f,
                 paintText);
     }
 
@@ -668,29 +670,29 @@ public class VideoRecorder {
     private void drawFeedbackCard(Canvas canvas,
                                   String feedbackText,
                                   String quality,
-                                  int    qualityColor,
-                                  float  density,
+                                  int qualityColor,
+                                  float density,
                                   int W, int H) {
 
-        float marginB  = dp(16, density);
-        float marginH  = dp(12, density);
-        float padding  = dp(16, density);
-        float radius   = dp(16, density);
+        float marginB = dp(16, density);
+        float marginH = dp(12, density);
+        float padding = dp(16, density);
+        float radius = dp(16, density);
 
-        float titleSize    = sp(15, density);
+        float titleSize = sp(15, density);
         float feedbackSize = sp(15, density);
-        float separatorH   = dp(20, density);
+        float separatorH = dp(20, density);
 
 
-        float cardW    = W - marginH * 2 - padding * 2;
-        int   lineCount = countLines(feedbackText,
+        float cardW = W - marginH * 2 - padding * 2;
+        int lineCount = countLines(feedbackText,
                 feedbackSize, cardW);
 
         float cardH = padding
                 + titleSize + dp(10, density)
                 + separatorH
                 + feedbackSize * lineCount
-                + dp(4, density) * (lineCount-1)
+                + dp(4, density) * (lineCount - 1)
                 + padding;
 
         float cardL = marginH;
@@ -712,17 +714,17 @@ public class VideoRecorder {
             paintText.setTypeface(Typeface.DEFAULT_BOLD);
             canvas.drawText("Анализ техники",
                     cardL + padding,
-                    curY  + titleSize * 0.85f,
+                    curY + titleSize * 0.85f,
                     paintText);
 
 
             String q = (quality != null) ? quality : "●●●●●";
-            int    qc = (qualityColor != 0) ? qualityColor : 0xFF00FF88;
+            int qc = (qualityColor != 0) ? qualityColor : 0xFF00FF88;
             paintText.setColor(qc);
             float qW = paintText.measureText(q);
             canvas.drawText(q,
                     cardR - padding - qW,
-                    curY  + titleSize * 0.85f,
+                    curY + titleSize * 0.85f,
                     paintText);
 
             curY += titleSize + dp(10, density);
@@ -826,16 +828,18 @@ public class VideoRecorder {
             }
         }
 
-        MediaCodec.BufferInfo info    = new MediaCodec.BufferInfo();
-        int                   maxLoop = 100;
+        MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+        int maxLoop = 100;
 
         while (maxLoop-- > 0) {
             int idx = encoder.dequeueOutputBuffer(info, 10_000);
 
             if (idx == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 if (!endOfStream) break;
-                try { Thread.sleep(5); }
-                catch (InterruptedException ignored) {}
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException ignored) {
+                }
 
             } else if (idx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 if (!muxerStarted) {
@@ -876,7 +880,7 @@ public class VideoRecorder {
     public void stopRecording() {
         if (!isRecording) return;
 
-        isRecording     = false;
+        isRecording = false;
         acceptingFrames = false;
 
         Log.d(TAG, "Остановка записи...");
@@ -895,16 +899,18 @@ public class VideoRecorder {
 
             if (encoderThread != null) {
                 encoderThread.quitSafely();
-                try { encoderThread.join(2000); }
-                catch (InterruptedException e) {
+                try {
+                    encoderThread.join(2000);
+                } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
-                encoderThread  = null;
+                encoderThread = null;
                 encoderHandler = null;
             }
 
-            try { drainEncoder(true); }
-            catch (Exception e) {
+            try {
+                drainEncoder(true);
+            } catch (Exception e) {
                 Log.e(TAG, "Final drain: " + e.getMessage());
             }
 
@@ -916,15 +922,18 @@ public class VideoRecorder {
 
     private void release() {
         if (encoder != null) {
-            try { encoder.stop(); encoder.release(); }
-            catch (Exception e) {
+            try {
+                encoder.stop();
+                encoder.release();
+            } catch (Exception e) {
                 Log.e(TAG, "Encoder: " + e.getMessage());
             }
             encoder = null;
         }
         if (encoderSurface != null) {
-            try { encoderSurface.release(); }
-            catch (Exception e) {
+            try {
+                encoderSurface.release();
+            } catch (Exception e) {
                 Log.e(TAG, "Surface: " + e.getMessage());
             }
             encoderSurface = null;
@@ -940,12 +949,12 @@ public class VideoRecorder {
         }
         if (encoderThread != null) {
             encoderThread.quitSafely();
-            encoderThread  = null;
+            encoderThread = null;
             encoderHandler = null;
         }
-        muxerStarted    = false;
+        muxerStarted = false;
         videoTrackIndex = -1;
-        startTimeUs     = -1;
+        startTimeUs = -1;
         Log.d(TAG, "Ресурсы освобождены");
     }
 
@@ -985,13 +994,13 @@ public class VideoRecorder {
                     MediaStore.Video.Media.EXTERNAL_CONTENT_URI, v);
 
             if (uri != null) {
-                try (InputStream  in  = new FileInputStream(src);
+                try (InputStream in = new FileInputStream(src);
                      OutputStream out = context.getContentResolver()
                              .openOutputStream(uri)) {
 
                     if (out != null) {
                         byte[] buf = new byte[65536];
-                        int    len;
+                        int len;
                         while ((len = in.read(buf)) > 0)
                             out.write(buf, 0, len);
                     }
@@ -1030,5 +1039,7 @@ public class VideoRecorder {
                 () -> callback.onRecordingSaved(path));
     }
 
-    public boolean isRecording() { return isRecording; }
+    public boolean isRecording() {
+        return isRecording;
+    }
 }

@@ -34,7 +34,7 @@ public class ExerciseListActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exercise_list);
 
-        allExercises      = ExerciseRegistry.getAll();
+        allExercises = ExerciseRegistry.getAll();
         filteredExercises = new ArrayList<>(allExercises);
 
         setupRecycler();
@@ -52,8 +52,13 @@ public class ExerciseListActivity extends AppCompatActivity {
     private void setupSearch() {
         EditText etSearch = findViewById(R.id.etSearch);
         etSearch.addTextChangedListener(new TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-            @Override public void afterTextChanged(Editable s) {}
+            @Override
+            public void beforeTextChanged(CharSequence s, int st, int c, int a) {
+            }
+
+            @Override
+            public void afterTextChanged(Editable s) {
+            }
 
             @Override
             public void onTextChanged(CharSequence s, int start, int b, int count) {
@@ -100,10 +105,10 @@ public class ExerciseListActivity extends AppCompatActivity {
         }
 
         private final List<ExerciseInfo> items;
-        private final OnClickListener    listener;
+        private final OnClickListener listener;
 
         ExerciseAdapter(List<ExerciseInfo> items, OnClickListener listener) {
-            this.items    = items;
+            this.items = items;
             this.listener = listener;
         }
 
@@ -127,19 +132,21 @@ public class ExerciseListActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemCount() { return items.size(); }
+        public int getItemCount() {
+            return items.size();
+        }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
-            TextView   tvEmoji, tvTitle, tvMuscles, tvDifficulty;
+            TextView tvEmoji, tvTitle, tvMuscles, tvDifficulty;
             LinearLayout cardRoot;
 
             ViewHolder(View view) {
                 super(view);
-                tvEmoji      = view.findViewById(R.id.tvEmoji);
-                tvTitle      = view.findViewById(R.id.tvTitle);
-                tvMuscles    = view.findViewById(R.id.tvMuscles);
+                tvEmoji = view.findViewById(R.id.tvEmoji);
+                tvTitle = view.findViewById(R.id.tvTitle);
+                tvMuscles = view.findViewById(R.id.tvMuscles);
                 tvDifficulty = view.findViewById(R.id.tvDifficulty);
-                cardRoot     = view.findViewById(R.id.cardRoot);
+                cardRoot = view.findViewById(R.id.cardRoot);
             }
         }
     }

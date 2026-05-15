@@ -3,12 +3,12 @@ plugins {
 }
 
 android {
-    namespace = "ru.sv.wear" // ← Должно совпадать с package в MainActivity.java!
+    namespace = "ru.sv.wear"
     compileSdk = 34
 
     defaultConfig {
         applicationId = "ru.sv.wear"
-        minSdk = 30      // Wear OS 3.0+
+        minSdk = 30
         targetSdk = 34
         versionCode = 1
         versionName = "1.0"

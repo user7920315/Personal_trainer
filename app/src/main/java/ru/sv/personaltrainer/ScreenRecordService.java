@@ -15,9 +15,9 @@ import androidx.core.app.NotificationCompat;
 
 public class ScreenRecordService extends Service {
 
-    private static final String TAG            = "ScreenRecordService";
-    private static final String CHANNEL_ID     = "RecordingChannel";
-    private static final int    NOTIFICATION_ID = 1001;
+    private static final String TAG = "ScreenRecordService";
+    private static final String CHANNEL_ID = "RecordingChannel";
+    private static final int NOTIFICATION_ID = 1001;
 
     private final IBinder binder = new LocalBinder();
 
@@ -64,7 +64,6 @@ public class ScreenRecordService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
             stopForeground(STOP_FOREGROUND_REMOVE);
         } else {
-            //noinspection deprecation
             stopForeground(true);
         }
         stopSelf();

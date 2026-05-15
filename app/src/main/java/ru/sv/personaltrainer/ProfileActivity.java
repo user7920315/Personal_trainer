@@ -42,35 +42,35 @@ import ru.sv.personaltrainer.overlay.ProfileOnboardingOverlay;
 
 public class ProfileActivity extends AppCompatActivity {
 
-    public static final String PREFS_NAME     = "PersonalTrainerPrefs";
-    public static final String KEY_HEIGHT     = "height";
-    public static final String KEY_WEIGHT     = "weight";
-    public static final String KEY_AGE        = "age";
-    public static final String KEY_GENDER     = "gender";
+    public static final String PREFS_NAME = "PersonalTrainerPrefs";
+    public static final String KEY_HEIGHT = "height";
+    public static final String KEY_WEIGHT = "weight";
+    public static final String KEY_AGE = "age";
+    public static final String KEY_GENDER = "gender";
     public static final String KEY_WEIGHT_LOG = "weight_log";
-    public static final String KEY_WORKOUTS   = "workouts";
+    public static final String KEY_WORKOUTS = "workouts";
 
     private TextInputEditText etHeight, etWeight, etAge;
-    private LinearLayout      btnGenderMale, btnGenderFemale;
-    private Button            btnCalculateBmi;
-    private View              layoutBmiResult;
-    private TextView          tvBmiValue;
-    private TextView          tvBmiResultCategory;
-    private TextView          tvBmiNorm;
-    private TextView          tvBmiCategory;
-    private TextView          tvNoWeightData;
-    private LineChart         weightChart;
-    private TextView          tvTotalWorkouts;
-    private TextView          tvCurrentStreak;
-    private TextView          tvWeekWorkouts;
-    private TextView          tvNoHistory;
-    private RecyclerView      rvHistory;
-    private Button            btnClearHistory;
+    private LinearLayout btnGenderMale, btnGenderFemale;
+    private Button btnCalculateBmi;
+    private View layoutBmiResult;
+    private TextView tvBmiValue;
+    private TextView tvBmiResultCategory;
+    private TextView tvBmiNorm;
+    private TextView tvBmiCategory;
+    private TextView tvNoWeightData;
+    private LineChart weightChart;
+    private TextView tvTotalWorkouts;
+    private TextView tvCurrentStreak;
+    private TextView tvWeekWorkouts;
+    private TextView tvNoHistory;
+    private RecyclerView rvHistory;
+    private Button btnClearHistory;
 
-    private SharedPreferences    prefs;
-    private Gson                 gson;
-    private List<WorkoutRecord>  workoutHistory;
-    private List<WeightRecord>   weightLog;
+    private SharedPreferences prefs;
+    private Gson gson;
+    private List<WorkoutRecord> workoutHistory;
+    private List<WeightRecord> weightLog;
     private WorkoutHistoryAdapter adapter;
     private ProfileOnboardingOverlay profileOnboarding;
 
@@ -82,25 +82,25 @@ public class ProfileActivity extends AppCompatActivity {
         public String exerciseId;
         public String exerciseName;
         public String icon;
-        public int    reps;
-        public long   timestamp;
+        public int reps;
+        public long timestamp;
 
         public WorkoutRecord(String exerciseId, String exerciseName,
                              String icon, int reps, long timestamp) {
-            this.exerciseId   = exerciseId;
+            this.exerciseId = exerciseId;
             this.exerciseName = exerciseName;
-            this.icon         = icon;
-            this.reps         = reps;
-            this.timestamp    = timestamp;
+            this.icon = icon;
+            this.reps = reps;
+            this.timestamp = timestamp;
         }
     }
 
     public static class WeightRecord {
         public float weight;
-        public long  timestamp;
+        public long timestamp;
 
         public WeightRecord(float weight, long timestamp) {
-            this.weight    = weight;
+            this.weight = weight;
             this.timestamp = timestamp;
         }
     }
@@ -111,7 +111,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(R.layout.activity_profile);
 
         prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        gson  = new Gson();
+        gson = new Gson();
 
         initViews();
         loadData();
@@ -127,25 +127,25 @@ public class ProfileActivity extends AppCompatActivity {
     private void initViews() {
         findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
-        etHeight            = findViewById(R.id.etHeight);
-        etWeight            = findViewById(R.id.etWeight);
-        etAge               = findViewById(R.id.etAge);
-        btnGenderMale       = findViewById(R.id.btnGenderMale);
-        btnGenderFemale     = findViewById(R.id.btnGenderFemale);
-        btnCalculateBmi     = findViewById(R.id.btnCalculateBmi);
-        layoutBmiResult     = findViewById(R.id.layoutBmiResult);
-        tvBmiValue          = findViewById(R.id.tvBmiValue);
+        etHeight = findViewById(R.id.etHeight);
+        etWeight = findViewById(R.id.etWeight);
+        etAge = findViewById(R.id.etAge);
+        btnGenderMale = findViewById(R.id.btnGenderMale);
+        btnGenderFemale = findViewById(R.id.btnGenderFemale);
+        btnCalculateBmi = findViewById(R.id.btnCalculateBmi);
+        layoutBmiResult = findViewById(R.id.layoutBmiResult);
+        tvBmiValue = findViewById(R.id.tvBmiValue);
         tvBmiResultCategory = findViewById(R.id.tvBmiResultCategory);
-        tvBmiNorm           = findViewById(R.id.tvBmiNorm);
-        tvBmiCategory       = findViewById(R.id.tvBmiCategory);
-        tvNoWeightData      = findViewById(R.id.tvNoWeightData);
-        weightChart         = findViewById(R.id.weightChart);
-        tvTotalWorkouts     = findViewById(R.id.tvTotalWorkouts);
-        tvCurrentStreak     = findViewById(R.id.tvCurrentStreak);
-        tvWeekWorkouts      = findViewById(R.id.tvWeekWorkouts);
-        tvNoHistory         = findViewById(R.id.tvNoHistory);
-        rvHistory           = findViewById(R.id.rvHistory);
-        btnClearHistory     = findViewById(R.id.btnClearHistory);
+        tvBmiNorm = findViewById(R.id.tvBmiNorm);
+        tvBmiCategory = findViewById(R.id.tvBmiCategory);
+        tvNoWeightData = findViewById(R.id.tvNoWeightData);
+        weightChart = findViewById(R.id.weightChart);
+        tvTotalWorkouts = findViewById(R.id.tvTotalWorkouts);
+        tvCurrentStreak = findViewById(R.id.tvCurrentStreak);
+        tvWeekWorkouts = findViewById(R.id.tvWeekWorkouts);
+        tvNoHistory = findViewById(R.id.tvNoHistory);
+        rvHistory = findViewById(R.id.rvHistory);
+        btnClearHistory = findViewById(R.id.btnClearHistory);
 
 
         btnGenderMale.setOnClickListener(v -> selectGender(true));
@@ -202,7 +202,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         float savedHeight = prefs.getFloat(KEY_HEIGHT, 0f);
         float savedWeight = prefs.getFloat(KEY_WEIGHT, 0f);
-        int   savedAge    = prefs.getInt(KEY_AGE, 0);
+        int savedAge = prefs.getInt(KEY_AGE, 0);
 
         if (savedHeight > 0)
             etHeight.setText(String.valueOf((int) savedHeight));
@@ -220,12 +220,14 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         String weightJson = prefs.getString(KEY_WEIGHT_LOG, "[]");
-        Type   weightType = new TypeToken<List<WeightRecord>>(){}.getType();
+        Type weightType = new TypeToken<List<WeightRecord>>() {
+        }.getType();
         weightLog = gson.fromJson(weightJson, weightType);
         if (weightLog == null) weightLog = new ArrayList<>();
 
         String workoutsJson = prefs.getString(KEY_WORKOUTS, "[]");
-        Type   workoutsType = new TypeToken<List<WorkoutRecord>>(){}.getType();
+        Type workoutsType = new TypeToken<List<WorkoutRecord>>() {
+        }.getType();
         workoutHistory = gson.fromJson(workoutsJson, workoutsType);
         if (workoutHistory == null) workoutHistory = new ArrayList<>();
     }
@@ -235,7 +237,7 @@ public class ProfileActivity extends AppCompatActivity {
                 ? etHeight.getText().toString().trim() : "";
         String weightStr = etWeight.getText() != null
                 ? etWeight.getText().toString().trim() : "";
-        String ageStr    = etAge.getText() != null
+        String ageStr = etAge.getText() != null
                 ? etAge.getText().toString().trim() : "";
 
         if (heightStr.isEmpty() || weightStr.isEmpty()) {
@@ -245,7 +247,7 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         float height, weight;
-        int   age = 0;
+        int age = 0;
 
         try {
             height = Float.parseFloat(heightStr);
@@ -297,32 +299,32 @@ public class ProfileActivity extends AppCompatActivity {
 
     private void showBmiResult(float height, float weight, int age) {
         float heightM = height / 100f;
-        float bmi     = weight / (heightM * heightM);
+        float bmi = weight / (heightM * heightM);
 
         String category;
-        int    color;
+        int color;
 
         if (bmi < 16.0f) {
             category = "Выраженный\nдефицит";
-            color    = Color.parseColor("#FF4444");
+            color = Color.parseColor("#FF4444");
         } else if (bmi < 18.5f) {
             category = "Недостаточный\nвес";
-            color    = Color.parseColor("#FF8800");
+            color = Color.parseColor("#FF8800");
         } else if (bmi < 25.0f) {
             category = "Норма ✓";
-            color    = Color.parseColor("#00FF88");
+            color = Color.parseColor("#00FF88");
         } else if (bmi < 30.0f) {
             category = "Избыточный\nвес";
-            color    = Color.parseColor("#FFFF00");
+            color = Color.parseColor("#FFFF00");
         } else if (bmi < 35.0f) {
             category = "Ожирение I";
-            color    = Color.parseColor("#FF8800");
+            color = Color.parseColor("#FF8800");
         } else if (bmi < 40.0f) {
             category = "Ожирение II";
-            color    = Color.parseColor("#FF4444");
+            color = Color.parseColor("#FF4444");
         } else {
             category = "Ожирение III";
-            color    = Color.parseColor("#CC0000");
+            color = Color.parseColor("#CC0000");
         }
 
         String normText = buildNormText(bmi, age);
@@ -349,16 +351,16 @@ public class ProfileActivity extends AppCompatActivity {
         float normMax;
 
         if (isMale) {
-            if (age < 45)       normMax = 24.9f;
-            else if (age < 55)  normMax = 25.9f;
-            else if (age < 65)  normMax = 26.9f;
-            else                normMax = 27.9f;
+            if (age < 45) normMax = 24.9f;
+            else if (age < 55) normMax = 25.9f;
+            else if (age < 65) normMax = 26.9f;
+            else normMax = 27.9f;
         } else {
-            if (age < 25)       normMax = 24.9f;
-            else if (age < 45)  normMax = 25.9f;
-            else if (age < 55)  normMax = 26.9f;
-            else if (age < 65)  normMax = 27.9f;
-            else                normMax = 28.9f;
+            if (age < 25) normMax = 24.9f;
+            else if (age < 45) normMax = 25.9f;
+            else if (age < 55) normMax = 26.9f;
+            else if (age < 65) normMax = 27.9f;
+            else normMax = 28.9f;
         }
 
         String gender = isMale ? "мужчин" : "женщин";
@@ -373,15 +375,14 @@ public class ProfileActivity extends AppCompatActivity {
     private void addWeightRecord(float weight) {
         long now = System.currentTimeMillis();
 
-        // Если сегодня уже есть запись — обновляем
-        Calendar cal      = Calendar.getInstance();
-        int      todayDay = cal.get(Calendar.DAY_OF_YEAR);
-        int      todayYear= cal.get(Calendar.YEAR);
+        Calendar cal = Calendar.getInstance();
+        int todayDay = cal.get(Calendar.DAY_OF_YEAR);
+        int todayYear = cal.get(Calendar.YEAR);
 
         for (int i = 0; i < weightLog.size(); i++) {
             cal.setTimeInMillis(weightLog.get(i).timestamp);
             if (cal.get(Calendar.DAY_OF_YEAR) == todayDay
-                    && cal.get(Calendar.YEAR)  == todayYear) {
+                    && cal.get(Calendar.YEAR) == todayYear) {
                 weightLog.get(i).weight = weight;
                 saveWeightLog();
                 return;
@@ -443,7 +444,7 @@ public class ProfileActivity extends AppCompatActivity {
 
 
         final List<WeightRecord> finalSorted = sorted;
-        final SimpleDateFormat   sdf =
+        final SimpleDateFormat sdf =
                 new SimpleDateFormat("dd.MM", Locale.US);
 
 
@@ -523,7 +524,7 @@ public class ProfileActivity extends AppCompatActivity {
         Collections.sort(uniqueDays, Collections.reverseOrder());
 
         Calendar today = Calendar.getInstance();
-        int      streak = 0;
+        int streak = 0;
 
         for (String dayStr : uniqueDays) {
             String todayStr = dayFmt.format(today.getTime());
@@ -547,7 +548,7 @@ public class ProfileActivity extends AppCompatActivity {
         startOfWeek.set(Calendar.MILLISECOND, 0);
 
         long weekStart = startOfWeek.getTimeInMillis();
-        int  count     = 0;
+        int count = 0;
         for (WorkoutRecord r : workoutHistory) {
             if (r.timestamp >= weekStart) count++;
         }
@@ -608,7 +609,8 @@ public class ProfileActivity extends AppCompatActivity {
         Gson gson = new Gson();
 
         String json = prefs.getString(KEY_WORKOUTS, "[]");
-        Type   type = new TypeToken<List<WorkoutRecord>>(){}.getType();
+        Type type = new TypeToken<List<WorkoutRecord>>() {
+        }.getType();
         List<WorkoutRecord> history = gson.fromJson(json, type);
         if (history == null) history = new ArrayList<>();
 
@@ -628,7 +630,7 @@ public class ProfileActivity extends AppCompatActivity {
             extends RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder> {
 
         private final List<WorkoutRecord> items;
-        private final SimpleDateFormat    sdf =
+        private final SimpleDateFormat sdf =
                 new SimpleDateFormat("dd.MM.yyyy  HH:mm", Locale.US);
 
         WorkoutHistoryAdapter(List<WorkoutRecord> items) {
@@ -652,7 +654,9 @@ public class ProfileActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemCount() { return items.size(); }
+        public int getItemCount() {
+            return items.size();
+        }
 
         static class ViewHolder extends RecyclerView.ViewHolder {
             TextView tvIcon, tvName, tvDate, tvReps;

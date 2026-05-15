@@ -1,7 +1,9 @@
 package ru.sv.personaltrainer.exercises;
 
 import android.util.Log;
+
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
+
 import java.util.List;
 
 public class PullUpExercise extends BaseExercise {
@@ -11,25 +13,25 @@ public class PullUpExercise extends BaseExercise {
     private static final float CHIN_ABOVE_WRIST_MIN = 0.02f;
 
     private static final float ELBOW_EXTENDED_ANGLE = 155f;
-    private static final float ELBOW_DOWN_ANGLE     = 135f;
+    private static final float ELBOW_DOWN_ANGLE = 135f;
 
-    private static final float ELBOW_FULL_EXTEND_WARN  = 150f;
+    private static final float ELBOW_FULL_EXTEND_WARN = 150f;
     private static final float ELBOW_FULL_EXTEND_ERROR = 140f;
 
 
-    private static final float SWING_WARN  = 0.05f;
+    private static final float SWING_WARN = 0.05f;
     private static final float SWING_ERROR = 0.10f;
 
     private static final float ELBOW_WIDTH_RATIO_MAX = 1.8f;
 
-    private static final float LEG_SWING_WARN  = 0.06f;
+    private static final float LEG_SWING_WARN = 0.06f;
     private static final float LEG_SWING_ERROR = 0.12f;
 
-    private static final float ELBOW_ASYMMETRY_WARN  = 15f;
+    private static final float ELBOW_ASYMMETRY_WARN = 15f;
     private static final float ELBOW_ASYMMETRY_ERROR = 25f;
 
     private static final float SIDE_THRESHOLD = 0.12f;
-    private static final int   STABLE_FRAMES  = 8;
+    private static final int STABLE_FRAMES = 8;
 
     private static final float EMA_ALPHA = 0.15f;
 
@@ -48,20 +50,22 @@ public class PullUpExercise extends BaseExercise {
     private float emaShoulderWidth = -1f;
 
     private float barY = -1f;
-    private int   barFrameCount = 0;
+    private int barFrameCount = 0;
     private static final int BAR_CAPTURE_FRAMES = 15;
 
     private float prevShoulderX = -1f;
-    private float emaSwingX     = -1f;
+    private float emaSwingX = -1f;
 
-    private ViewMode currentView   = ViewMode.UNKNOWN;
+    private ViewMode currentView = ViewMode.UNKNOWN;
     private ViewMode candidateView = ViewMode.UNKNOWN;
-    private int candidateCount     = 0;
+    private int candidateCount = 0;
 
-    private enum ViewMode { SIDE, FRONT, UNKNOWN }
+    private enum ViewMode {SIDE, FRONT, UNKNOWN}
 
     @Override
-    public String getName() { return "🏅 Подтягивания"; }
+    public String getName() {
+        return "🏅 Подтягивания";
+    }
 
     @Override
     public AnalysisResult analyze(List<NormalizedLandmark> lm) {
@@ -109,7 +113,7 @@ public class PullUpExercise extends BaseExercise {
 
         checkLegSwing(result, lm);
 
-        result.repCount     = repCount;
+        result.repCount = repCount;
         result.mainFeedback = result.errors.isEmpty()
                 ? buildFeedback(result.phase)
                 : result.errors.get(0);
@@ -124,7 +128,7 @@ public class PullUpExercise extends BaseExercise {
         if (elbowAngle > ELBOW_EXTENDED_ANGLE) {
             if (isDown) {
             }
-            isDown  = true;
+            isDown = true;
             r.phase = "DOWN";
 
         } else if (elbowAngle < ELBOW_DOWN_ANGLE && isDown) {
@@ -179,7 +183,7 @@ public class PullUpExercise extends BaseExercise {
 
     private void checkElbowSymmetry(AnalysisResult result,
                                     List<NormalizedLandmark> lm) {
-        float lA = getAngle(lm, LEFT_SHOULDER,  LEFT_ELBOW,  LEFT_WRIST);
+        float lA = getAngle(lm, LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST);
         float rA = getAngle(lm, RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST);
 
         if (lA < 0 || rA < 0) return;
@@ -222,7 +226,7 @@ public class PullUpExercise extends BaseExercise {
         if (!allVisible(lm, LEFT_ELBOW, RIGHT_ELBOW,
                 LEFT_SHOULDER, RIGHT_SHOULDER)) return;
 
-        float elbowW   = distX(lm, LEFT_ELBOW,   RIGHT_ELBOW);
+        float elbowW = distX(lm, LEFT_ELBOW, RIGHT_ELBOW);
         float shoulderW = distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
 
         if (elbowW < 0 || shoulderW <= 0) return;
@@ -239,7 +243,7 @@ public class PullUpExercise extends BaseExercise {
 
     private void checkLegSwing(AnalysisResult result,
                                List<NormalizedLandmark> lm) {
-        float shX  = getAvgShoulderX();
+        float shX = getAvgShoulderX();
         float hipX = getAvgHipX();
 
         if (shX < 0 || hipX < 0) return;
@@ -283,7 +287,7 @@ public class PullUpExercise extends BaseExercise {
 
 
     private float getAvgElbowAngle(List<NormalizedLandmark> lm) {
-        float lA = getAngle(lm, LEFT_SHOULDER,  LEFT_ELBOW,  LEFT_WRIST);
+        float lA = getAngle(lm, LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST);
         float rA = getAngle(lm, RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST);
         if (lA < 0 && rA < 0) return -1f;
         if (lA < 0) return rA;
@@ -317,9 +321,12 @@ public class PullUpExercise extends BaseExercise {
 
     private String buildFeedback(String phase) {
         switch (phase) {
-            case "UP":   return "✅ Подтянулись! Повторений: " + repCount;
-            case "DOWN": return "✅ Полный вис — начните тянуться";
-            default:     return "✅ Повисните на перекладине";
+            case "UP":
+                return "✅ Подтянулись! Повторений: " + repCount;
+            case "DOWN":
+                return "✅ Полный вис — начните тянуться";
+            default:
+                return "✅ Повисните на перекладине";
         }
     }
 
@@ -361,7 +368,7 @@ public class PullUpExercise extends BaseExercise {
             emaRHipY = emaVal(emaRHipY, lm.get(RIGHT_HIP).y());
             emaRHipX = emaVal(emaRHipX, lm.get(RIGHT_HIP).x());
         }
-        if (isVisible(lm, LEFT_KNEE))  emaLKneeY = emaVal(emaLKneeY, lm.get(LEFT_KNEE).y());
+        if (isVisible(lm, LEFT_KNEE)) emaLKneeY = emaVal(emaLKneeY, lm.get(LEFT_KNEE).y());
         if (isVisible(lm, RIGHT_KNEE)) emaRKneeY = emaVal(emaRKneeY, lm.get(RIGHT_KNEE).y());
 
         if (allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
@@ -383,7 +390,7 @@ public class PullUpExercise extends BaseExercise {
         if (raw == candidateView) {
             candidateCount++;
         } else {
-            candidateView  = raw;
+            candidateView = raw;
             candidateCount = 1;
         }
         if (candidateCount >= STABLE_FRAMES
@@ -412,12 +419,12 @@ public class PullUpExercise extends BaseExercise {
         emaLHipY = emaLHipX = emaRHipY = emaRHipX = -1f;
         emaLKneeY = emaRKneeY = -1f;
         emaShoulderWidth = -1f;
-        barY          = -1f;
+        barY = -1f;
         barFrameCount = 0;
         prevShoulderX = -1f;
-        emaSwingX     = -1f;
-        currentView    = ViewMode.UNKNOWN;
-        candidateView  = ViewMode.UNKNOWN;
+        emaSwingX = -1f;
+        currentView = ViewMode.UNKNOWN;
+        candidateView = ViewMode.UNKNOWN;
         candidateCount = 0;
     }
 }

@@ -16,15 +16,13 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int CAMERA_PERMISSION_CODE = 100;
 
-    // ── Ключи SharedPreferences ──────────────────────────────────────
-    public static final String PREFS_NAME         = "PersonalTrainerPrefs";
+    public static final String PREFS_NAME = "PersonalTrainerPrefs";
     public static final String KEY_ONBOARDING_DONE = "onboarding_done";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Сначала проверяем разрешение камеры
         if (ContextCompat.checkSelfPermission(
                 this, Manifest.permission.CAMERA)
                 != PackageManager.PERMISSION_GRANTED) {
@@ -38,18 +36,13 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    /**
-     * Решает куда идти: онбординг (первый запуск) или список упражнений
-     */
     private void navigateNext() {
         SharedPreferences prefs =
                 getSharedPreferences(PREFS_NAME, MODE_PRIVATE);
 
         if (!prefs.getBoolean(KEY_ONBOARDING_DONE, false)) {
-            // Первый запуск → онбординг
             startActivity(new Intent(this, ru.sv.personaltrainer.onboarding.OnBoardingActivity.class));
         } else {
-            // Уже запускался → сразу к упражнениям
             startActivity(new Intent(this, ExerciseListActivity.class));
         }
         finish();

@@ -1,67 +1,70 @@
 package ru.sv.personaltrainer.exercises;
 
 import android.util.Log;
+
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
+
 import java.util.List;
 
 public class LungeExercise extends BaseExercise {
 
     private static final String TAG = "LungeExercise";
 
-    private static final float SIDE_FRONT_KNEE_TOO_DEEP   = 75f;
-    private static final float SIDE_FRONT_KNEE_IDEAL_MAX  = 100f;
-    private static final float SIDE_FRONT_KNEE_SHALLOW    = 115f;
+    private static final float SIDE_FRONT_KNEE_TOO_DEEP = 75f;
+    private static final float SIDE_FRONT_KNEE_IDEAL_MAX = 100f;
+    private static final float SIDE_FRONT_KNEE_SHALLOW = 115f;
 
-    private static final float SIDE_BACK_KNEE_IDEAL_MAX   = 105f;
-    private static final float SIDE_BACK_KNEE_SHALLOW     = 120f;
+    private static final float SIDE_BACK_KNEE_IDEAL_MAX = 105f;
+    private static final float SIDE_BACK_KNEE_SHALLOW = 120f;
 
-    private static final float FRONT_KNEE_TOO_DEEP        = 75f;
-    private static final float FRONT_KNEE_IDEAL_MAX       = 100f;
-    private static final float FRONT_KNEE_SHALLOW         = 115f;
+    private static final float FRONT_KNEE_TOO_DEEP = 75f;
+    private static final float FRONT_KNEE_IDEAL_MAX = 100f;
+    private static final float FRONT_KNEE_SHALLOW = 115f;
 
-    private static final float PHASE_DOWN_DEEP  = 110f;
+    private static final float PHASE_DOWN_DEEP = 110f;
     private static final float PHASE_DOWN_ENTER = 130f;
-    private static final float PHASE_UP_EXIT    = 158f;
+    private static final float PHASE_UP_EXIT = 158f;
 
-    private static final float TRUNK_LEAN_WARN  = 25f;
+    private static final float TRUNK_LEAN_WARN = 25f;
     private static final float TRUNK_LEAN_ERROR = 42f;
 
     private static final float KNEE_OVER_TOE_THRESHOLD = 0.05f;
-    private static final float HEEL_LIFT_WARN  = 0.08f;
+    private static final float HEEL_LIFT_WARN = 0.08f;
     private static final float HEEL_LIFT_ERROR = 0.16f;
 
     private static final float FRONT_KNEE_CAVE_ERROR = 0.72f;
-    private static final float FRONT_KNEE_CAVE_WARN  = 0.85f;
-    private static final float FRONT_ASYMMETRY_WARN  = 18f;
+    private static final float FRONT_KNEE_CAVE_WARN = 0.85f;
+    private static final float FRONT_ASYMMETRY_WARN = 18f;
     private static final float FRONT_ASYMMETRY_ERROR = 30f;
 
     private static final float SIDE_THRESHOLD = 0.12f;
-    private static final int   STABLE_FRAMES  = 8;
+    private static final int STABLE_FRAMES = 8;
 
     private static final float EMA_ALPHA = 0.15f;
-    private float emaLHipY    = -1f, emaLHipX    = -1f;
-    private float emaRHipY    = -1f, emaRHipX    = -1f;
-    private float emaLKneeY   = -1f, emaLKneeX   = -1f;
-    private float emaRKneeY   = -1f, emaRKneeX   = -1f;
-    private float emaLAnkleY  = -1f, emaLAnkleX  = -1f;
-    private float emaRAnkleY  = -1f, emaRAnkleX  = -1f;
-    private float emaLHeelY   = -1f;
-    private float emaRHeelY   = -1f;
-    private float emaLFootY   = -1f;
-    private float emaRFootY   = -1f;
+    private float emaLHipY = -1f, emaLHipX = -1f;
+    private float emaRHipY = -1f, emaRHipX = -1f;
+    private float emaLKneeY = -1f, emaLKneeX = -1f;
+    private float emaRKneeY = -1f, emaRKneeX = -1f;
+    private float emaLAnkleY = -1f, emaLAnkleX = -1f;
+    private float emaRAnkleY = -1f, emaRAnkleX = -1f;
+    private float emaLHeelY = -1f;
+    private float emaRHeelY = -1f;
+    private float emaLFootY = -1f;
+    private float emaRFootY = -1f;
     private float emaLShoulderY = -1f, emaLShoulderX = -1f;
     private float emaRShoulderY = -1f, emaRShoulderX = -1f;
     private float emaShoulderWidth = -1f;
 
-    private ViewMode currentView   = ViewMode.UNKNOWN;
+    private ViewMode currentView = ViewMode.UNKNOWN;
     private ViewMode candidateView = ViewMode.UNKNOWN;
-    private int      candidateCount = 0;
+    private int candidateCount = 0;
 
-    private enum ViewMode { SIDE, FRONT, UNKNOWN }
+    private enum ViewMode {SIDE, FRONT, UNKNOWN}
 
-    // ═════════════════════════════════════════════════
     @Override
-    public String getName() { return "🦵 Выпады"; }
+    public String getName() {
+        return "🦵 Выпады";
+    }
 
     @Override
     public AnalysisResult analyze(List<NormalizedLandmark> lm) {
@@ -93,7 +96,7 @@ public class LungeExercise extends BaseExercise {
             analyzeFront(lm, result);
         }
 
-        result.repCount     = repCount;
+        result.repCount = repCount;
         result.mainFeedback = result.errors.isEmpty()
                 ? buildFeedback(result.phase, view)
                 : result.errors.get(0);
@@ -107,14 +110,14 @@ public class LungeExercise extends BaseExercise {
 
         boolean leftIsForward = chooseForwardLegSide(lm);
 
-        int frontHip   = leftIsForward ? LEFT_HIP        : RIGHT_HIP;
-        int frontKnee  = leftIsForward ? LEFT_KNEE       : RIGHT_KNEE;
-        int frontAnkle = leftIsForward ? LEFT_ANKLE      : RIGHT_ANKLE;
-        int frontHeel  = leftIsForward ? LEFT_HEEL       : RIGHT_HEEL;
-        int frontToe   = leftIsForward ? LEFT_FOOT_INDEX : RIGHT_FOOT_INDEX;
-        int backHip    = leftIsForward ? RIGHT_HIP       : LEFT_HIP;
-        int backKnee   = leftIsForward ? RIGHT_KNEE      : LEFT_KNEE;
-        int backAnkle  = leftIsForward ? RIGHT_ANKLE     : LEFT_ANKLE;
+        int frontHip = leftIsForward ? LEFT_HIP : RIGHT_HIP;
+        int frontKnee = leftIsForward ? LEFT_KNEE : RIGHT_KNEE;
+        int frontAnkle = leftIsForward ? LEFT_ANKLE : RIGHT_ANKLE;
+        int frontHeel = leftIsForward ? LEFT_HEEL : RIGHT_HEEL;
+        int frontToe = leftIsForward ? LEFT_FOOT_INDEX : RIGHT_FOOT_INDEX;
+        int backHip = leftIsForward ? RIGHT_HIP : LEFT_HIP;
+        int backKnee = leftIsForward ? RIGHT_KNEE : LEFT_KNEE;
+        int backAnkle = leftIsForward ? RIGHT_ANKLE : LEFT_ANKLE;
 
         float frontKneeAngle = getAngle(lm, frontHip, frontKnee, frontAnkle);
 
@@ -151,7 +154,7 @@ public class LungeExercise extends BaseExercise {
 
 
     private boolean chooseForwardLegSide(List<NormalizedLandmark> lm) {
-        float lAngle = getAngle(lm, LEFT_HIP,  LEFT_KNEE,  LEFT_ANKLE);
+        float lAngle = getAngle(lm, LEFT_HIP, LEFT_KNEE, LEFT_ANKLE);
         float rAngle = getAngle(lm, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE);
 
         if (lAngle < 0 && rAngle < 0) return true;
@@ -201,13 +204,13 @@ public class LungeExercise extends BaseExercise {
                                     boolean leftForward) {
         float shX = leftForward ? emaLShoulderX : emaRShoulderX;
         float shY = leftForward ? emaLShoulderY : emaRShoulderY;
-        float hiX = leftForward ? emaLHipX      : emaRHipX;
-        float hiY = leftForward ? emaLHipY      : emaRHipY;
+        float hiX = leftForward ? emaLHipX : emaRHipX;
+        float hiY = leftForward ? emaLHipY : emaRHipY;
 
         if (shX < 0 || shY < 0 || hiX < 0 || hiY < 0) return;
 
-        double dx    = shX - hiX;
-        double dy    = shY - hiY;
+        double dx = shX - hiX;
+        double dy = shY - hiY;
         double angle = Math.toDegrees(
                 Math.atan2(Math.abs(dx), Math.abs(dy)));
 
@@ -216,7 +219,7 @@ public class LungeExercise extends BaseExercise {
                 dx, dy, angle));
 
         int shIdx = leftForward ? LEFT_SHOULDER : RIGHT_SHOULDER;
-        int hiIdx = leftForward ? LEFT_HIP      : RIGHT_HIP;
+        int hiIdx = leftForward ? LEFT_HIP : RIGHT_HIP;
 
         if (angle > TRUNK_LEAN_ERROR) {
             result.addError(
@@ -236,9 +239,9 @@ public class LungeExercise extends BaseExercise {
                                   int toeIdx) {
         if (!allVisible(lm, kneeIdx, ankleIdx, toeIdx)) return;
 
-        float kneeX  = lm.get(kneeIdx).x();
+        float kneeX = lm.get(kneeIdx).x();
         float ankleX = lm.get(ankleIdx).x();
-        float toeX   = lm.get(toeIdx).x();
+        float toeX = lm.get(toeIdx).x();
 
         float footLen = Math.abs(toeX - ankleX);
         if (footLen < 0.01f) return;
@@ -259,8 +262,8 @@ public class LungeExercise extends BaseExercise {
     private void checkHeelLiftSide(AnalysisResult result,
                                    boolean leftForward,
                                    int heelIdx) {
-        float heelY  = leftForward ? emaLHeelY  : emaRHeelY;
-        float footY  = leftForward ? emaLFootY  : emaRFootY;
+        float heelY = leftForward ? emaLHeelY : emaRHeelY;
+        float footY = leftForward ? emaLFootY : emaRFootY;
         float ankleY = leftForward ? emaLAnkleY : emaRAnkleY;
 
         if (heelY < 0 || footY < 0 || ankleY < 0) return;
@@ -288,7 +291,7 @@ public class LungeExercise extends BaseExercise {
     private void analyzeFront(List<NormalizedLandmark> lm,
                               AnalysisResult result) {
 
-        float lAngle = getAngle(lm, LEFT_HIP,  LEFT_KNEE,  LEFT_ANKLE);
+        float lAngle = getAngle(lm, LEFT_HIP, LEFT_KNEE, LEFT_ANKLE);
         float rAngle = getAngle(lm, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE);
 
         if (lAngle < 0 && rAngle < 0) {
@@ -298,9 +301,9 @@ public class LungeExercise extends BaseExercise {
         }
 
         float workingAngle;
-        if      (lAngle < 0) workingAngle = rAngle;
+        if (lAngle < 0) workingAngle = rAngle;
         else if (rAngle < 0) workingAngle = lAngle;
-        else                 workingAngle = Math.min(lAngle, rAngle);
+        else workingAngle = Math.min(lAngle, rAngle);
 
 
         updatePhase(result, workingAngle);
@@ -376,10 +379,10 @@ public class LungeExercise extends BaseExercise {
 
     private void checkFrontKneeCave(AnalysisResult result,
                                     List<NormalizedLandmark> lm) {
-        if (!allVisible(lm, LEFT_KNEE,  RIGHT_KNEE,
+        if (!allVisible(lm, LEFT_KNEE, RIGHT_KNEE,
                 LEFT_ANKLE, RIGHT_ANKLE)) return;
 
-        float kneeW  = distX(lm, LEFT_KNEE,  RIGHT_KNEE);
+        float kneeW = distX(lm, LEFT_KNEE, RIGHT_KNEE);
         float ankleW = distX(lm, LEFT_ANKLE, RIGHT_ANKLE);
 
         if (kneeW < 0 || ankleW <= 0) return;
@@ -405,13 +408,13 @@ public class LungeExercise extends BaseExercise {
     private void checkTrunkLeanFront(AnalysisResult result) {
         float shX = avgEma(emaLShoulderX, emaRShoulderX);
         float shY = avgEma(emaLShoulderY, emaRShoulderY);
-        float hiX = avgEma(emaLHipX,      emaRHipX);
-        float hiY = avgEma(emaLHipY,      emaRHipY);
+        float hiX = avgEma(emaLHipX, emaRHipX);
+        float hiY = avgEma(emaLHipY, emaRHipY);
 
         if (shX < 0 || shY < 0 || hiX < 0 || hiY < 0) return;
 
-        double dx    = shX - hiX;
-        double dy    = shY - hiY;
+        double dx = shX - hiX;
+        double dy = shY - hiY;
         double angle = Math.toDegrees(
                 Math.atan2(Math.abs(dx), Math.abs(dy)));
 
@@ -423,7 +426,7 @@ public class LungeExercise extends BaseExercise {
             result.addError(
                     "⚠ Сильный наклон вперёд — держите спину прямо",
                     LEFT_SHOULDER, RIGHT_SHOULDER,
-                    LEFT_HIP,      RIGHT_HIP);
+                    LEFT_HIP, RIGHT_HIP);
         } else if (angle > TRUNK_LEAN_WARN) {
             result.addError(
                     "⚠ Немного наклонены вперёд — выпрямите корпус",
@@ -438,7 +441,7 @@ public class LungeExercise extends BaseExercise {
         float diff = Math.abs(emaLHipY - emaRHipY);
 
         float scale = emaShoulderWidth > 0 ? emaShoulderWidth : 0.15f;
-        float tilt  = diff / scale;
+        float tilt = diff / scale;
 
         Log.d(TAG, String.format(
                 "HipTiltFront: LhipY=%.3f RhipY=%.3f tilt=%.3f",
@@ -536,7 +539,7 @@ public class LungeExercise extends BaseExercise {
         if (raw == candidateView) {
             candidateCount++;
         } else {
-            candidateView  = raw;
+            candidateView = raw;
             candidateCount = 1;
         }
         if (candidateCount >= STABLE_FRAMES
@@ -568,9 +571,12 @@ public class LungeExercise extends BaseExercise {
         String hint = view == ViewMode.FRONT
                 ? " (для анализа пятки встаньте боком)" : "";
         switch (phase) {
-            case "DOWN": return "✅ Хорошо! Держите позицию" + hint;
-            case "UP":   return "✅ Повторений: " + repCount + hint;
-            default:     return "✅ Начните выпад" + hint;
+            case "DOWN":
+                return "✅ Хорошо! Держите позицию" + hint;
+            case "UP":
+                return "✅ Повторений: " + repCount + hint;
+            default:
+                return "✅ Начните выпад" + hint;
         }
     }
 
@@ -578,14 +584,14 @@ public class LungeExercise extends BaseExercise {
     @Override
     public void reset() {
         super.reset();
-        emaLHipY    = emaLHipX    = emaRHipY    = emaRHipX    = -1f;
-        emaLKneeY   = emaLKneeX   = emaRKneeY   = emaRKneeX   = -1f;
-        emaLAnkleY  = emaLAnkleX  = emaRAnkleY  = emaRAnkleX  = -1f;
-        emaLHeelY   = emaRHeelY   = emaLFootY   = emaRFootY   = -1f;
+        emaLHipY = emaLHipX = emaRHipY = emaRHipX = -1f;
+        emaLKneeY = emaLKneeX = emaRKneeY = emaRKneeX = -1f;
+        emaLAnkleY = emaLAnkleX = emaRAnkleY = emaRAnkleX = -1f;
+        emaLHeelY = emaRHeelY = emaLFootY = emaRFootY = -1f;
         emaLShoulderY = emaLShoulderX = emaRShoulderY = emaRShoulderX = -1f;
         emaShoulderWidth = -1f;
-        currentView    = ViewMode.UNKNOWN;
-        candidateView  = ViewMode.UNKNOWN;
+        currentView = ViewMode.UNKNOWN;
+        candidateView = ViewMode.UNKNOWN;
         candidateCount = 0;
     }
 }

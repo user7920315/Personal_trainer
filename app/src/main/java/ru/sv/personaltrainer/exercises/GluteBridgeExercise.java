@@ -1,71 +1,75 @@
 package ru.sv.personaltrainer.exercises;
 
 import android.util.Log;
+
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
+
 import java.util.List;
 
 public class GluteBridgeExercise extends BaseExercise {
 
     private static final String TAG = "GluteBridgeExercise";
 
-    private static final float PHASE_UP_ENTER  = 0.07f;
+    private static final float PHASE_UP_ENTER = 0.07f;
     private static final float PHASE_DOWN_EXIT = 0.03f;
 
     private static final float HIP_RISE_GOOD = 0.15f;
-    private static final float HIP_POS_SAG_WARN   =  0.10f;
-    private static final float HIP_POS_SAG_ERROR  =  0.20f;
-    private static final float HIP_POS_HIGH_WARN  = -0.10f;
+    private static final float HIP_POS_SAG_WARN = 0.10f;
+    private static final float HIP_POS_SAG_ERROR = 0.20f;
+    private static final float HIP_POS_HIGH_WARN = -0.10f;
     private static final float HIP_POS_HIGH_ERROR = -0.20f;
 
 
     private static final float KNEE_TOO_CLOSE = 65f;
-    private static final float KNEE_TOO_FAR   = 120f;
+    private static final float KNEE_TOO_FAR = 120f;
 
-    private static final float HEEL_LIFT_WARN  = 0.04f;
+    private static final float HEEL_LIFT_WARN = 0.04f;
     private static final float HEEL_LIFT_ERROR = 0.5f;
 
-    private static final float ARM_LIFT_WARN  = 0.04f;
+    private static final float ARM_LIFT_WARN = 0.04f;
     private static final float ARM_LIFT_ERROR = 0.08f;
-    private static final float WRIST_LIFT_WARN  = 0.04f;
+    private static final float WRIST_LIFT_WARN = 0.04f;
     private static final float WRIST_LIFT_ERROR = 0.08f;
 
-    private static final float SHOULDER_LIFT_WARN  = 0.03f;
+    private static final float SHOULDER_LIFT_WARN = 0.03f;
     private static final float SHOULDER_LIFT_ERROR = 0.06f;
 
     private static final float SIDE_THRESHOLD = 0.12f;
-    private static final int   STABLE_FRAMES  = 8;
-    private static final float EMA_ALPHA      = 0.15f;
+    private static final int STABLE_FRAMES = 8;
+    private static final float EMA_ALPHA = 0.15f;
 
-    private float emaLShoulderY  = -1f, emaLShoulderX = -1f;
-    private float emaRShoulderY  = -1f, emaRShoulderX = -1f;
-    private float emaLHipY       = -1f;
-    private float emaRHipY       = -1f;
-    private float emaLKneeY      = -1f;
-    private float emaRKneeY      = -1f;
-    private float emaLAnkleY     = -1f;
-    private float emaRAnkleY     = -1f;
-    private float emaLHeelY      = -1f;
-    private float emaRHeelY      = -1f;
-    private float emaLElbowY     = -1f;
-    private float emaRElbowY     = -1f;
+    private float emaLShoulderY = -1f, emaLShoulderX = -1f;
+    private float emaRShoulderY = -1f, emaRShoulderX = -1f;
+    private float emaLHipY = -1f;
+    private float emaRHipY = -1f;
+    private float emaLKneeY = -1f;
+    private float emaRKneeY = -1f;
+    private float emaLAnkleY = -1f;
+    private float emaRAnkleY = -1f;
+    private float emaLHeelY = -1f;
+    private float emaRHeelY = -1f;
+    private float emaLElbowY = -1f;
+    private float emaRElbowY = -1f;
     private float emaShoulderWidth = -1f;
 
-    private float baseShoulderY  = -1f;
-    private float baseHipY       = -1f;
-    private float baseHeelY      = -1f;
-    private int   baseFrameCount =  0;
+    private float baseShoulderY = -1f;
+    private float baseHipY = -1f;
+    private float baseHeelY = -1f;
+    private int baseFrameCount = 0;
     private static final int BASE_FRAMES = 30;
 
     private boolean baselineCaptured = false;
 
-    private ViewMode currentView    = ViewMode.UNKNOWN;
-    private ViewMode candidateView  = ViewMode.UNKNOWN;
-    private int      candidateCount = 0;
+    private ViewMode currentView = ViewMode.UNKNOWN;
+    private ViewMode candidateView = ViewMode.UNKNOWN;
+    private int candidateCount = 0;
 
-    private enum ViewMode { SIDE, FRONT, UNKNOWN }
+    private enum ViewMode {SIDE, FRONT, UNKNOWN}
 
     @Override
-    public String getName() { return "Ягодичный мостик"; }
+    public String getName() {
+        return "Ягодичный мостик";
+    }
 
     @Override
     public AnalysisResult analyze(List<NormalizedLandmark> lm) {
@@ -126,7 +130,7 @@ public class GluteBridgeExercise extends BaseExercise {
             }
         }
 
-        result.repCount     = repCount;
+        result.repCount = repCount;
         result.mainFeedback = result.errors.isEmpty()
                 ? buildFeedback(result.phase, hipRise)
                 : result.errors.get(0);
@@ -156,13 +160,13 @@ public class GluteBridgeExercise extends BaseExercise {
     private void checkHipAlignment(AnalysisResult result,
                                    List<NormalizedLandmark> lm) {
         float shoulderY = getAvgShoulderY();
-        float kneeY     = getAvgKneeY();
-        float hipY      = getAvgHipY();
+        float kneeY = getAvgKneeY();
+        float hipY = getAvgHipY();
 
         if (shoulderY < 0 || kneeY < 0 || hipY < 0) return;
 
         float expectedHipY = (kneeY + shoulderY) / 2f;
-        float span         = Math.abs(kneeY - shoulderY);
+        float span = Math.abs(kneeY - shoulderY);
 
         if (span < 0.05f) return;
 
@@ -230,7 +234,6 @@ public class GluteBridgeExercise extends BaseExercise {
     }
 
 
-
     private void checkHeelsOnFloor(AnalysisResult result) {
         if (baseHeelY < 0) return;
 
@@ -262,13 +265,14 @@ public class GluteBridgeExercise extends BaseExercise {
             }
         }
     }
+
     private void checkWristsOnFloor(AnalysisResult result,
                                     List<NormalizedLandmark> lm) {
         if (isVisible(lm, LEFT_WRIST)
                 && isVisible(lm, LEFT_ELBOW)) {
             float wristY = lm.get(LEFT_WRIST).y();
             float elbowY = lm.get(LEFT_ELBOW).y();
-            float lift   = elbowY - wristY;
+            float lift = elbowY - wristY;
 
             Log.d(TAG, String.format(
                     "LWrist: wristY=%.3f elbowY=%.3f lift=%.3f",
@@ -290,7 +294,7 @@ public class GluteBridgeExercise extends BaseExercise {
                 && isVisible(lm, RIGHT_ELBOW)) {
             float wristY = lm.get(RIGHT_WRIST).y();
             float elbowY = lm.get(RIGHT_ELBOW).y();
-            float lift   = elbowY - wristY;
+            float lift = elbowY - wristY;
 
             Log.d(TAG, String.format(
                     "RWrist: wristY=%.3f elbowY=%.3f lift=%.3f",
@@ -309,16 +313,15 @@ public class GluteBridgeExercise extends BaseExercise {
     }
 
 
-
     private void checkArmsOnFloor(AnalysisResult result,
                                   List<NormalizedLandmark> lm) {
 
         if (isVisible(lm, LEFT_ELBOW)
                 && isVisible(lm, LEFT_SHOULDER)) {
 
-            float elbowY   = lm.get(LEFT_ELBOW).y();
+            float elbowY = lm.get(LEFT_ELBOW).y();
             float shoulderY = lm.get(LEFT_SHOULDER).y();
-            float lift      = shoulderY - elbowY;
+            float lift = shoulderY - elbowY;
 
             Log.d(TAG, String.format(
                     "LArmFloor: elbowY=%.3f shY=%.3f lift=%.3f",
@@ -339,9 +342,9 @@ public class GluteBridgeExercise extends BaseExercise {
         if (isVisible(lm, RIGHT_ELBOW)
                 && isVisible(lm, RIGHT_SHOULDER)) {
 
-            float elbowY    = lm.get(RIGHT_ELBOW).y();
+            float elbowY = lm.get(RIGHT_ELBOW).y();
             float shoulderY = lm.get(RIGHT_SHOULDER).y();
-            float lift      = shoulderY - elbowY;
+            float lift = shoulderY - elbowY;
 
             Log.d(TAG, String.format(
                     "RArmFloor: elbowY=%.3f shY=%.3f lift=%.3f",
@@ -366,9 +369,9 @@ public class GluteBridgeExercise extends BaseExercise {
             return;
         }
 
-        float hipY  = getAvgHipY();
+        float hipY = getAvgHipY();
         float heelY = getAvgHeelY();
-        float shY   = getAvgShoulderY();
+        float shY = getAvgShoulderY();
 
         if (hipY < 0 || heelY < 0 || shY < 0) return;
 
@@ -379,13 +382,13 @@ public class GluteBridgeExercise extends BaseExercise {
         }
 
         if (baseFrameCount == 0) {
-            baseHipY      = hipY;
-            baseHeelY     = heelY;
+            baseHipY = hipY;
+            baseHeelY = heelY;
             baseShoulderY = shY;
         } else {
-            baseHipY      = baseHipY      * 0.8f + hipY  * 0.2f;
-            baseHeelY     = baseHeelY     * 0.8f + heelY * 0.2f;
-            baseShoulderY = baseShoulderY * 0.8f + shY   * 0.2f;
+            baseHipY = baseHipY * 0.8f + hipY * 0.2f;
+            baseHeelY = baseHeelY * 0.8f + heelY * 0.2f;
+            baseShoulderY = baseShoulderY * 0.8f + shY * 0.2f;
         }
         baseFrameCount++;
 
@@ -438,7 +441,7 @@ public class GluteBridgeExercise extends BaseExercise {
     }
 
     private float getAvgKneeAngle(List<NormalizedLandmark> lm) {
-        float lA = getAngle(lm, LEFT_HIP,  LEFT_KNEE,  LEFT_ANKLE);
+        float lA = getAngle(lm, LEFT_HIP, LEFT_KNEE, LEFT_ANKLE);
         float rA = getAngle(lm, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE);
         if (lA < 0 && rA < 0) return -1f;
         if (lA < 0) return rA;
@@ -512,7 +515,7 @@ public class GluteBridgeExercise extends BaseExercise {
         if (raw == candidateView) {
             candidateCount++;
         } else {
-            candidateView  = raw;
+            candidateView = raw;
             candidateCount = 1;
         }
         if (candidateCount >= STABLE_FRAMES
@@ -531,25 +534,23 @@ public class GluteBridgeExercise extends BaseExercise {
     }
 
 
-
-
     @Override
     public void reset() {
         super.reset();
-        emaLShoulderY  = emaLShoulderX = emaRShoulderY = emaRShoulderX = -1f;
-        emaLHipY       = emaRHipY      = -1f;
-        emaLKneeY      = emaRKneeY     = -1f;
-        emaLAnkleY     = emaRAnkleY    = -1f;
-        emaLHeelY      = emaRHeelY     = -1f;
-        emaLElbowY     = emaRElbowY    = -1f;
+        emaLShoulderY = emaLShoulderX = emaRShoulderY = emaRShoulderX = -1f;
+        emaLHipY = emaRHipY = -1f;
+        emaLKneeY = emaRKneeY = -1f;
+        emaLAnkleY = emaRAnkleY = -1f;
+        emaLHeelY = emaRHeelY = -1f;
+        emaLElbowY = emaRElbowY = -1f;
         emaShoulderWidth = -1f;
-        baseShoulderY    = -1f;
-        baseHipY         = -1f;
-        baseHeelY        = -1f;
-        baseFrameCount   = 0;
+        baseShoulderY = -1f;
+        baseHipY = -1f;
+        baseHeelY = -1f;
+        baseFrameCount = 0;
         baselineCaptured = false;
-        currentView      = ViewMode.UNKNOWN;
-        candidateView    = ViewMode.UNKNOWN;
-        candidateCount   = 0;
+        currentView = ViewMode.UNKNOWN;
+        candidateView = ViewMode.UNKNOWN;
+        candidateCount = 0;
     }
 }

@@ -15,17 +15,17 @@ public class MainActivity extends ComponentActivity {
     private TextView tvPhase;
     private TextView tvError;
     private TextView tvConnection;
-    private TextView tvRepCount;   // ✅ НОВОЕ — счётчик повторений
+    private TextView tvRepCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        tvPhase      = findViewById(R.id.tvPhase);
-        tvError      = findViewById(R.id.tvError);
+        tvPhase = findViewById(R.id.tvPhase);
+        tvError = findViewById(R.id.tvError);
         tvConnection = findViewById(R.id.tvConnection);
-        tvRepCount   = findViewById(R.id.tvRepCount);  // ✅ НОВОЕ
+        tvRepCount = findViewById(R.id.tvRepCount);
 
         WearDataListenerService.setMainActivity(this);
 
@@ -39,7 +39,6 @@ public class MainActivity extends ComponentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        // ✅ Очищаем ссылку при уничтожении
         WearDataListenerService.setMainActivity(null);
         Log.d(TAG, "onDestroy");
     }
@@ -77,7 +76,6 @@ public class MainActivity extends ComponentActivity {
         });
     }
 
-    // ✅ НОВОЕ — обновление счётчика
     public void updateRepCount(String repText) {
         runOnUiThread(() -> {
             if (tvRepCount != null) {
@@ -88,10 +86,20 @@ public class MainActivity extends ComponentActivity {
 
     public void resetDisplay() {
         runOnUiThread(() -> {
-            if (tvPhase      != null) { tvPhase.setText("ГОТОВ");      tvPhase.setTextColor(Color.WHITE); }
-            if (tvError      != null) { tvError.setVisibility(View.GONE); }
-            if (tvConnection != null) { tvConnection.setText("●●●");   tvConnection.setTextColor(0xFF00FF88); }
-            if (tvRepCount   != null) { tvRepCount.setText("0");        } // ✅
+            if (tvPhase != null) {
+                tvPhase.setText("ГОТОВ");
+                tvPhase.setTextColor(Color.WHITE);
+            }
+            if (tvError != null) {
+                tvError.setVisibility(View.GONE);
+            }
+            if (tvConnection != null) {
+                tvConnection.setText("●●●");
+                tvConnection.setTextColor(0xFF00FF88);
+            }
+            if (tvRepCount != null) {
+                tvRepCount.setText("0");
+            }
         });
     }
 }

@@ -7,36 +7,36 @@ import java.util.List;
 
 public abstract class BaseExercise {
 
-    protected static final int NOSE             = 0;
-    protected static final int LEFT_SHOULDER    = 11;
-    protected static final int RIGHT_SHOULDER   = 12;
-    protected static final int LEFT_ELBOW       = 13;
-    protected static final int RIGHT_ELBOW      = 14;
-    protected static final int LEFT_WRIST       = 15;
-    protected static final int RIGHT_WRIST      = 16;
-    protected static final int LEFT_HIP         = 23;
-    protected static final int RIGHT_HIP        = 24;
-    protected static final int LEFT_KNEE        = 25;
-    protected static final int RIGHT_KNEE       = 26;
-    protected static final int LEFT_ANKLE       = 27;
-    protected static final int RIGHT_ANKLE      = 28;
-    protected static final int LEFT_HEEL        = 29;
-    protected static final int RIGHT_HEEL       = 30;
-    protected static final int LEFT_FOOT_INDEX  = 31;
+    protected static final int NOSE = 0;
+    protected static final int LEFT_SHOULDER = 11;
+    protected static final int RIGHT_SHOULDER = 12;
+    protected static final int LEFT_ELBOW = 13;
+    protected static final int RIGHT_ELBOW = 14;
+    protected static final int LEFT_WRIST = 15;
+    protected static final int RIGHT_WRIST = 16;
+    protected static final int LEFT_HIP = 23;
+    protected static final int RIGHT_HIP = 24;
+    protected static final int LEFT_KNEE = 25;
+    protected static final int RIGHT_KNEE = 26;
+    protected static final int LEFT_ANKLE = 27;
+    protected static final int RIGHT_ANKLE = 28;
+    protected static final int LEFT_HEEL = 29;
+    protected static final int RIGHT_HEEL = 30;
+    protected static final int LEFT_FOOT_INDEX = 31;
     protected static final int RIGHT_FOOT_INDEX = 32;
 
     protected static final float VISIBILITY_THRESHOLD = 0.6f;
 
-    protected int     repCount = 0;
-    protected boolean isDown   = false;
+    protected int repCount = 0;
+    protected boolean isDown = false;
 
     public static class AnalysisResult {
-        public List<String>  errors         = new ArrayList<>();
+        public List<String> errors = new ArrayList<>();
         public List<Integer> errorLandmarks = new ArrayList<>();
-        public String        mainFeedback   = "";
-        public String        phase          = "";
-        public int           repCount       = 0;
-        public int           holdSeconds    = -1;
+        public String mainFeedback = "";
+        public String phase = "";
+        public int repCount = 0;
+        public int holdSeconds = -1;
 
         public void addError(String message, int... landmarks) {
             errors.add(message);
@@ -44,16 +44,19 @@ public abstract class BaseExercise {
         }
     }
 
+
     public abstract AnalysisResult analyze(List<NormalizedLandmark> landmarks);
 
     public abstract String getName();
 
     public void reset() {
         repCount = 0;
-        isDown   = false;
+        isDown = false;
     }
 
-    public int getRepCount() { return repCount; }
+    public int getRepCount() {
+        return repCount;
+    }
 
 
     protected boolean isVisible(List<NormalizedLandmark> lm, int idx) {
@@ -105,7 +108,7 @@ public abstract class BaseExercise {
         double cx = c.x() - b.x();
         double cy = c.y() - b.y();
 
-        double dot  = ax * cx + ay * cy;
+        double dot = ax * cx + ay * cy;
         double magA = Math.sqrt(ax * ax + ay * ay);
         double magC = Math.sqrt(cx * cx + cy * cy);
 

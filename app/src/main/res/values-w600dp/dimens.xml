@@ -2,9 +2,6 @@
 <resources>
     <dimen name="fab_margin">48dp</dimen>
 
-    <!-- Широкий экран — увеличиваем отступы и размеры
-         Срабатывает когда ТЕКУЩАЯ ширина >= 600dp
-         (т.е. планшет в любой ориентации, телефон горизонтально) -->
 
     <dimen name="spacing_md">18dp</dimen>
     <dimen name="spacing_lg">24dp</dimen>
@@ -26,7 +23,6 @@
     <dimen name="icon_sm">44dp</dimen>
     <dimen name="icon_xl">130dp</dimen>
 
-    <!-- ExerciseActivity -->
     <dimen name="exercise_top_margin">16dp</dimen>
     <dimen name="exercise_side_margin">16dp</dimen>
     <dimen name="rep_count_text">20sp</dimen>
@@ -40,7 +36,6 @@
     <dimen name="btn_exercise_height">44dp</dimen>
     <dimen name="btn_exercise_text">14sp</dimen>
 
-    <!-- ProfileActivity -->
     <dimen name="profile_avatar">92dp</dimen>
     <dimen name="profile_title_text">22sp</dimen>
     <dimen name="bmi_value_text">32sp</dimen>
@@ -50,11 +45,9 @@
     <dimen name="stat_min_height">74dp</dimen>
     <dimen name="chart_height">210dp</dimen>
 
-    <!-- ExerciseList -->
     <dimen name="list_header_text">22sp</dimen>
     <dimen name="search_height">52dp</dimen>
 
-    <!-- OnBoarding -->
     <dimen name="onboarding_image">180dp</dimen>
     <dimen name="onboarding_title">26sp</dimen>
     <dimen name="onboarding_desc">15sp</dimen>

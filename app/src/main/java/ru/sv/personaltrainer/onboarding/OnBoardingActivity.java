@@ -25,16 +25,15 @@ import ru.sv.personaltrainer.R;
 public class OnBoardingActivity extends AppCompatActivity {
 
     private ViewPager2 viewPager;
-    private Button     btnNext;
-    private TextView   btnSkip;
+    private Button btnNext;
+    private TextView btnSkip;
 
-    // Данные слайдов: иконка, заголовок, описание, цвет фона
-    private static final int[]     ICONS = {
-            R.drawable.ic_fitness,   // слайд 1 — используем вашу иконку
-            R.drawable.ic_fitness,   // слайд 2
-            R.drawable.ic_fitness,   // слайд 3
-            R.drawable.ic_fitness,   // слайд 4
-            R.drawable.ic_fitness    // слайд 5
+    private static final int[] ICONS = {
+            R.drawable.ic_fitness,
+            R.drawable.ic_fitness,
+            R.drawable.ic_fitness,
+            R.drawable.ic_fitness,
+            R.drawable.ic_fitness
     };
 
     private static final String[] TITLES = {
@@ -87,12 +86,11 @@ public class OnBoardingActivity extends AppCompatActivity {
         setContentView(R.layout.activity_onboarding);
 
         viewPager = findViewById(R.id.onboarding_viewpager);
-        btnNext   = findViewById(R.id.btn_next);
-        btnSkip   = findViewById(R.id.btn_skip);
+        btnNext = findViewById(R.id.btn_next);
+        btnSkip = findViewById(R.id.btn_skip);
 
         viewPager.setAdapter(new OnBoardingPagerAdapter());
 
-        // Точки-индикатор (без сторонней библиотеки — обновляем вручную)
         updateDots(0);
 
         viewPager.registerOnPageChangeCallback(
@@ -116,7 +114,6 @@ public class OnBoardingActivity extends AppCompatActivity {
         });
     }
 
-    // ── Обновление текста кнопки ─────────────────────────────────────
     private void updateButtonText(int position) {
         if (position == TITLES.length - 1) {
             btnNext.setText("Начать!");
@@ -127,18 +124,16 @@ public class OnBoardingActivity extends AppCompatActivity {
         }
     }
 
-    // ── Ручные точки через TextView ──────────────────────────────────
     private void updateDots(int selectedPosition) {
         TextView tvDots = findViewById(R.id.tv_dots);
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < TITLES.length; i++) {
             if (i == selectedPosition) sb.append("● ");
-            else                       sb.append("○ ");
+            else sb.append("○ ");
         }
         tvDots.setText(sb.toString().trim());
     }
 
-    // ── Сохраняем флаг и идём к упражнениям ─────────────────────────
     private void finishOnBoarding() {
         getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE)
                 .edit()
@@ -149,9 +144,6 @@ public class OnBoardingActivity extends AppCompatActivity {
         finish();
     }
 
-    // ════════════════════════════════════════════════════════════════
-    //  Внутренний адаптер
-    // ════════════════════════════════════════════════════════════════
     private class OnBoardingPagerAdapter
             extends RecyclerView.Adapter<OnBoardingPagerAdapter.VH> {
 
@@ -174,18 +166,20 @@ public class OnBoardingActivity extends AppCompatActivity {
         }
 
         @Override
-        public int getItemCount() { return TITLES.length; }
+        public int getItemCount() {
+            return TITLES.length;
+        }
 
         class VH extends RecyclerView.ViewHolder {
-            View      root;
+            View root;
             ImageView image;
-            TextView  title, description;
+            TextView title, description;
 
             VH(@NonNull View v) {
                 super(v);
-                root        = v;
-                image       = v.findViewById(R.id.onboarding_image);
-                title       = v.findViewById(R.id.onboarding_title);
+                root = v;
+                image = v.findViewById(R.id.onboarding_image);
+                title = v.findViewById(R.id.onboarding_title);
                 description = v.findViewById(R.id.onboarding_description);
             }
         }

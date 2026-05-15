@@ -16,21 +16,21 @@ import java.util.List;
 
 public class PoseOverlayView extends View {
 
-    private final Paint pointPaint     = new Paint();
-    private final Paint linePaint      = new Paint();
-    private final Paint errorPaint     = new Paint();
-    private final Paint errorStroke    = new Paint();
+    private final Paint pointPaint = new Paint();
+    private final Paint linePaint = new Paint();
+    private final Paint errorPaint = new Paint();
+    private final Paint errorStroke = new Paint();
     private final Paint errorLinePaint = new Paint();
-    private final Paint glowPaint      = new Paint();
+    private final Paint glowPaint = new Paint();
 
     private PoseLandmarkerResult poseResult;
-    private List<Integer>        errorLandmarks;
+    private List<Integer> errorLandmarks;
 
-    private float   pulseRadius  = 0f;
+    private float pulseRadius = 0f;
     private boolean pulseGrowing = true;
 
-    private static final float PULSE_MIN  = 14f;
-    private static final float PULSE_MAX  = 22f;
+    private static final float PULSE_MIN = 14f;
+    private static final float PULSE_MAX = 22f;
     private static final float PULSE_STEP = 0.5f;
 
     private static final int[][] POSE_CONNECTIONS = {
@@ -114,7 +114,7 @@ public class PoseOverlayView extends View {
                               int imageWidth,
                               int imageHeight,
                               List<Integer> errorLandmarks) {
-        this.poseResult     = result;
+        this.poseResult = result;
         this.errorLandmarks = errorLandmarks;
         invalidate();
     }
@@ -133,7 +133,7 @@ public class PoseOverlayView extends View {
         this.errorLandmarks = errors;
 
         drawConnections(canvas, landmarks, frameWidth, frameHeight);
-        drawLandmarks(canvas,  landmarks, frameWidth, frameHeight);
+        drawLandmarks(canvas, landmarks, frameWidth, frameHeight);
 
         this.errorLandmarks = savedErrors;
     }
@@ -154,7 +154,7 @@ public class PoseOverlayView extends View {
 
         updatePulse();
         drawConnections(canvas, landmarks, viewW, viewH);
-        drawLandmarks(canvas,  landmarks, viewW, viewH);
+        drawLandmarks(canvas, landmarks, viewW, viewH);
 
         if (errorLandmarks != null && !errorLandmarks.isEmpty()) {
             postInvalidateDelayed(16);
@@ -167,23 +167,23 @@ public class PoseOverlayView extends View {
                                  float viewW, float viewH) {
         for (int[] connection : POSE_CONNECTIONS) {
             int startIdx = connection[0];
-            int endIdx   = connection[1];
+            int endIdx = connection[1];
 
             if (startIdx >= landmarks.size()
                     || endIdx >= landmarks.size()) continue;
 
             NormalizedLandmark start = landmarks.get(startIdx);
-            NormalizedLandmark end   = landmarks.get(endIdx);
+            NormalizedLandmark end = landmarks.get(endIdx);
 
             if (!isVisible(start) || !isVisible(end)) continue;
 
             float startX = start.x() * viewW;
             float startY = start.y() * viewH;
-            float endX   = end.x()   * viewW;
-            float endY   = end.y()   * viewH;
+            float endX = end.x() * viewW;
+            float endY = end.y() * viewH;
 
             boolean startIsError = isErrorLandmark(startIdx);
-            boolean endIsError   = isErrorLandmark(endIdx);
+            boolean endIsError = isErrorLandmark(endIdx);
 
             if (startIsError || endIsError) {
                 canvas.drawLine(startX, startY,
@@ -303,12 +303,12 @@ public class PoseOverlayView extends View {
     }
 
     private int getConnectionColor(int startIdx, int endIdx) {
-        boolean startLeft  = isLeftLandmark(startIdx);
+        boolean startLeft = isLeftLandmark(startIdx);
         boolean startRight = isRightLandmark(startIdx);
-        boolean endLeft    = isLeftLandmark(endIdx);
-        boolean endRight   = isRightLandmark(endIdx);
+        boolean endLeft = isLeftLandmark(endIdx);
+        boolean endRight = isRightLandmark(endIdx);
 
-        if (startLeft  || endLeft)  return 0xFF00BFFF;
+        if (startLeft || endLeft) return 0xFF00BFFF;
         if (startRight || endRight) return 0xFFFFD700;
         return 0xFF00FF00;
     }

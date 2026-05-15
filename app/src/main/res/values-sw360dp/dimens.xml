@@ -1,9 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 
-    <!-- Переопределяем только то что нужно увеличить
-         для обычных телефонов (360dp-479dp) -->
-
     <dimen name="spacing_md">14dp</dimen>
     <dimen name="spacing_lg">18dp</dimen>
     <dimen name="spacing_xl">28dp</dimen>

@@ -53,8 +53,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -63,26 +65,26 @@ import androidx.core.graphics.Insets;
 
 public class ExerciseActivity extends AppCompatActivity {
 
-    private static final String TAG        = "ExerciseActivity";
+    private static final String TAG = "ExerciseActivity";
     private static final String MODEL_FILE = "pose_landmarker_full.task";
-    private static final int    AUDIO_PERMISSION_CODE = 200;
+    private static final int AUDIO_PERMISSION_CODE = 200;
 
 
-    private PreviewView     previewView;
+    private PreviewView previewView;
     private PoseOverlayView poseOverlay;
-    private TextView        tvRepCount;
-    private TextView        tvExerciseName;
-    private TextView        tvFeedback;
-    private TextView        tvErrors;
-    private TextView        tvPhase;
-    private TextView        tvQuality;
-    private LinearLayout    layoutErrors;
-    private Button          btnBack;
-    private Button          btnReset;
-    private Button          btnRecord;
-    private LinearLayout    layoutRecordingIndicator;
-    private View            viewRecordingDot;
-    private TextView        tvRecordingTimer;
+    private TextView tvRepCount;
+    private TextView tvExerciseName;
+    private TextView tvFeedback;
+    private TextView tvErrors;
+    private TextView tvPhase;
+    private TextView tvQuality;
+    private LinearLayout layoutErrors;
+    private Button btnBack;
+    private Button btnReset;
+    private Button btnRecord;
+    private LinearLayout layoutRecordingIndicator;
+    private View viewRecordingDot;
+    private TextView tvRecordingTimer;
 
 
     private PoseLandmarker poseLandmarker;
@@ -91,22 +93,22 @@ public class ExerciseActivity extends AppCompatActivity {
     private String lastSentError = null;
 
     private BaseExercise currentExercise;
-    private String       exerciseId;
+    private String exerciseId;
 
-    private volatile PoseLandmarkerResult lastPoseResult    = null;
-    private volatile List<Integer>        lastErrorLandmarks = null;
-    private volatile String               lastRepText        = "Повторений: 0";
-    private volatile String               lastPhaseText      = "● ГОТОВ";
-    private volatile String               lastFeedbackText   = "";
-    private volatile int                  lastPhaseColor     = 0xFFFFFFFF;
-    private volatile String lastQualityText  = "●●●●●";
-    private volatile int    lastQualityColor = 0xFF00FF88;
+    private volatile PoseLandmarkerResult lastPoseResult = null;
+    private volatile List<Integer> lastErrorLandmarks = null;
+    private volatile String lastRepText = "Повторений: 0";
+    private volatile String lastPhaseText = "● ГОТОВ";
+    private volatile String lastFeedbackText = "";
+    private volatile int lastPhaseColor = 0xFFFFFFFF;
+    private volatile String lastQualityText = "●●●●●";
+    private volatile int lastQualityColor = 0xFF00FF88;
 
     private VideoRecorder videoRecorder;
-    private boolean       isRecording = false;
+    private boolean isRecording = false;
 
     private ScreenRecordService recordService;
-    private boolean             serviceBound = false;
+    private boolean serviceBound = false;
 
     private final ErrorDebouncer errorDebouncer = new ErrorDebouncer();
 
@@ -116,7 +118,7 @@ public class ExerciseActivity extends AppCompatActivity {
     private long lastErrorStartTime = 0;
     private long lastSpeechTime = 0;
     private static final long TTS_THRESHOLD_MS = 500L;
-    private static final long MIN_SPEECH_INTERVAL_MS = 2500L; // Мин. интервал между фразами
+    private static final long MIN_SPEECH_INTERVAL_MS = 2500L;
 
 
     private final ServiceConnection serviceConnection =
@@ -127,21 +129,21 @@ public class ExerciseActivity extends AppCompatActivity {
                     ScreenRecordService.LocalBinder lb =
                             (ScreenRecordService.LocalBinder) binder;
                     recordService = lb.getService();
-                    serviceBound  = true;
+                    serviceBound = true;
                     Log.d(TAG, "Сервис подключён");
                 }
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
-                    serviceBound  = false;
+                    serviceBound = false;
                     recordService = null;
                 }
             };
 
 
-    private final Handler  timerHandler  =
+    private final Handler timerHandler =
             new Handler(Looper.getMainLooper());
-    private       int      recordSeconds = 0;
+    private int recordSeconds = 0;
     private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
@@ -158,7 +160,7 @@ public class ExerciseActivity extends AppCompatActivity {
 
 
     private ExecutorService cameraExecutor;
-    private final Handler   mainHandler =
+    private final Handler mainHandler =
             new Handler(Looper.getMainLooper());
 
     private void initTextToSpeech() {
@@ -175,9 +177,17 @@ public class ExerciseActivity extends AppCompatActivity {
 
                     textToSpeech.setOnUtteranceProgressListener(
                             new UtteranceProgressListener() {
-                                @Override public void onStart(String id) {}
-                                @Override public void onDone(String id) {}
-                                @Override public void onError(String id) {}
+                                @Override
+                                public void onStart(String id) {
+                                }
+
+                                @Override
+                                public void onDone(String id) {
+                                }
+
+                                @Override
+                                public void onError(String id) {
+                                }
                             });
                 }
             } else {
@@ -206,7 +216,7 @@ public class ExerciseActivity extends AppCompatActivity {
         }
 
         initViews();
-        applyInsets(); // ← ДОБАВИТЬ ПОСЛЕ initViews()
+        applyInsets();
         initTextToSpeech();
         initMediaPipe();
         initBlinkAnimation();
@@ -239,8 +249,6 @@ public class ExerciseActivity extends AppCompatActivity {
                             getResources().getDimensionPixelSize(
                                     R.dimen.feedback_card_margin);
 
-                    // Только tvRepCount и tvExerciseName — первая строка
-                    // tvPhase автоматически опустится под них через constraint
                     ViewGroup.MarginLayoutParams repParams =
                             (ViewGroup.MarginLayoutParams)
                                     tvRepCount.getLayoutParams();
@@ -253,7 +261,6 @@ public class ExerciseActivity extends AppCompatActivity {
                     nameParams.topMargin = topOffset;
                     tvExerciseName.setLayoutParams(nameParams);
 
-                    // Карточка снизу
                     View card = findViewById(R.id.cardFeedback);
                     ViewGroup.MarginLayoutParams cardParams =
                             (ViewGroup.MarginLayoutParams) card.getLayoutParams();
@@ -268,7 +275,9 @@ public class ExerciseActivity extends AppCompatActivity {
     private void initVideoRecorder() {
         videoRecorder = new VideoRecorder(this);
         videoRecorder.setCallback(new VideoRecorder.RecordingCallback() {
-            @Override public void onRecordingStarted() {}
+            @Override
+            public void onRecordingStarted() {
+            }
 
             @Override
             public void onRecordingSaved(String filePath) {
@@ -296,21 +305,21 @@ public class ExerciseActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        previewView              = findViewById(R.id.previewView);
-        poseOverlay              = findViewById(R.id.poseOverlay);
-        tvRepCount               = findViewById(R.id.tvRepCount);
-        tvExerciseName           = findViewById(R.id.tvExerciseName);
-        tvFeedback               = findViewById(R.id.tvFeedback);
-        tvErrors                 = findViewById(R.id.tvErrors);
-        tvPhase                  = findViewById(R.id.tvPhase);
-        tvQuality                = findViewById(R.id.tvQuality);
-        layoutErrors             = findViewById(R.id.layoutErrors);
-        btnBack                  = findViewById(R.id.btnBack);
-        btnReset                 = findViewById(R.id.btnReset);
-        btnRecord                = findViewById(R.id.btnRecord);
+        previewView = findViewById(R.id.previewView);
+        poseOverlay = findViewById(R.id.poseOverlay);
+        tvRepCount = findViewById(R.id.tvRepCount);
+        tvExerciseName = findViewById(R.id.tvExerciseName);
+        tvFeedback = findViewById(R.id.tvFeedback);
+        tvErrors = findViewById(R.id.tvErrors);
+        tvPhase = findViewById(R.id.tvPhase);
+        tvQuality = findViewById(R.id.tvQuality);
+        layoutErrors = findViewById(R.id.layoutErrors);
+        btnBack = findViewById(R.id.btnBack);
+        btnReset = findViewById(R.id.btnReset);
+        btnRecord = findViewById(R.id.btnRecord);
         layoutRecordingIndicator = findViewById(R.id.layoutRecordingIndicator);
-        viewRecordingDot         = findViewById(R.id.viewRecordingDot);
-        tvRecordingTimer         = findViewById(R.id.tvRecordingTimer);
+        viewRecordingDot = findViewById(R.id.viewRecordingDot);
+        tvRecordingTimer = findViewById(R.id.tvRecordingTimer);
 
         tvExerciseName.setText(currentExercise.getName());
 
@@ -345,9 +354,9 @@ public class ExerciseActivity extends AppCompatActivity {
         tvQuality.setText("●●●●●");
         tvQuality.setTextColor(0xFF00FF88);
         layoutErrors.setVisibility(View.GONE);
-        lastPhaseText    = "● ГОТОВ";
+        lastPhaseText = "● ГОТОВ";
         lastFeedbackText = "";
-        lastPhaseColor   = 0xFFFFFFFF;
+        lastPhaseColor = 0xFFFFFFFF;
     }
 
     private void initBlinkAnimation() {
@@ -388,7 +397,7 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void startRecording() {
         videoRecorder.startRecording();
-        isRecording   = true;
+        isRecording = true;
         recordSeconds = 0;
         updateRecordingUI(true);
         timerHandler.postDelayed(timerRunnable, 1000);
@@ -498,11 +507,11 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void analyzeFrame(ImageProxy imageProxy) {
         try {
-            int    rotation = imageProxy.getImageInfo()
+            int rotation = imageProxy.getImageInfo()
                     .getRotationDegrees();
-            long   tsNs     = imageProxy.getImageInfo()
+            long tsNs = imageProxy.getImageInfo()
                     .getTimestamp();
-            Bitmap bitmap   = imageProxy.toBitmap();
+            Bitmap bitmap = imageProxy.toBitmap();
 
 
             Matrix matrix = new Matrix();
@@ -550,7 +559,7 @@ public class ExerciseActivity extends AppCompatActivity {
         BaseExercise.AnalysisResult filtered =
                 new BaseExercise.AnalysisResult();
 
-        filtered.phase    = raw.phase;
+        filtered.phase = raw.phase;
         filtered.repCount = raw.repCount;
 
         if (filteredErrors.isEmpty()) {
@@ -572,10 +581,14 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private String buildPositiveFeedback(String phase) {
         switch (phase) {
-            case "DOWN": return "✅ Хорошо! Держите позицию";
-            case "UP":   return "✅ Отлично!";
-            case "HOLD": return "✅ Держите!";
-            default:     return "✅ Начните упражнение";
+            case "DOWN":
+                return "✅ Хорошо! Держите позицию";
+            case "UP":
+                return "✅ Отлично!";
+            case "HOLD":
+                return "✅ Держите!";
+            default:
+                return "✅ Начните упражнение";
         }
     }
 
@@ -591,7 +604,7 @@ public class ExerciseActivity extends AppCompatActivity {
                 layoutErrors.setVisibility(View.GONE);
                 poseOverlay.updateResults(null, 0, 0, null);
             });
-            lastPoseResult     = null;
+            lastPoseResult = null;
             lastErrorLandmarks = null;
             return;
         }
@@ -609,16 +622,10 @@ public class ExerciseActivity extends AppCompatActivity {
             String currentError = filteredAnalysis.errors.get(0);
             long now = System.currentTimeMillis();
 
-            // Если это новая ошибка — сбрасываем таймер
             if (!currentError.equals(lastSpokenError)) {
                 lastErrorStartTime = now;
                 lastSpokenError = currentError;
-            }
-            // Озвучиваем если:
-            // 1. Ошибка длится > 500мс
-            // 2. TTS сейчас НЕ говорит (ждем завершения текущей фразы)
-            // 3. Прошло достаточно времени с последней озвучки
-            else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS
+            } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS
                     && !textToSpeech.isSpeaking()
                     && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
 
@@ -630,7 +637,6 @@ public class ExerciseActivity extends AppCompatActivity {
                 textToSpeech.speak(cleanMessage, TextToSpeech.QUEUE_FLUSH, params, "error_feedback");
 
                 lastSpeechTime = now;
-                // Сбросим таймер чтобы не озвучивать ту же ошибку сразу после завершения
                 lastErrorStartTime = now + MIN_SPEECH_INTERVAL_MS;
             }
         } else if (filteredAnalysis.errors.isEmpty()) {
@@ -638,16 +644,16 @@ public class ExerciseActivity extends AppCompatActivity {
             lastErrorStartTime = 0;
         }
 
-        lastPoseResult     = result;
+        lastPoseResult = result;
         lastErrorLandmarks = filteredAnalysis.errorLandmarks;
         if (filteredAnalysis.holdSeconds >= 0) {
             lastRepText = formatHoldTime(filteredAnalysis.holdSeconds);
         } else {
             lastRepText = "Повторений: " + filteredAnalysis.repCount;
         }
-        lastPhaseText      = phaseToText(filteredAnalysis.phase);
-        lastPhaseColor     = phaseToColor(filteredAnalysis.phase);
-        lastFeedbackText   = filteredAnalysis.mainFeedback;
+        lastPhaseText = phaseToText(filteredAnalysis.phase);
+        lastPhaseColor = phaseToColor(filteredAnalysis.phase);
+        lastFeedbackText = filteredAnalysis.mainFeedback;
 
         mainHandler.post(() -> updateUI(result, filteredAnalysis));
         sendDataToWear(filteredAnalysis);
@@ -671,31 +677,51 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private String phaseToText(String phase) {
         switch (phase) {
-            case "DOWN":  return "▼ ВНИЗ";
-            case "UP":    return "▲ ВВЕРХ";
-            case "HOLD":  return "⏸ ДЕРЖИ";
-            default:      return "● ГОТОВ";
+            case "DOWN":
+                return "▼ ВНИЗ";
+            case "UP":
+                return "▲ ВВЕРХ";
+            case "HOLD":
+                return "⏸ ДЕРЖИ";
+            default:
+                return "● ГОТОВ";
         }
     }
 
     private int phaseToColor(String phase) {
         switch (phase) {
-            case "DOWN":  return 0xFF00FF88;
-            case "UP":    return 0xFF00AAFF;
-            case "HOLD":  return 0xFFFFAA00;
-            default:      return 0xFFFFFFFF;
+            case "DOWN":
+                return 0xFF00FF88;
+            case "UP":
+                return 0xFF00AAFF;
+            case "HOLD":
+                return 0xFFFFAA00;
+            default:
+                return 0xFFFFFFFF;
         }
     }
 
     private void updateQualityIndicator(int errorCount) {
-        String q; int c;
-        if      (errorCount == 0) { q="●●●●●"; c=0xFF00FF88; }
-        else if (errorCount == 1) { q="●●●●○"; c=0xFF88FF00; }
-        else if (errorCount == 2) { q="●●●○○"; c=0xFFFFFF00; }
-        else if (errorCount == 3) { q="●●○○○"; c=0xFFFF8800; }
-        else                      { q="●○○○○"; c=0xFFFF0000; }
+        String q;
+        int c;
+        if (errorCount == 0) {
+            q = "●●●●●";
+            c = 0xFF00FF88;
+        } else if (errorCount == 1) {
+            q = "●●●●○";
+            c = 0xFF88FF00;
+        } else if (errorCount == 2) {
+            q = "●●●○○";
+            c = 0xFFFFFF00;
+        } else if (errorCount == 3) {
+            q = "●●○○○";
+            c = 0xFFFF8800;
+        } else {
+            q = "●○○○○";
+            c = 0xFFFF0000;
+        }
 
-        lastQualityText  = q;
+        lastQualityText = q;
         lastQualityColor = c;
 
         tvQuality.setText(q);
@@ -733,12 +759,24 @@ public class ExerciseActivity extends AppCompatActivity {
             } else if (currentExercise.getRepCount() > 0) {
                 String icon;
                 switch (exerciseId) {
-                    case "SQUAT":        icon = "🏋"; break;
-                    case "LUNGE":        icon = "🦵"; break;
-                    case "GLUTE_BRIDGE": icon = "🍑"; break;
-                    case "BURPEE":       icon = "🔥"; break;
-                    case "PULL_UP":      icon = "🏅"; break;
-                    default:             icon = "💪"; break;
+                    case "SQUAT":
+                        icon = "🏋";
+                        break;
+                    case "LUNGE":
+                        icon = "🦵";
+                        break;
+                    case "GLUTE_BRIDGE":
+                        icon = "🍑";
+                        break;
+                    case "BURPEE":
+                        icon = "🔥";
+                        break;
+                    case "PULL_UP":
+                        icon = "🏅";
+                        break;
+                    default:
+                        icon = "💪";
+                        break;
                 }
                 ProfileActivity.saveWorkout(
                         this, exerciseId,
@@ -764,7 +802,7 @@ public class ExerciseActivity extends AppCompatActivity {
             } catch (Exception e) {
                 Log.e(TAG, "unbind: " + e.getMessage());
             }
-            serviceBound  = false;
+            serviceBound = false;
             recordService = null;
         }
         if (cameraExecutor != null) cameraExecutor.shutdown();
