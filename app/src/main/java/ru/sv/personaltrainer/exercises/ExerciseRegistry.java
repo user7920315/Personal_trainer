@@ -107,7 +107,7 @@ public class ExerciseRegistry {
                 new ExerciseInfo(
                         "GLUTE_BRIDGE",
                         "Ягодичный мостик",
-                        "🍑",
+                        "\uD83C\uDF09",
                         "Ягодицы, Бицепс бедра",
                         "Лёгкий",
                         0xFF4A1942,
