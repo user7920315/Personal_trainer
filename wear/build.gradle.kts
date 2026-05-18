@@ -4,12 +4,12 @@ plugins {
 
 android {
     namespace = "ru.sv.wear"
-    compileSdk = 34
+    compileSdk = 35
 
     defaultConfig {
-        applicationId = "ru.sv.wear"
+        applicationId = "ru.sv.personaltrainer"
         minSdk = 30
-        targetSdk = 34
+        targetSdk = 35
         versionCode = 1
         versionName = "1.0"
     }
