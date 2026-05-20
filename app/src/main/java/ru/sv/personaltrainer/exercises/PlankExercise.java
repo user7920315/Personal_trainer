@@ -32,9 +32,7 @@ public class PlankExercise extends BaseExercise {
     private static final float SIDE_THRESHOLD = 0.12f;
     private static final int STABLE_FRAMES = 8;
     private static final float EMA_ALPHA = 0.15f;
-
-    // === ТАЙМЕР ===
-    private static final long ERROR_TOLERANCE_MS = 500L; // 0.5 сек толерантности
+    private static final long ERROR_TOLERANCE_MS = 500L;
 
     private long cleanStreakStartMs = -1L;
     private long errorStartMs = -1L;
@@ -72,7 +70,7 @@ public class PlankExercise extends BaseExercise {
         if (!isValidData(lm)) {
             result.mainFeedback = "Встаньте полностью в кадр";
             stopCleanStreak();
-            result.holdSeconds = currentSeconds;   // ← общее время не сбрасывается
+            result.holdSeconds = currentSeconds;
             return result;
         }
 
@@ -80,7 +78,7 @@ public class PlankExercise extends BaseExercise {
             result.mainFeedback = "Направьте камеру — должны быть видны плечи";
             result.phase = "";
             stopCleanStreak();
-            result.holdSeconds = currentSeconds;   // ← здесь тоже
+            result.holdSeconds = currentSeconds;
             return result;
         }
 
@@ -91,7 +89,7 @@ public class PlankExercise extends BaseExercise {
             result.mainFeedback = "Встаньте боком или лицом к камере";
             result.phase = "";
             stopCleanStreak();
-            result.holdSeconds = currentSeconds;   // ← и здесь
+            result.holdSeconds = currentSeconds;
             return result;
         }
 
@@ -106,7 +104,7 @@ public class PlankExercise extends BaseExercise {
         updateTimer(result);
 
         result.repCount = repCount;
-        result.holdSeconds = currentSeconds;       // ← основной путь (уже было)
+        result.holdSeconds = currentSeconds;
         result.mainFeedback = result.errors.isEmpty()
                 ? buildFeedback()
                 : result.errors.get(0);
@@ -114,7 +112,6 @@ public class PlankExercise extends BaseExercise {
         return result;
     }
 
-    // === ТАЙМЕР С ТОЛЕРАНТНОСТЬЮ ===
 
     private void updateTimer(AnalysisResult result) {
         long nowMs = System.currentTimeMillis();
@@ -213,7 +210,6 @@ public class PlankExercise extends BaseExercise {
         return "✅ Держите! Лучшее время: " + bestHoldSeconds + "с";
     }
 
-    // === АНАЛИЗ ПОЗЫ ===
 
     private void analyzeSide(List<NormalizedLandmark> lm, AnalysisResult result) {
         if (emaHipY > 0 && emaShoulderY > 0) {
@@ -361,7 +357,6 @@ public class PlankExercise extends BaseExercise {
         return bestHoldSeconds;
     }
 
-    // === EMA ===
 
     private void updateEMA(List<NormalizedLandmark> lm) {
         if (allVisible(lm, LEFT_HIP, RIGHT_HIP)) {

@@ -41,7 +41,6 @@ public class ExerciseDetailActivity extends AppCompatActivity {
             Insets bars = insets.getInsets(
                     WindowInsetsCompat.Type.systemBars() |
                             WindowInsetsCompat.Type.displayCutout());
-            // Видео остаётся edge-to-edge, а контент прокручивается над navigation bar
             v.setPadding(bars.left, 0, bars.right, bars.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
@@ -50,7 +49,6 @@ public class ExerciseDetailActivity extends AppCompatActivity {
             Insets bars = insets.getInsets(
                     WindowInsetsCompat.Type.systemBars() |
                             WindowInsetsCompat.Type.displayCutout());
-            // 12dp из оригинального margin + высота статус-бара
             FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) v.getLayoutParams();
             params.topMargin = bars.top + (int) (12 * getResources().getDisplayMetrics().density);
             v.setLayoutParams(params);

@@ -256,7 +256,7 @@ public class ExerciseActivity extends AppCompatActivity {
     }
 
     private void startCameraAndWear() {
-        startRecordService();   // foreground-сервис тоже стартуем только после разрешения
+        startRecordService();
         startCamera();
         wearHelper = new WearHelper(this);
         if (!wearHelper.isAvailable()) {
