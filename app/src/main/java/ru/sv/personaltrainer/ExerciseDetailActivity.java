@@ -5,11 +5,16 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.MediaController;
 import android.widget.TextView;
 import android.widget.VideoView;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import ru.sv.personaltrainer.exercises.ExerciseRegistry;
 import ru.sv.personaltrainer.model.ExerciseInfo;
@@ -29,6 +34,28 @@ public class ExerciseDetailActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_exercise_detail);
+
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.scrollViewDetail), (v, insets) -> {
+            Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() |
+                            WindowInsetsCompat.Type.displayCutout());
+            // Видео остаётся edge-to-edge, а контент прокручивается над navigation bar
+            v.setPadding(bars.left, 0, bars.right, bars.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.btnDetailBack), (v, insets) -> {
+            Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() |
+                            WindowInsetsCompat.Type.displayCutout());
+            // 12dp из оригинального margin + высота статус-бара
+            FrameLayout.LayoutParams params = (FrameLayout.LayoutParams) v.getLayoutParams();
+            params.topMargin = bars.top + (int) (12 * getResources().getDisplayMetrics().density);
+            v.setLayoutParams(params);
+            return WindowInsetsCompat.CONSUMED;
+        });
 
         String exerciseId = getIntent().getStringExtra("EXERCISE_ID");
         if (exerciseId == null) {

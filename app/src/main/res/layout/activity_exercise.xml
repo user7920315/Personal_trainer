@@ -105,6 +105,24 @@
 
     </LinearLayout>
 
+    <Button
+        android:id="@+id/btnToggleTts"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="@dimen/feedback_card_margin"
+        android:layout_marginBottom="@dimen/spacing_sm"
+        android:backgroundTint="#88333333"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:minWidth="0dp"
+        android:minHeight="0dp"
+        android:padding="0dp"
+        android:text="🔊"
+        android:textColor="#FFFFFF"
+        android:textSize="22sp"
+        app:layout_constraintBottom_toTopOf="@id/layoutButtons"
+        app:layout_constraintStart_toStartOf="parent" />
+
     <LinearLayout
         android:id="@+id/layoutButtons"
         android:layout_width="0dp"
@@ -154,6 +172,7 @@
             android:textSize="@dimen/btn_exercise_text" />
 
     </LinearLayout>
+
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardFeedback"

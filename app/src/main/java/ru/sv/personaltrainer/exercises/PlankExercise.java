@@ -15,33 +15,32 @@ public class PlankExercise extends BaseExercise {
     private static final float HIP_HIGH_WARN = -0.20f;
     private static final float HIP_HIGH_ERROR = -0.35f;
 
-
     private static final float HEAD_NEUTRAL = 0.15f;
     private static final float HEAD_DROP_WARN = 0.25f;
     private static final float HEAD_DROP_ERROR = 0.40f;
     private static final float HEAD_HIGH_WARN = 0.25f;
     private static final float HEAD_HIGH_ERROR = 0.40f;
 
-
     private static final float ARM_BODY_ANGLE_WARN = 15f;
     private static final float ARM_BODY_ANGLE_ERROR = 25f;
-
 
     private static final float SHOULDER_TILT_WARN = 0.03f;
     private static final float SHOULDER_TILT_ERROR = 0.06f;
     private static final float KNEE_TILT_WARN = 0.05f;
     private static final float KNEE_TILT_ERROR = 0.10f;
 
-
     private static final float SIDE_THRESHOLD = 0.12f;
     private static final int STABLE_FRAMES = 8;
     private static final float EMA_ALPHA = 0.15f;
 
+    // === ТАЙМЕР ===
+    private static final long ERROR_TOLERANCE_MS = 500L; // 0.5 сек толерантности
 
     private long cleanStreakStartMs = -1L;
+    private long errorStartMs = -1L;
+    private long accumulatedTimeMs = 0;
     private int bestHoldSeconds = 0;
     private int currentSeconds = 0;
-
 
     private float emaShoulderY = -1f, emaShoulderX = -1f;
     private float emaLShoulderY = -1f, emaRShoulderY = -1f;
@@ -54,7 +53,6 @@ public class PlankExercise extends BaseExercise {
     private float emaWristX = -1f, emaWristY = -1f;
     private float emaShoulderWidth = -1f;
 
-
     private ViewMode currentView = ViewMode.UNKNOWN;
     private ViewMode candidateView = ViewMode.UNKNOWN;
     private int candidateCount = 0;
@@ -66,7 +64,6 @@ public class PlankExercise extends BaseExercise {
         return "🧘 Планка";
     }
 
-
     @Override
     public AnalysisResult analyze(List<NormalizedLandmark> lm) {
         AnalysisResult result = new AnalysisResult();
@@ -75,6 +72,7 @@ public class PlankExercise extends BaseExercise {
         if (!isValidData(lm)) {
             result.mainFeedback = "Встаньте полностью в кадр";
             stopCleanStreak();
+            result.holdSeconds = currentSeconds;   // ← общее время не сбрасывается
             return result;
         }
 
@@ -82,6 +80,7 @@ public class PlankExercise extends BaseExercise {
             result.mainFeedback = "Направьте камеру — должны быть видны плечи";
             result.phase = "";
             stopCleanStreak();
+            result.holdSeconds = currentSeconds;   // ← здесь тоже
             return result;
         }
 
@@ -92,6 +91,7 @@ public class PlankExercise extends BaseExercise {
             result.mainFeedback = "Встаньте боком или лицом к камере";
             result.phase = "";
             stopCleanStreak();
+            result.holdSeconds = currentSeconds;   // ← и здесь
             return result;
         }
 
@@ -106,7 +106,7 @@ public class PlankExercise extends BaseExercise {
         updateTimer(result);
 
         result.repCount = repCount;
-        result.holdSeconds = currentSeconds;
+        result.holdSeconds = currentSeconds;       // ← основной путь (уже было)
         result.mainFeedback = result.errors.isEmpty()
                 ? buildFeedback()
                 : result.errors.get(0);
@@ -114,37 +114,96 @@ public class PlankExercise extends BaseExercise {
         return result;
     }
 
+    // === ТАЙМЕР С ТОЛЕРАНТНОСТЬЮ ===
 
     private void updateTimer(AnalysisResult result) {
         long nowMs = System.currentTimeMillis();
+        boolean hasErrors = !result.errors.isEmpty();
 
-        if (result.errors.isEmpty()) {
-            if (cleanStreakStartMs < 0) {
-                cleanStreakStartMs = nowMs;
-                Log.d(TAG, "Timer: чистая серия началась");
+        if (hasErrors) {
+            if (errorStartMs < 0) {
+                errorStartMs = nowMs;
+                Log.d(TAG, "Timer: ошибка началась");
             }
-            currentSeconds = (int) ((nowMs - cleanStreakStartMs) / 1000L);
+            long errorDuration = nowMs - errorStartMs;
 
-            if (currentSeconds > bestHoldSeconds) {
-                bestHoldSeconds = currentSeconds;
+            if (errorDuration > ERROR_TOLERANCE_MS && cleanStreakStartMs >= 0) {
+                long sessionDuration = errorStartMs - cleanStreakStartMs;
+                accumulatedTimeMs += sessionDuration;
+
+                int sessionSeconds = (int) (sessionDuration / 1000);
+                if (sessionSeconds > bestHoldSeconds) {
+                    bestHoldSeconds = sessionSeconds;
+                }
+
+                Log.d(TAG, "Timer: серия прервана длительной ошибкой на " + sessionSeconds + "с");
+                cleanStreakStartMs = -1L;
             }
         } else {
-            stopCleanStreak();
+            if (errorStartMs >= 0) {
+                long errorDuration = nowMs - errorStartMs;
+
+                if (errorDuration <= ERROR_TOLERANCE_MS) {
+                    Log.d(TAG, "Timer: короткая ошибка " + errorDuration + "мс, продолжаем");
+                } else {
+                    if (cleanStreakStartMs >= 0) {
+                        long sessionDuration = errorStartMs - cleanStreakStartMs;
+                        accumulatedTimeMs += sessionDuration;
+
+                        int sessionSeconds = (int) (sessionDuration / 1000);
+                        if (sessionSeconds > bestHoldSeconds) {
+                            bestHoldSeconds = sessionSeconds;
+                        }
+                        Log.d(TAG, "Timer: новая серия, предыдущая " + sessionSeconds + "с");
+                    }
+                    cleanStreakStartMs = nowMs;
+                }
+                errorStartMs = -1L;
+            }
+
+            if (cleanStreakStartMs < 0) {
+                cleanStreakStartMs = nowMs;
+                Log.d(TAG, "Timer: новая серия началась");
+            }
+
+            long currentSessionDuration = nowMs - cleanStreakStartMs;
+            long totalTimeMs = accumulatedTimeMs + currentSessionDuration;
+            currentSeconds = (int) (totalTimeMs / 1000);
+
+            int currentSessionSeconds = (int) (currentSessionDuration / 1000);
+            if (currentSessionSeconds > bestHoldSeconds) {
+                bestHoldSeconds = currentSessionSeconds;
+            }
         }
 
         Log.d(TAG, String.format(
-                "Timer: cur=%ds best=%ds errors=%d",
-                currentSeconds, bestHoldSeconds,
-                result.errors.size()));
+                "Timer: total=%ds best=%ds acc=%dms curSession=%dms err=%dms",
+                currentSeconds, bestHoldSeconds, accumulatedTimeMs,
+                (cleanStreakStartMs >= 0 ? nowMs - cleanStreakStartMs : 0),
+                (errorStartMs >= 0 ? nowMs - errorStartMs : 0)));
     }
-
 
     private void stopCleanStreak() {
         if (cleanStreakStartMs >= 0) {
-            Log.d(TAG, "Timer: серия прервана на " + currentSeconds + "с");
+            long nowMs = System.currentTimeMillis();
+            long sessionDuration;
+
+            if (errorStartMs >= 0 && errorStartMs > cleanStreakStartMs) {
+                sessionDuration = errorStartMs - cleanStreakStartMs;
+            } else {
+                sessionDuration = nowMs - cleanStreakStartMs;
+            }
+
+            accumulatedTimeMs += sessionDuration;
+            int sessionSeconds = (int) (sessionDuration / 1000);
+            if (sessionSeconds > bestHoldSeconds) {
+                bestHoldSeconds = sessionSeconds;
+            }
+            Log.d(TAG, "Timer: серия прервана на " + sessionSeconds + "с");
         }
         cleanStreakStartMs = -1L;
-        currentSeconds = 0;
+        errorStartMs = -1L;
+        currentSeconds = (int) (accumulatedTimeMs / 1000);
     }
 
     private String buildFeedback() {
@@ -154,9 +213,9 @@ public class PlankExercise extends BaseExercise {
         return "✅ Держите! Лучшее время: " + bestHoldSeconds + "с";
     }
 
+    // === АНАЛИЗ ПОЗЫ ===
 
-    private void analyzeSide(List<NormalizedLandmark> lm,
-                             AnalysisResult result) {
+    private void analyzeSide(List<NormalizedLandmark> lm, AnalysisResult result) {
         if (emaHipY > 0 && emaShoulderY > 0) {
             checkBodyLineSide(result);
         } else {
@@ -167,32 +226,26 @@ public class PlankExercise extends BaseExercise {
         boolean hasBody = (emaAnkleX > 0 && emaAnkleY > 0)
                 || (emaKneeX > 0 && emaKneeY > 0);
 
-        if (emaShoulderX > 0 && emaShoulderY > 0
-                && hasWrist && hasBody) {
+        if (emaShoulderX > 0 && emaShoulderY > 0 && hasWrist && hasBody) {
             checkArmBodyAngle(result);
         }
 
-        if (emaNoseY > 0 && emaShoulderY > 0
-                && emaShoulderWidth > 0) {
+        if (emaNoseY > 0 && emaShoulderY > 0 && emaShoulderWidth > 0) {
             checkHead(result);
         }
     }
 
-
-    private void analyzeFront(List<NormalizedLandmark> lm,
-                              AnalysisResult result) {
+    private void analyzeFront(List<NormalizedLandmark> lm, AnalysisResult result) {
         if (emaLShoulderY > 0 && emaRShoulderY > 0) {
             checkShoulderTilt(result);
         }
         if (hasLKnee && hasRKnee) {
             checkKneeTilt(result);
         }
-        if (isVisible(lm, NOSE)
-                && allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
+        if (isVisible(lm, NOSE) && allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
             checkHeadCenter(lm, result);
         }
     }
-
 
     private void checkBodyLineSide(AnalysisResult result) {
         float diff = emaHipY - emaShoulderY;
@@ -207,24 +260,15 @@ public class PlankExercise extends BaseExercise {
                 emaShoulderY, emaHipY, deviation));
 
         if (deviation > HIP_SAG_ERROR) {
-            result.addError(
-                    "⚠ Тело провисает — напрягите пресс и ягодицы",
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError("⚠ Тело провисает — напрягите пресс и ягодицы", LEFT_HIP, RIGHT_HIP);
         } else if (deviation > HIP_SAG_WARN) {
-            result.addError(
-                    "⚠ Тело немного провисает — подтяните пресс",
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError("⚠ Тело немного провисает — подтяните пресс", LEFT_HIP, RIGHT_HIP);
         } else if (deviation < HIP_HIGH_ERROR) {
-            result.addError(
-                    "⚠ Таз слишком высоко — опустите бёдра",
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError("⚠ Таз слишком высоко — опустите бёдра", LEFT_HIP, RIGHT_HIP);
         } else if (deviation < HIP_HIGH_WARN) {
-            result.addError(
-                    "⚠ Таз чуть высоковат — опустите немного",
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError("⚠ Таз чуть высоковат — опустите немного", LEFT_HIP, RIGHT_HIP);
         }
     }
-
 
     private void checkArmBodyAngle(AnalysisResult result) {
         float bodyEndY = emaAnkleY > 0 ? emaAnkleY : emaKneeY;
@@ -251,76 +295,55 @@ public class PlankExercise extends BaseExercise {
                     angleBetween < 90.0
                             ? "⚠ Плечи ушли вперёд — поставьте руки под плечи"
                             : "⚠ Плечи ушли назад — поставьте руки под плечи",
-                    LEFT_SHOULDER, RIGHT_SHOULDER,
-                    LEFT_WRIST, RIGHT_WRIST);
+                    LEFT_SHOULDER, RIGHT_SHOULDER, LEFT_WRIST, RIGHT_WRIST);
         } else if (diff > ARM_BODY_ANGLE_WARN) {
-            result.addError(
-                    "⚠ Поправьте положение рук — перпендикулярно телу",
-                    LEFT_SHOULDER, RIGHT_SHOULDER);
+            result.addError("⚠ Поправьте положение рук — перпендикулярно телу", LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
 
-
     private void checkHead(AnalysisResult result) {
-        float scale = emaShoulderWidth > 0.02f
-                ? emaShoulderWidth : 0.15f;
+        float scale = emaShoulderWidth > 0.02f ? emaShoulderWidth : 0.15f;
         float headDiff = emaNoseY - emaShoulderY;
         float deviation = headDiff / scale;
 
         if (Math.abs(deviation) <= HEAD_NEUTRAL) return;
 
         if (deviation > HEAD_DROP_ERROR) {
-            result.addError(
-                    "⚠ Голова сильно опущена — смотрите чуть вперёд",
-                    NOSE);
+            result.addError("⚠ Голова сильно опущена — смотрите чуть вперёд", NOSE);
         } else if (deviation > HEAD_DROP_WARN) {
             result.addError("⚠ Не опускайте голову вниз", NOSE);
         } else if (deviation < -HEAD_HIGH_ERROR) {
-            result.addError(
-                    "⚠ Голова сильно задрана — смотрите в пол",
-                    NOSE);
+            result.addError("⚠ Голова сильно задрана — смотрите в пол", NOSE);
         } else if (deviation < -HEAD_HIGH_WARN) {
             result.addError("⚠ Не запрокидывайте голову", NOSE);
         }
     }
-
 
     private void checkShoulderTilt(AnalysisResult result) {
         float diff = emaLShoulderY - emaRShoulderY;
 
         if (Math.abs(diff) > SHOULDER_TILT_ERROR) {
             result.addError(
-                    diff > 0
-                            ? "⚠ Левое плечо ниже — выровняйте корпус"
-                            : "⚠ Правое плечо ниже — выровняйте корпус",
+                    diff > 0 ? "⚠ Левое плечо ниже — выровняйте корпус" : "⚠ Правое плечо ниже — выровняйте корпус",
                     LEFT_SHOULDER, RIGHT_SHOULDER);
         } else if (Math.abs(diff) > SHOULDER_TILT_WARN) {
-            result.addError(
-                    "⚠ Плечи немного перекошены — выровняйте",
-                    LEFT_SHOULDER, RIGHT_SHOULDER);
+            result.addError("⚠ Плечи немного перекошены — выровняйте", LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
-
 
     private void checkKneeTilt(AnalysisResult result) {
         float diff = emaLKneeY - emaRKneeY;
 
         if (Math.abs(diff) > KNEE_TILT_ERROR) {
             result.addError(
-                    diff > 0
-                            ? "⚠ Левая нога ниже — выровняйте таз"
-                            : "⚠ Правая нога ниже — выровняйте таз",
+                    diff > 0 ? "⚠ Левая нога ниже — выровняйте таз" : "⚠ Правая нога ниже — выровняйте таз",
                     LEFT_KNEE, RIGHT_KNEE);
         } else if (Math.abs(diff) > KNEE_TILT_WARN) {
-            result.addError(
-                    "⚠ Таз немного перекошен — выровняйте",
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError("⚠ Таз немного перекошен — выровняйте", LEFT_KNEE, RIGHT_KNEE);
         }
     }
 
-
-    private void checkHeadCenter(List<NormalizedLandmark> lm,
-                                 AnalysisResult result) {
+    private void checkHeadCenter(List<NormalizedLandmark> lm, AnalysisResult result) {
         float noseX = lm.get(NOSE).x();
         float lShX = lm.get(LEFT_SHOULDER).x();
         float rShX = lm.get(RIGHT_SHOULDER).x();
@@ -330,22 +353,19 @@ public class PlankExercise extends BaseExercise {
 
         float offset = (noseX - midShoulderX) / shoulderW;
         if (Math.abs(offset) > 0.25f) {
-            result.addError(
-                    "⚠ Голова смещена в сторону — держите ровно",
-                    NOSE);
+            result.addError("⚠ Голова смещена в сторону — держите ровно", NOSE);
         }
     }
-
 
     public int getBestHoldSeconds() {
         return bestHoldSeconds;
     }
 
+    // === EMA ===
 
     private void updateEMA(List<NormalizedLandmark> lm) {
         if (allVisible(lm, LEFT_HIP, RIGHT_HIP)) {
-            emaHipY = emaVal(emaHipY,
-                    (lm.get(LEFT_HIP).y() + lm.get(RIGHT_HIP).y()) / 2f);
+            emaHipY = emaVal(emaHipY, (lm.get(LEFT_HIP).y() + lm.get(RIGHT_HIP).y()) / 2f);
         } else if (isVisible(lm, LEFT_HIP)) {
             emaHipY = emaVal(emaHipY, lm.get(LEFT_HIP).y());
         } else if (isVisible(lm, RIGHT_HIP)) {
@@ -387,10 +407,8 @@ public class PlankExercise extends BaseExercise {
         }
 
         if (allVisible(lm, LEFT_ANKLE, RIGHT_ANKLE)) {
-            emaAnkleY = emaVal(emaAnkleY,
-                    (lm.get(LEFT_ANKLE).y() + lm.get(RIGHT_ANKLE).y()) / 2f);
-            emaAnkleX = emaVal(emaAnkleX,
-                    (lm.get(LEFT_ANKLE).x() + lm.get(RIGHT_ANKLE).x()) / 2f);
+            emaAnkleY = emaVal(emaAnkleY, (lm.get(LEFT_ANKLE).y() + lm.get(RIGHT_ANKLE).y()) / 2f);
+            emaAnkleX = emaVal(emaAnkleX, (lm.get(LEFT_ANKLE).x() + lm.get(RIGHT_ANKLE).x()) / 2f);
         } else if (isVisible(lm, LEFT_ANKLE)) {
             emaAnkleY = emaVal(emaAnkleY, lm.get(LEFT_ANKLE).y());
             emaAnkleX = emaVal(emaAnkleX, lm.get(LEFT_ANKLE).x());
@@ -398,10 +416,8 @@ public class PlankExercise extends BaseExercise {
             emaAnkleY = emaVal(emaAnkleY, lm.get(RIGHT_ANKLE).y());
             emaAnkleX = emaVal(emaAnkleX, lm.get(RIGHT_ANKLE).x());
         } else if (allVisible(lm, LEFT_HEEL, RIGHT_HEEL)) {
-            emaAnkleY = emaVal(emaAnkleY,
-                    (lm.get(LEFT_HEEL).y() + lm.get(RIGHT_HEEL).y()) / 2f);
-            emaAnkleX = emaVal(emaAnkleX,
-                    (lm.get(LEFT_HEEL).x() + lm.get(RIGHT_HEEL).x()) / 2f);
+            emaAnkleY = emaVal(emaAnkleY, (lm.get(LEFT_HEEL).y() + lm.get(RIGHT_HEEL).y()) / 2f);
+            emaAnkleX = emaVal(emaAnkleX, (lm.get(LEFT_HEEL).x() + lm.get(RIGHT_HEEL).x()) / 2f);
         }
 
         if (isVisible(lm, NOSE)) {
@@ -409,10 +425,8 @@ public class PlankExercise extends BaseExercise {
         }
 
         if (allVisible(lm, LEFT_WRIST, RIGHT_WRIST)) {
-            emaWristX = emaVal(emaWristX,
-                    (lm.get(LEFT_WRIST).x() + lm.get(RIGHT_WRIST).x()) / 2f);
-            emaWristY = emaVal(emaWristY,
-                    (lm.get(LEFT_WRIST).y() + lm.get(RIGHT_WRIST).y()) / 2f);
+            emaWristX = emaVal(emaWristX, (lm.get(LEFT_WRIST).x() + lm.get(RIGHT_WRIST).x()) / 2f);
+            emaWristY = emaVal(emaWristY, (lm.get(LEFT_WRIST).y() + lm.get(RIGHT_WRIST).y()) / 2f);
         } else if (isVisible(lm, LEFT_WRIST)) {
             emaWristX = emaVal(emaWristX, lm.get(LEFT_WRIST).x());
             emaWristY = emaVal(emaWristY, lm.get(LEFT_WRIST).y());
@@ -422,13 +436,11 @@ public class PlankExercise extends BaseExercise {
         }
     }
 
-
     private ViewMode updateView() {
         ViewMode raw = detectRawView();
 
         if (raw == ViewMode.UNKNOWN) {
-            return currentView != ViewMode.UNKNOWN
-                    ? currentView : ViewMode.UNKNOWN;
+            return currentView != ViewMode.UNKNOWN ? currentView : ViewMode.UNKNOWN;
         }
         if (raw == candidateView) {
             candidateCount++;
@@ -436,8 +448,7 @@ public class PlankExercise extends BaseExercise {
             candidateView = raw;
             candidateCount = 1;
         }
-        if (candidateCount >= STABLE_FRAMES
-                && currentView != candidateView) {
+        if (candidateCount >= STABLE_FRAMES && currentView != candidateView) {
             Log.d(TAG, "View: " + currentView + " → " + candidateView);
             resetEMA();
             currentView = candidateView;
@@ -447,16 +458,13 @@ public class PlankExercise extends BaseExercise {
 
     private ViewMode detectRawView() {
         if (emaShoulderWidth > 0) {
-            return emaShoulderWidth < SIDE_THRESHOLD
-                    ? ViewMode.SIDE : ViewMode.FRONT;
+            return emaShoulderWidth < SIDE_THRESHOLD ? ViewMode.SIDE : ViewMode.FRONT;
         }
         return ViewMode.UNKNOWN;
     }
 
     private float emaVal(float prev, float newVal) {
-        if (newVal < 0 || newVal > 1.0f
-                || Float.isNaN(newVal)
-                || Float.isInfinite(newVal)) return prev;
+        if (newVal < 0 || newVal > 1.0f || Float.isNaN(newVal) || Float.isInfinite(newVal)) return prev;
         if (prev < 0) return newVal;
         return prev + EMA_ALPHA * (newVal - prev);
     }
@@ -483,6 +491,8 @@ public class PlankExercise extends BaseExercise {
         candidateView = ViewMode.UNKNOWN;
         candidateCount = 0;
         cleanStreakStartMs = -1L;
+        errorStartMs = -1L;
+        accumulatedTimeMs = 0;
         bestHoldSeconds = 0;
         currentSeconds = 0;
     }

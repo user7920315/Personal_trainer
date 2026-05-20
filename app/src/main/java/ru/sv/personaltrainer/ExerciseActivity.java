@@ -61,7 +61,8 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.graphics.Insets;
-
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 
 public class ExerciseActivity extends AppCompatActivity {
 
@@ -69,7 +70,7 @@ public class ExerciseActivity extends AppCompatActivity {
     private static final String MODEL_FILE = "pose_landmarker_full.task";
     private static final int AUDIO_PERMISSION_CODE = 200;
 
-
+    private ActivityResultLauncher<String> cameraPermissionLauncher;
     private PreviewView previewView;
     private PoseOverlayView poseOverlay;
     private TextView tvRepCount;
@@ -119,6 +120,8 @@ public class ExerciseActivity extends AppCompatActivity {
     private long lastSpeechTime = 0;
     private static final long TTS_THRESHOLD_MS = 500L;
     private static final long MIN_SPEECH_INTERVAL_MS = 2500L;
+    private boolean isTtsEnabled = true;
+    private Button btnToggleTts;
 
 
     private final ServiceConnection serviceConnection =
@@ -221,9 +224,39 @@ public class ExerciseActivity extends AppCompatActivity {
         initMediaPipe();
         initBlinkAnimation();
         initVideoRecorder();
-        startRecordService();
 
         cameraExecutor = Executors.newSingleThreadExecutor();
+        setupCameraPermission();
+        wearHelper = new WearHelper(this);
+        if (!wearHelper.isAvailable()) {
+            Log.w(TAG, "⌚ Часы не подключены.");
+        }
+    }
+
+    private void setupCameraPermission() {
+        cameraPermissionLauncher = registerForActivityResult(
+                new ActivityResultContracts.RequestPermission(),
+                isGranted -> {
+                    if (isGranted) {
+                        startCameraAndWear();
+                    } else {
+                        Toast.makeText(this,
+                                "Для тренировки необходим доступ к камере",
+                                Toast.LENGTH_LONG).show();
+                        finish();
+                    }
+                });
+
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
+                == PackageManager.PERMISSION_GRANTED) {
+            startCameraAndWear();
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+        }
+    }
+
+    private void startCameraAndWear() {
+        startRecordService();   // foreground-сервис тоже стартуем только после разрешения
         startCamera();
         wearHelper = new WearHelper(this);
         if (!wearHelper.isAvailable()) {
@@ -330,6 +363,24 @@ public class ExerciseActivity extends AppCompatActivity {
         btnBack.setOnClickListener(v -> finish());
         btnReset.setOnClickListener(v -> resetExercise());
         btnRecord.setOnClickListener(v -> onRecordClick());
+
+        btnToggleTts = findViewById(R.id.btnToggleTts);
+        btnToggleTts.setOnClickListener(v -> toggleTts());
+        updateTtsButton();
+    }
+
+    private void toggleTts() {
+        isTtsEnabled = !isTtsEnabled;
+        updateTtsButton();
+
+        if (!isTtsEnabled && ttsInitialized && textToSpeech != null && textToSpeech.isSpeaking()) {
+            textToSpeech.stop();
+        }
+    }
+
+    private void updateTtsButton() {
+        btnToggleTts.setText(isTtsEnabled ? "🔊" : "🔇");
+        btnToggleTts.setAlpha(isTtsEnabled ? 1.0f : 0.5f);
     }
 
     private void resetExercise() {
@@ -498,9 +549,7 @@ public class ExerciseActivity extends AppCompatActivity {
     }
 
     private String formatHoldTime(int seconds) {
-        if (seconds == 0) {
-            return "⏱ Время: 0с";
-        }
+        if (seconds == 0) return "⏱ Время: 0с";
         return "⏱ Время: " + seconds + "с";
     }
 
@@ -556,11 +605,10 @@ public class ExerciseActivity extends AppCompatActivity {
             BaseExercise.AnalysisResult raw,
             List<String> filteredErrors) {
 
-        BaseExercise.AnalysisResult filtered =
-                new BaseExercise.AnalysisResult();
-
+        BaseExercise.AnalysisResult filtered = new BaseExercise.AnalysisResult();
         filtered.phase = raw.phase;
         filtered.repCount = raw.repCount;
+        filtered.holdSeconds = raw.holdSeconds;
 
         if (filteredErrors.isEmpty()) {
             filtered.mainFeedback = raw.mainFeedback.startsWith("⚠")
@@ -570,9 +618,7 @@ public class ExerciseActivity extends AppCompatActivity {
         }
 
         filtered.errors.addAll(filteredErrors);
-
         filtered.errorLandmarks.addAll(raw.errorLandmarks);
-
         filtered.mainFeedback = filteredErrors.get(0);
 
         return filtered;
@@ -613,12 +659,11 @@ public class ExerciseActivity extends AppCompatActivity {
                 currentExercise.analyze(result.landmarks().get(0));
 
         long nowMs = System.currentTimeMillis();
-        List<String> filteredErrors =
-                errorDebouncer.filter(rawAnalysis.errors, nowMs);
+        List<String> filteredErrors = errorDebouncer.filter(rawAnalysis.errors, nowMs);
 
         BaseExercise.AnalysisResult filteredAnalysis = buildFilteredAnalysis(rawAnalysis, filteredErrors);
 
-        if (!filteredAnalysis.errors.isEmpty() && ttsInitialized) {
+        if (!filteredAnalysis.errors.isEmpty() && ttsInitialized && isTtsEnabled) {
             String currentError = filteredAnalysis.errors.get(0);
             long now = System.currentTimeMillis();
 
