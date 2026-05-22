@@ -12,14 +12,11 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.util.Log;
-import android.view.View;
-import android.view.ViewGroup;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
-import android.widget.Button;
-import android.widget.LinearLayout;
-import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -31,36 +28,31 @@ import androidx.camera.core.ImageAnalysis;
 import androidx.camera.core.ImageProxy;
 import androidx.camera.core.Preview;
 import androidx.camera.lifecycle.ProcessCameraProvider;
-import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.mediapipe.framework.image.BitmapImageBuilder;
-import com.google.mediapipe.framework.image.MPImage;
 import com.google.mediapipe.tasks.core.BaseOptions;
 import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-
-import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 
 import ru.sv.personaltrainer.databinding.ActivityExerciseBinding;
 import ru.sv.personaltrainer.exercises.BaseExercise;
 import ru.sv.personaltrainer.exercises.ExerciseRegistry;
 import ru.sv.personaltrainer.exercises.PlankExercise;
-import ru.sv.personaltrainer.overlay.PoseOverlayView;
+import ru.sv.personaltrainer.model.WorkoutResult;
+import ru.sv.personaltrainer.viewmodel.ExerciseViewModel;
 import ru.sv.personaltrainer.wear.WearHelper;
 
 public class ExerciseActivity extends AppCompatActivity {
@@ -70,45 +62,7 @@ public class ExerciseActivity extends AppCompatActivity {
     private static final int AUDIO_PERMISSION_CODE = 200;
 
     private ActivityExerciseBinding binding;
-    private ActivityResultLauncher<String> cameraPermissionLauncher;
-
-    private PreviewView previewView;
-    private PoseOverlayView poseOverlay;
-    private TextView tvRepCount;
-    private TextView tvExerciseName;
-    private TextView tvFeedback;
-    private TextView tvErrors;
-    private TextView tvPhase;
-    private TextView tvQuality;
-    private LinearLayout layoutErrors;
-    private Button btnBack;
-    private Button btnReset;
-    private Button btnRecord;
-    private LinearLayout layoutRecordingIndicator;
-    private View viewRecordingDot;
-    private TextView tvRecordingTimer;
-    private Button btnToggleTts;
-
-    private PoseLandmarker poseLandmarker;
-    private WearHelper wearHelper;
-    private String lastSentError = null;
-    private BaseExercise currentExercise;
-    private String exerciseId;
-
-    private volatile PoseLandmarkerResult lastPoseResult = null;
-    private volatile List<Integer> lastErrorLandmarks = null;
-    private volatile String lastRepText = "Повторений: 0";
-    private volatile String lastPhaseText = "● ГОТОВ";
-    private volatile String lastFeedbackText = "";
-    private volatile int lastPhaseColor = 0xFFFFFFFF;
-    private volatile String lastQualityText = "●●●●●";
-    private volatile int lastQualityColor = 0xFF00FF88;
-
-    private VideoRecorder videoRecorder;
-    private boolean isRecording = false;
-    private ScreenRecordService recordService;
-    private boolean serviceBound = false;
-    private final ErrorDebouncer errorDebouncer = new ErrorDebouncer();
+    private ExerciseViewModel viewModel;
 
     private TextToSpeech textToSpeech;
     private boolean ttsInitialized = false;
@@ -117,39 +71,113 @@ public class ExerciseActivity extends AppCompatActivity {
     private long lastSpeechTime = 0;
     private static final long TTS_THRESHOLD_MS = 500L;
     private static final long MIN_SPEECH_INTERVAL_MS = 2500L;
-    private boolean isTtsEnabled = true;
 
-    private final ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override
-        public void onServiceConnected(ComponentName name, IBinder binder) {
-            ScreenRecordService.LocalBinder lb = (ScreenRecordService.LocalBinder) binder;
-            recordService = lb.getService();
-            serviceBound = true;
-            Log.d(TAG, "Сервис подключён");
-        }
+    private PoseLandmarker poseLandmarker;
+    private ExecutorService cameraExecutor;
 
-        @Override
-        public void onServiceDisconnected(ComponentName name) {
-            serviceBound = false;
-            recordService = null;
-        }
-    };
-
+    private VideoRecorder videoRecorder;
+    private boolean isRecording = false;
+    private ScreenRecordService recordService;
+    private boolean serviceBound = false;
     private final Handler timerHandler = new Handler(Looper.getMainLooper());
     private int recordSeconds = 0;
     private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
             recordSeconds++;
-            tvRecordingTimer.setText(String.format(Locale.US, "%02d:%02d",
+            binding.tvRecordingTimer.setText(String.format(Locale.US, "%02d:%02d",
                     recordSeconds / 60, recordSeconds % 60));
             timerHandler.postDelayed(this, 1000);
         }
     };
-
     private Animation blinkAnimation;
-    private ExecutorService cameraExecutor;
-    private final Handler mainHandler = new Handler(Looper.getMainLooper());
+
+    private WearHelper wearHelper;
+    private String lastSentError = null;
+
+    private String exerciseId;
+    private BaseExercise currentExercise;
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
+        binding = ActivityExerciseBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
+
+        exerciseId = getIntent().getStringExtra("EXERCISE_ID");
+        if (exerciseId == null) exerciseId = "SQUAT";
+
+        try {
+            currentExercise = ExerciseRegistry.createExercise(exerciseId);
+        } catch (Exception e) {
+            finish();
+            return;
+        }
+
+        viewModel = new ViewModelProvider(this).get(ExerciseViewModel.class);
+        viewModel.initExercise(this, currentExercise);
+
+        viewModel.getWorkoutResult().observe(this, this::onWorkoutResult);
+        viewModel.getIsRecording().observe(this, this::updateRecordingUI);
+        viewModel.getTtsEnabled().observe(this, enabled -> updateTtsButton(enabled));
+
+        initViews();
+        applyInsets();
+        initTextToSpeech();
+        initMediaPipe();
+        initBlinkAnimation();
+        initVideoRecorder();
+
+        cameraExecutor = Executors.newSingleThreadExecutor();
+        setupCameraPermission();
+        wearHelper = new WearHelper(this);
+    }
+
+
+    private void onWorkoutResult(WorkoutResult result) {
+        binding.tvRepCount.setText(result.repText);
+        binding.tvFeedback.setText(result.mainFeedback);
+        binding.tvPhase.setText(result.phaseText);
+        binding.tvPhase.setTextColor(result.phaseColor);
+        binding.tvQuality.setText(result.qualityText);
+        binding.tvQuality.setTextColor(result.qualityColor);
+
+        if (result.poseResult != null) {
+            binding.poseOverlay.updateResults(
+                    result.poseResult,
+                    binding.previewView.getWidth(),
+                    binding.previewView.getHeight(),
+                    result.errorLandmarks
+            );
+        } else {
+            binding.poseOverlay.updateResults(null, 0, 0, null);
+        }
+
+        if (result.errors != null && result.errors.size() > 1) {
+            binding.layoutErrors.setVisibility(android.view.View.VISIBLE);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 1; i < result.errors.size(); i++) {
+                sb.append(result.errors.get(i));
+                if (i < result.errors.size() - 1) sb.append("\n");
+            }
+            binding.tvErrors.setText(sb.toString());
+        } else {
+            binding.layoutErrors.setVisibility(android.view.View.GONE);
+        }
+
+        if (result.errors != null && !result.errors.isEmpty()
+                && ttsInitialized && viewModel.isTtsEnabled()) {
+            speakError(result.errors.get(0));
+        } else if (result.errors == null || result.errors.isEmpty()) {
+            lastSpokenError = null;
+            lastErrorStartTime = 0;
+        }
+
+        sendDataToWear(result);
+    }
+
 
     private void initTextToSpeech() {
         textToSpeech = new TextToSpeech(this, status -> {
@@ -174,52 +202,37 @@ public class ExerciseActivity extends AppCompatActivity {
         });
     }
 
-    @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-
-        binding = ActivityExerciseBinding.inflate(getLayoutInflater());
-        setContentView(binding.getRoot());
-
-        exerciseId = getIntent().getStringExtra("EXERCISE_ID");
-        if (exerciseId == null) exerciseId = "SQUAT";
-
-        try {
-            currentExercise = ExerciseRegistry.createExercise(exerciseId);
-        } catch (Exception e) {
-            finish();
-            return;
-        }
-
-        initViews();
-        applyInsets();
-        initTextToSpeech();
-        initMediaPipe();
-        initBlinkAnimation();
-        initVideoRecorder();
-
-        cameraExecutor = Executors.newSingleThreadExecutor();
-        setupCameraPermission();
-        wearHelper = new WearHelper(this);
-        if (!wearHelper.isAvailable()) {
-            Log.w(TAG, "⌚ Часы не подключены.");
+    private void speakError(String error) {
+        long now = System.currentTimeMillis();
+        if (!error.equals(lastSpokenError)) {
+            lastErrorStartTime = now;
+            lastSpokenError = error;
+        } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS
+                && !textToSpeech.isSpeaking()
+                && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
+            String cleanMessage = error.replace("⚠ ", "").replace("✅ ", "");
+            android.os.Bundle params = new android.os.Bundle();
+            params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "error_feedback");
+            textToSpeech.speak(cleanMessage, TextToSpeech.QUEUE_FLUSH, params, "error_feedback");
+            lastSpeechTime = now;
+            lastErrorStartTime = now + MIN_SPEECH_INTERVAL_MS;
         }
     }
 
-    private void setupCameraPermission() {
-        cameraPermissionLauncher = registerForActivityResult(
-                new ActivityResultContracts.RequestPermission(),
-                isGranted -> {
-                    if (isGranted) {
-                        startCameraAndWear();
-                    } else {
-                        Toast.makeText(this, "Для тренировки необходим доступ к камере",
-                                Toast.LENGTH_LONG).show();
-                        finish();
-                    }
-                });
 
+    private ActivityResultLauncher<String> cameraPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                if (isGranted) {
+                    startCameraAndWear();
+                } else {
+                    Toast.makeText(this, "Для тренировки необходим доступ к камере",
+                            Toast.LENGTH_LONG).show();
+                    finish();
+                }
+            });
+
+    private void setupCameraPermission() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
                 == PackageManager.PERMISSION_GRANTED) {
             startCameraAndWear();
@@ -232,10 +245,50 @@ public class ExerciseActivity extends AppCompatActivity {
         startRecordService();
         startCamera();
         wearHelper = new WearHelper(this);
-        if (!wearHelper.isAvailable()) {
-            Log.w(TAG, "⌚ Часы не подключены.");
+    }
+
+
+    private void initViews() {
+        binding.tvExerciseName.setText(currentExercise.getName());
+        if ("PLANK".equals(exerciseId)) {
+            binding.tvRepCount.setText("⏱ Время: 0с");
+        }
+        binding.btnBack.setOnClickListener(v -> finish());
+        binding.btnReset.setOnClickListener(v -> {
+            viewModel.resetExercise();
+            resetUI();
+        });
+        binding.btnRecord.setOnClickListener(v -> onRecordClick());
+        if (binding.btnToggleTts != null) {
+            binding.btnToggleTts.setOnClickListener(v -> viewModel.toggleTts());
         }
     }
+
+    private void resetUI() {
+        if ("PLANK".equals(exerciseId)) {
+            binding.tvRepCount.setText("⏱ Время: 0с");
+        } else {
+            binding.tvRepCount.setText("Повторений: 0");
+        }
+        binding.tvFeedback.setText("Встаньте в кадр для начала");
+        binding.tvPhase.setText("● ГОТОВ");
+        binding.tvPhase.setTextColor(0xFFFFFFFF);
+        binding.tvQuality.setText("●●●●●");
+        binding.tvQuality.setTextColor(0xFF00FF88);
+        binding.layoutErrors.setVisibility(android.view.View.GONE);
+        if (wearHelper != null) wearHelper.sendReset();
+        lastSentError = null;
+    }
+
+    private void updateTtsButton(boolean enabled) {
+        if (binding.btnToggleTts == null) return;
+        binding.btnToggleTts.setText(enabled ? "🔊" : "🔇");
+        binding.btnToggleTts.setAlpha(enabled ? 1.0f : 0.5f);
+        if (!enabled && ttsInitialized && textToSpeech != null && textToSpeech.isSpeaking()) {
+            textToSpeech.stop();
+        }
+    }
+
 
     private void applyInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.previewView, (view, windowInsets) -> {
@@ -246,22 +299,26 @@ public class ExerciseActivity extends AppCompatActivity {
             int topOffset = insets.top + getResources().getDimensionPixelSize(R.dimen.exercise_top_margin);
             int bottomOffset = insets.bottom + getResources().getDimensionPixelSize(R.dimen.feedback_card_margin);
 
-            ViewGroup.MarginLayoutParams repParams = (ViewGroup.MarginLayoutParams) tvRepCount.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams repParams =
+                    (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
             repParams.topMargin = topOffset;
-            tvRepCount.setLayoutParams(repParams);
+            binding.tvRepCount.setLayoutParams(repParams);
 
-            ViewGroup.MarginLayoutParams nameParams = (ViewGroup.MarginLayoutParams) tvExerciseName.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams nameParams =
+                    (android.view.ViewGroup.MarginLayoutParams) binding.tvExerciseName.getLayoutParams();
             nameParams.topMargin = topOffset;
-            tvExerciseName.setLayoutParams(nameParams);
+            binding.tvExerciseName.setLayoutParams(nameParams);
 
-            View card = binding.cardFeedback;
-            ViewGroup.MarginLayoutParams cardParams = (ViewGroup.MarginLayoutParams) card.getLayoutParams();
+            android.view.View card = binding.cardFeedback;
+            android.view.ViewGroup.MarginLayoutParams cardParams =
+                    (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
             cardParams.bottomMargin = bottomOffset;
             card.setLayoutParams(cardParams);
 
             return WindowInsetsCompat.CONSUMED;
         });
     }
+
 
     private void initVideoRecorder() {
         videoRecorder = new VideoRecorder(this);
@@ -275,7 +332,7 @@ public class ExerciseActivity extends AppCompatActivity {
             public void onRecordingError(String error) {
                 Toast.makeText(ExerciseActivity.this, "Ошибка: " + error, Toast.LENGTH_SHORT).show();
                 isRecording = false;
-                updateRecordingUI(false);
+                viewModel.setRecording(false);
                 timerHandler.removeCallbacks(timerRunnable);
             }
         });
@@ -287,85 +344,18 @@ public class ExerciseActivity extends AppCompatActivity {
         bindService(si, serviceConnection, Context.BIND_AUTO_CREATE);
     }
 
-    private void initViews() {
-        previewView = binding.previewView;
-        poseOverlay = binding.poseOverlay;
-        tvRepCount = binding.tvRepCount;
-        tvExerciseName = binding.tvExerciseName;
-        tvFeedback = binding.tvFeedback;
-        tvErrors = binding.tvErrors;
-        tvPhase = binding.tvPhase;
-        tvQuality = binding.tvQuality;
-        layoutErrors = binding.layoutErrors;
-        btnBack = binding.btnBack;
-        btnReset = binding.btnReset;
-        btnRecord = binding.btnRecord;
-        layoutRecordingIndicator = binding.layoutRecordingIndicator;
-        viewRecordingDot = binding.viewRecordingDot;
-        tvRecordingTimer = binding.tvRecordingTimer;
-        btnToggleTts = binding.btnToggleTts;
-
-        tvExerciseName.setText(currentExercise.getName());
-
-        if ("PLANK".equals(exerciseId)) {
-            tvRepCount.setText("⏱ Время: 0с");
+    private final ServiceConnection serviceConnection = new ServiceConnection() {
+        @Override public void onServiceConnected(ComponentName name, IBinder binder) {
+            ScreenRecordService.LocalBinder lb = (ScreenRecordService.LocalBinder) binder;
+            recordService = lb.getService();
+            serviceBound = true;
         }
-
-        btnBack.setOnClickListener(v -> finish());
-        btnReset.setOnClickListener(v -> resetExercise());
-        btnRecord.setOnClickListener(v -> onRecordClick());
-
-        if (btnToggleTts != null) {
-            btnToggleTts.setOnClickListener(v -> toggleTts());
-            updateTtsButton();
+        @Override public void onServiceDisconnected(ComponentName name) {
+            serviceBound = false;
+            recordService = null;
         }
-    }
+    };
 
-    private void toggleTts() {
-        isTtsEnabled = !isTtsEnabled;
-        updateTtsButton();
-        if (!isTtsEnabled && ttsInitialized && textToSpeech != null && textToSpeech.isSpeaking()) {
-            textToSpeech.stop();
-        }
-    }
-
-    private void updateTtsButton() {
-        if (btnToggleTts == null) return;
-        btnToggleTts.setText(isTtsEnabled ? "🔊" : "🔇");
-        btnToggleTts.setAlpha(isTtsEnabled ? 1.0f : 0.5f);
-    }
-
-    private void resetExercise() {
-        currentExercise.reset();
-        errorDebouncer.reset();
-
-        if ("PLANK".equals(exerciseId)) {
-            tvRepCount.setText("⏱ Время: 0с");
-            lastRepText = "⏱ Время: 0с";
-        } else {
-            tvRepCount.setText("Повторений: 0");
-            lastRepText = "Повторений: 0";
-        }
-        if (wearHelper != null) wearHelper.sendReset();
-        lastSentError = null;
-
-        tvFeedback.setText("Встаньте в кадр для начала");
-        tvPhase.setText("● ГОТОВ");
-        tvPhase.setTextColor(0xFFFFFFFF);
-        tvQuality.setText("●●●●●");
-        tvQuality.setTextColor(0xFF00FF88);
-        layoutErrors.setVisibility(View.GONE);
-        lastPhaseText = "● ГОТОВ";
-        lastFeedbackText = "";
-        lastPhaseColor = 0xFFFFFFFF;
-    }
-
-    private void initBlinkAnimation() {
-        blinkAnimation = new AlphaAnimation(1.0f, 0.0f);
-        blinkAnimation.setDuration(600);
-        blinkAnimation.setRepeatMode(Animation.REVERSE);
-        blinkAnimation.setRepeatCount(Animation.INFINITE);
-    }
 
     private void onRecordClick() {
         if (isRecording) {
@@ -391,6 +381,7 @@ public class ExerciseActivity extends AppCompatActivity {
     private void startRecording() {
         videoRecorder.startRecording();
         isRecording = true;
+        viewModel.setRecording(true);
         recordSeconds = 0;
         updateRecordingUI(true);
         timerHandler.postDelayed(timerRunnable, 1000);
@@ -401,24 +392,33 @@ public class ExerciseActivity extends AppCompatActivity {
         if (!isRecording) return;
         videoRecorder.stopRecording();
         isRecording = false;
+        viewModel.setRecording(false);
         updateRecordingUI(false);
         timerHandler.removeCallbacks(timerRunnable);
     }
 
     private void updateRecordingUI(boolean rec) {
         if (rec) {
-            btnRecord.setText("⏹ Стоп");
-            btnRecord.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.holo_red_dark));
-            layoutRecordingIndicator.setVisibility(View.VISIBLE);
-            viewRecordingDot.startAnimation(blinkAnimation);
-            tvRecordingTimer.setText("00:00");
+            binding.btnRecord.setText("⏹ Стоп");
+            binding.btnRecord.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.holo_red_dark));
+            binding.layoutRecordingIndicator.setVisibility(android.view.View.VISIBLE);
+            binding.viewRecordingDot.startAnimation(blinkAnimation);
+            binding.tvRecordingTimer.setText("00:00");
         } else {
-            btnRecord.setText("⏺ Запись");
-            btnRecord.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.darker_gray));
-            layoutRecordingIndicator.setVisibility(View.GONE);
-            viewRecordingDot.clearAnimation();
+            binding.btnRecord.setText("⏺ Запись");
+            binding.btnRecord.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.darker_gray));
+            binding.layoutRecordingIndicator.setVisibility(android.view.View.GONE);
+            binding.viewRecordingDot.clearAnimation();
         }
     }
+
+    private void initBlinkAnimation() {
+        blinkAnimation = new AlphaAnimation(1.0f, 0.0f);
+        blinkAnimation.setDuration(600);
+        blinkAnimation.setRepeatMode(Animation.REVERSE);
+        blinkAnimation.setRepeatCount(Animation.INFINITE);
+    }
+
 
     private void initMediaPipe() {
         try {
@@ -430,7 +430,7 @@ public class ExerciseActivity extends AppCompatActivity {
                     .setMinPoseDetectionConfidence(0.5f)
                     .setMinPosePresenceConfidence(0.5f)
                     .setMinTrackingConfidence(0.5f)
-                    .setResultListener(this::onPoseResult)
+                    .setResultListener((result, image) -> viewModel.analyzeFrame(null))
                     .setErrorListener(e -> Log.e(TAG, "MP: " + e.getMessage()))
                     .build();
             poseLandmarker = PoseLandmarker.createFromOptions(this, opts);
@@ -446,7 +446,7 @@ public class ExerciseActivity extends AppCompatActivity {
             try {
                 ProcessCameraProvider provider = future.get();
                 Preview preview = new Preview.Builder().build();
-                preview.setSurfaceProvider(previewView.getSurfaceProvider());
+                preview.setSurfaceProvider(binding.previewView.getSurfaceProvider());
 
                 ImageAnalysis analysis = new ImageAnalysis.Builder()
                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
@@ -462,176 +462,30 @@ public class ExerciseActivity extends AppCompatActivity {
         }, ContextCompat.getMainExecutor(this));
     }
 
-    private String formatHoldTime(int seconds) {
-        if (seconds == 0) return "⏱ Время: 0с";
-        return "⏱ Время: " + seconds + "с";
-    }
-
     private void analyzeFrame(ImageProxy imageProxy) {
-        try {
-            int rotation = imageProxy.getImageInfo().getRotationDegrees();
-            long tsNs = imageProxy.getImageInfo().getTimestamp();
-            Bitmap bitmap = imageProxy.toBitmap();
+        viewModel.analyzeFrame(imageProxy);
+    }
 
-            Matrix matrix = new Matrix();
-            matrix.postRotate(rotation);
-            matrix.postScale(-1f, 1f, bitmap.getWidth() / 2f, bitmap.getHeight() / 2f);
-            Bitmap rotated = Bitmap.createBitmap(bitmap, 0, 0, bitmap.getWidth(), bitmap.getHeight(), matrix, true);
 
-            poseLandmarker.detectAsync(new BitmapImageBuilder(rotated).build(), tsNs);
-
-            if (isRecording) {
-                videoRecorder.submitFrame(rotated, lastPoseResult, lastErrorLandmarks,
-                        lastRepText, lastPhaseText, lastFeedbackText, lastPhaseColor,
-                        currentExercise.getName(), lastQualityText, lastQualityColor, tsNs);
+    private void sendDataToWear(WorkoutResult result) {
+        if (wearHelper == null || !wearHelper.isAvailable()) return;
+        wearHelper.sendPhase(result.phaseText, result.phaseColor);
+        wearHelper.sendRepCount(result.repText);
+        if (result.errors != null && !result.errors.isEmpty()) {
+            String currentError = result.errors.get(0);
+            if (!currentError.equals(lastSentError)) {
+                String cleanError = currentError.replace("⚠ ", "").replace("✅ ", "").trim();
+                wearHelper.sendError(cleanError);
+                lastSentError = currentError;
             }
-        } catch (Exception e) {
-            Log.e(TAG, "analyzeFrame: " + e.getMessage());
-        } finally {
-            imageProxy.close();
-        }
-    }
-
-    private BaseExercise.AnalysisResult buildFilteredAnalysis(
-            BaseExercise.AnalysisResult raw, List<String> filteredErrors) {
-        BaseExercise.AnalysisResult filtered = new BaseExercise.AnalysisResult();
-        filtered.phase = raw.phase;
-        filtered.repCount = raw.repCount;
-        filtered.holdSeconds = raw.holdSeconds;
-
-        if (filteredErrors.isEmpty()) {
-            filtered.mainFeedback = raw.mainFeedback.startsWith("⚠")
-                    ? buildPositiveFeedback(raw.phase) : raw.mainFeedback;
-            return filtered;
-        }
-
-        filtered.errors.addAll(filteredErrors);
-        filtered.errorLandmarks.addAll(raw.errorLandmarks);
-        filtered.mainFeedback = filteredErrors.get(0);
-        return filtered;
-    }
-
-    private String buildPositiveFeedback(String phase) {
-        switch (phase) {
-            case "DOWN": return "✅ Хорошо! Держите позицию";
-            case "UP": return "✅ Отлично!";
-            case "HOLD": return "✅ Держите!";
-            default: return "✅ Начните упражнение";
-        }
-    }
-
-    private void onPoseResult(PoseLandmarkerResult result, MPImage input) {
-        if (result == null || result.landmarks().isEmpty()) {
-            mainHandler.post(() -> {
-                tvFeedback.setText("Встаньте полностью в кадр");
-                tvPhase.setText("● ПОИСК...");
-                tvPhase.setTextColor(0xFFAAAAAA);
-                layoutErrors.setVisibility(View.GONE);
-                poseOverlay.updateResults(null, 0, 0, null);
-            });
-            lastPoseResult = null;
-            lastErrorLandmarks = null;
-            return;
-        }
-
-        BaseExercise.AnalysisResult rawAnalysis = currentExercise.analyze(result.landmarks().get(0));
-        long nowMs = System.currentTimeMillis();
-        List<String> filteredErrors = errorDebouncer.filter(rawAnalysis.errors, nowMs);
-        BaseExercise.AnalysisResult filteredAnalysis = buildFilteredAnalysis(rawAnalysis, filteredErrors);
-
-        if (!filteredAnalysis.errors.isEmpty() && ttsInitialized && isTtsEnabled) {
-            String currentError = filteredAnalysis.errors.get(0);
-            long now = System.currentTimeMillis();
-
-            if (!currentError.equals(lastSpokenError)) {
-                lastErrorStartTime = now;
-                lastSpokenError = currentError;
-            } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS
-                    && !textToSpeech.isSpeaking()
-                    && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
-                String cleanMessage = currentError.replace("⚠ ", "").replace("✅ ", "");
-                Bundle params = new Bundle();
-                params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "error_feedback");
-                textToSpeech.speak(cleanMessage, TextToSpeech.QUEUE_FLUSH, params, "error_feedback");
-                lastSpeechTime = now;
-                lastErrorStartTime = now + MIN_SPEECH_INTERVAL_MS;
-            }
-        } else if (filteredAnalysis.errors.isEmpty()) {
-            lastSpokenError = null;
-            lastErrorStartTime = 0;
-        }
-
-        lastPoseResult = result;
-        lastErrorLandmarks = filteredAnalysis.errorLandmarks;
-        if (filteredAnalysis.holdSeconds >= 0) {
-            lastRepText = formatHoldTime(filteredAnalysis.holdSeconds);
         } else {
-            lastRepText = "Повторений: " + filteredAnalysis.repCount;
-        }
-        lastPhaseText = phaseToText(filteredAnalysis.phase);
-        lastPhaseColor = phaseToColor(filteredAnalysis.phase);
-        lastFeedbackText = filteredAnalysis.mainFeedback;
-
-        mainHandler.post(() -> updateUI(result, filteredAnalysis));
-        sendDataToWear(filteredAnalysis);
-    }
-
-    private void updateUI(PoseLandmarkerResult result, BaseExercise.AnalysisResult analysis) {
-        tvRepCount.setText(lastRepText);
-        tvFeedback.setText(analysis.mainFeedback);
-        tvPhase.setText(lastPhaseText);
-        tvPhase.setTextColor(lastPhaseColor);
-        updateQualityIndicator(analysis.errors.size());
-        updateErrorsBlock(analysis);
-        poseOverlay.updateResults(result, previewView.getWidth(), previewView.getHeight(), analysis.errorLandmarks);
-    }
-
-    private String phaseToText(String phase) {
-        switch (phase) {
-            case "DOWN": return "▼ ВНИЗ";
-            case "UP": return "▲ ВВЕРХ";
-            case "HOLD": return "⏸ ДЕРЖИ";
-            default: return "● ГОТОВ";
-        }
-    }
-
-    private int phaseToColor(String phase) {
-        switch (phase) {
-            case "DOWN": return 0xFF00FF88;
-            case "UP": return 0xFF00AAFF;
-            case "HOLD": return 0xFFFFAA00;
-            default: return 0xFFFFFFFF;
-        }
-    }
-
-    private void updateQualityIndicator(int errorCount) {
-        String q;
-        int c;
-        if (errorCount == 0) { q = "●●●●●"; c = 0xFF00FF88; }
-        else if (errorCount == 1) { q = "●●●●○"; c = 0xFF88FF00; }
-        else if (errorCount == 2) { q = "●●●○○"; c = 0xFFFFFF00; }
-        else if (errorCount == 3) { q = "●●○○○"; c = 0xFFFF8800; }
-        else { q = "●○○○○"; c = 0xFFFF0000; }
-
-        lastQualityText = q;
-        lastQualityColor = c;
-        tvQuality.setText(q);
-        tvQuality.setTextColor(c);
-    }
-
-    private void updateErrorsBlock(BaseExercise.AnalysisResult a) {
-        if (a.errors.size() > 1) {
-            layoutErrors.setVisibility(View.VISIBLE);
-            StringBuilder sb = new StringBuilder();
-            for (int i = 1; i < a.errors.size(); i++) {
-                sb.append(a.errors.get(i));
-                if (i < a.errors.size() - 1) sb.append("\n");
+            if (lastSentError != null) {
+                wearHelper.sendError("");
+                lastSentError = null;
             }
-            tvErrors.setText(sb.toString());
-        } else {
-            layoutErrors.setVisibility(View.GONE);
         }
     }
+
 
     @Override
     protected void onPause() {
@@ -686,52 +540,5 @@ public class ExerciseActivity extends AppCompatActivity {
         }
         ttsInitialized = false;
         if (poseLandmarker != null) poseLandmarker.close();
-    }
-
-    private void sendDataToWear(BaseExercise.AnalysisResult analysis) {
-        if (wearHelper == null || !wearHelper.isAvailable()) return;
-        wearHelper.sendPhase(lastPhaseText, lastPhaseColor);
-        wearHelper.sendRepCount(lastRepText);
-        if (!analysis.errors.isEmpty()) {
-            String currentError = analysis.errors.get(0);
-            if (!currentError.equals(lastSentError)) {
-                String cleanError = currentError.replace("⚠ ", "").replace("✅ ", "").trim();
-                wearHelper.sendError(cleanError);
-                lastSentError = currentError;
-            }
-        } else {
-            if (lastSentError != null) {
-                wearHelper.sendError("");
-                lastSentError = null;
-            }
-        }
-    }
-
-    private static class ErrorDebouncer {
-        private static final long DEBOUNCE_MS = 250L;
-        private final java.util.HashMap<String, Long> firstSeenMap = new java.util.HashMap<>();
-        private final java.util.HashSet<String> confirmedErrors = new java.util.HashSet<>();
-
-        public List<String> filter(List<String> rawErrors, long nowMs) {
-            firstSeenMap.keySet().retainAll(rawErrors);
-            confirmedErrors.retainAll(rawErrors);
-            for (String error : rawErrors) {
-                if (!firstSeenMap.containsKey(error)) firstSeenMap.put(error, nowMs);
-            }
-            List<String> result = new ArrayList<>();
-            for (String error : rawErrors) {
-                Long firstSeen = firstSeenMap.get(error);
-                if (firstSeen != null && (nowMs - firstSeen) >= DEBOUNCE_MS) {
-                    confirmedErrors.add(error);
-                    result.add(error);
-                }
-            }
-            return result;
-        }
-
-        public void reset() {
-            firstSeenMap.clear();
-            confirmedErrors.clear();
-        }
     }
 }

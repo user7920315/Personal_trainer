@@ -1,12 +1,13 @@
 package ru.sv.wear;
 
-import android.content.Intent;
 import android.util.Log;
 
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
 
 import java.lang.ref.WeakReference;
+
+import ru.sv.wear.repository.WearRepository;
 
 public class WearDataListenerService extends WearableListenerService {
 
@@ -16,21 +17,20 @@ public class WearDataListenerService extends WearableListenerService {
     private static final String PATH_RESET = "/exercise/reset";
     private static final String PATH_REPS = "/exercise/reps";
 
-    private static WeakReference<MainActivity> mainActivityRef = null;
+    private static WeakReference<WearRepository> repositoryRef = null;
 
-    public static void setMainActivity(MainActivity activity) {
-        if (activity != null) {
-            mainActivityRef = new WeakReference<>(activity);
+    public static void setRepository(WearRepository repository) {
+        if (repository != null) {
+            repositoryRef = new WeakReference<>(repository);
         } else {
-            mainActivityRef = null;
+            repositoryRef = null;
         }
-        Log.d(TAG, "MainActivity reference " +
-                (activity != null ? "set" : "cleared"));
+        Log.d(TAG, "Repository reference " + (repository != null ? "set" : "cleared"));
     }
 
-    private MainActivity getActivity() {
-        if (mainActivityRef == null) return null;
-        return mainActivityRef.get();
+    private WearRepository getRepository() {
+        if (repositoryRef == null) return null;
+        return repositoryRef.get();
     }
 
     @Override
@@ -42,25 +42,31 @@ public class WearDataListenerService extends WearableListenerService {
 
         Log.d(TAG, "Получено: path=" + path + " data=" + message);
 
+        WearRepository repo = getRepository();
+        if (repo == null) {
+            Log.w(TAG, "Repository not available");
+            return;
+        }
+
         switch (path) {
             case PATH_ERROR:
-                handleError(message);
+                handleError(repo, message);
                 break;
             case PATH_PHASE:
-                handlePhase(message);
+                handlePhase(repo, message);
                 break;
             case PATH_RESET:
-                handleReset();
+                handleReset(repo);
                 break;
             case PATH_REPS:
-                handleRepCount(message);
+                handleRepCount(repo, message);
                 break;
             default:
                 Log.w(TAG, "Неизвестный путь: " + path);
         }
     }
 
-    private void handlePhase(String data) {
+    private void handlePhase(WearRepository repo, String data) {
         String[] parts = data.split("\\|");
         if (parts.length != 2) {
             Log.e(TAG, "Неверный формат фазы: " + data);
@@ -68,40 +74,26 @@ public class WearDataListenerService extends WearableListenerService {
         }
         try {
             String phaseText = parts[0];
-
             int color = (int) Long.parseLong(parts[1], 16);
-
-            MainActivity activity = getActivity();
-            if (activity != null) {
-                activity.markConnected();
-                activity.updatePhase(phaseText, color);
-            }
+            repo.setConnected(true);
+            repo.updatePhase(phaseText, color);
         } catch (NumberFormatException e) {
             Log.e(TAG, "Ошибка парсинга цвета: " + parts[1], e);
         }
     }
 
-    private void handleRepCount(String repText) {
-        MainActivity activity = getActivity();
-        if (activity != null) {
-            activity.updateRepCount(repText);
-        }
+    private void handleRepCount(WearRepository repo, String repText) {
+        repo.updateRepCount(repText);
     }
 
-    private void handleError(String errorText) {
+    private void handleError(WearRepository repo, String errorText) {
         Log.d(TAG, "Ошибка: " + errorText);
-        MainActivity activity = getActivity();
-        if (activity != null) {
-            activity.markConnected();
-            activity.updateError(errorText);
-        }
+        repo.setConnected(true);
+        repo.updateError(errorText);
     }
 
-    private void handleReset() {
+    private void handleReset(WearRepository repo) {
         Log.d(TAG, "Сброс");
-        MainActivity activity = getActivity();
-        if (activity != null) {
-            activity.resetDisplay();
-        }
+        repo.reset();
     }
 }
