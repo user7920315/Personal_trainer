@@ -3,37 +3,31 @@ package ru.sv.wear;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
-import android.widget.TextView;
 
 import androidx.activity.ComponentActivity;
+
+import ru.sv.wear.databinding.ActivityMainBinding;
 
 public class MainActivity extends ComponentActivity {
 
     private static final String TAG = "WearMainActivity";
 
-    private TextView tvPhase;
-    private TextView tvError;
-    private TextView tvConnection;
-    private TextView tvRepCount;
+    private ActivityMainBinding binding;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
 
-        tvPhase = findViewById(R.id.tvPhase);
-        tvError = findViewById(R.id.tvError);
-        tvConnection = findViewById(R.id.tvConnection);
-        tvRepCount = findViewById(R.id.tvRepCount);
+        binding = ActivityMainBinding.inflate(getLayoutInflater());
+        setContentView(binding.getRoot());
 
         WearDataListenerService.setMainActivity(this);
 
-        tvPhase.setText("⏳ Поиск...");
-        tvPhase.setTextColor(0xFFAAAAAA);
-        tvError.setVisibility(View.GONE);
-        tvConnection.setText("○○○");
-        tvConnection.setTextColor(0xFFFF5555);
+        binding.tvPhase.setText("⏳ Поиск...");
+        binding.tvPhase.setTextColor(0xFFAAAAAA);
+        binding.tvError.setVisibility(android.view.View.GONE);
+        binding.tvConnection.setText("○○○");
+        binding.tvConnection.setTextColor(0xFFFF5555);
     }
 
     @Override
@@ -41,65 +35,59 @@ public class MainActivity extends ComponentActivity {
         super.onDestroy();
         WearDataListenerService.setMainActivity(null);
         Log.d(TAG, "onDestroy");
+        binding = null;
     }
 
     public void markConnected() {
         runOnUiThread(() -> {
-            tvConnection.setText("●●●");
-            tvConnection.setTextColor(0xFF00FF88);
-            if (tvPhase.getText().toString().contains("Поиск")) {
-                tvPhase.setText("ГОТОВ");
-                tvPhase.setTextColor(0xFFFFFFFF);
+            binding.tvConnection.setText("●●●");
+            binding.tvConnection.setTextColor(0xFF00FF88);
+            if (binding.tvPhase.getText().toString().contains("Поиск")) {
+                binding.tvPhase.setText("ГОТОВ");
+                binding.tvPhase.setTextColor(0xFFFFFFFF);
             }
         });
     }
 
     public void updatePhase(String phase, int color) {
         runOnUiThread(() -> {
-            if (tvPhase != null) {
-                tvPhase.setText(phase);
-                tvPhase.setTextColor(color);
+            if (binding != null) {
+                binding.tvPhase.setText(phase);
+                binding.tvPhase.setTextColor(color);
             }
         });
     }
 
     public void updateError(String error) {
         runOnUiThread(() -> {
-            if (tvError == null) return;
+            if (binding == null) return;
             if (error != null && !error.isEmpty()) {
-                tvError.setText(error);
-                tvError.setVisibility(View.VISIBLE);
-                tvError.setTextColor(Color.parseColor("#FF5555"));
+                binding.tvError.setText(error);
+                binding.tvError.setVisibility(android.view.View.VISIBLE);
+                binding.tvError.setTextColor(Color.parseColor("#FF5555"));
             } else {
-                tvError.setVisibility(View.GONE);
+                binding.tvError.setVisibility(android.view.View.GONE);
             }
         });
     }
 
     public void updateRepCount(String repText) {
         runOnUiThread(() -> {
-            if (tvRepCount != null) {
-                tvRepCount.setText(repText);
+            if (binding != null) {
+                binding.tvRepCount.setText(repText);
             }
         });
     }
 
     public void resetDisplay() {
         runOnUiThread(() -> {
-            if (tvPhase != null) {
-                tvPhase.setText("ГОТОВ");
-                tvPhase.setTextColor(Color.WHITE);
-            }
-            if (tvError != null) {
-                tvError.setVisibility(View.GONE);
-            }
-            if (tvConnection != null) {
-                tvConnection.setText("●●●");
-                tvConnection.setTextColor(0xFF00FF88);
-            }
-            if (tvRepCount != null) {
-                tvRepCount.setText("0");
-            }
+            if (binding == null) return;
+            binding.tvPhase.setText("ГОТОВ");
+            binding.tvPhase.setTextColor(Color.WHITE);
+            binding.tvError.setVisibility(android.view.View.GONE);
+            binding.tvConnection.setText("●●●");
+            binding.tvConnection.setTextColor(0xFF00FF88);
+            binding.tvRepCount.setText("0");
         });
     }
 }
