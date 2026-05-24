@@ -25,9 +25,6 @@ public class MainActivity extends ComponentActivity {
         setContentView(binding.getRoot());
 
         viewModel = new ViewModelProvider(this).get(WearViewModel.class);
-        viewModel.initRepository();
-
-        WearDataListenerService.setRepository(viewModel.getRepository());
 
         viewModel.getPhaseText().observe(this, text -> {
             binding.tvPhase.setText(text);
@@ -52,25 +49,20 @@ public class MainActivity extends ComponentActivity {
             binding.tvRepCount.setText(text);
         });
 
-        viewModel.getConnectionStatus().observe(this, status -> {
-            binding.tvConnection.setText(status);
+        viewModel.getConnectionText().observe(this, text -> {
+            binding.tvConnection.setText(text);
         });
 
         viewModel.getConnectionColor().observe(this, color -> {
             binding.tvConnection.setTextColor(color);
         });
 
-        binding.tvPhase.setText("⏳ Поиск...");
-        binding.tvPhase.setTextColor(0xFFAAAAAA);
-        binding.tvError.setVisibility(android.view.View.GONE);
-        binding.tvConnection.setText("○○○");
-        binding.tvConnection.setTextColor(0xFFFF5555);
+        viewModel.setConnected(false);
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        WearDataListenerService.setRepository(null);
         Log.d(TAG, "onDestroy");
         binding = null;
     }

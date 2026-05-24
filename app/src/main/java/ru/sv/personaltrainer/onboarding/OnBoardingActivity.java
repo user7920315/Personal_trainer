@@ -1,7 +1,6 @@
 package ru.sv.personaltrainer.onboarding;
 
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,16 +8,15 @@ import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.viewpager2.widget.ViewPager2;
 
-import java.util.List;
-
 import ru.sv.personaltrainer.ExerciseListActivity;
-import ru.sv.personaltrainer.MainActivity;
 import ru.sv.personaltrainer.R;
 import ru.sv.personaltrainer.databinding.ActivityOnboardingBinding;
 import ru.sv.personaltrainer.databinding.ItemOnboardingBinding;
+import ru.sv.personaltrainer.viewmodel.OnBoardingViewModel;
 
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -29,6 +27,7 @@ public class OnBoardingActivity extends AppCompatActivity {
 
     private ActivityOnboardingBinding binding;
     private ViewPager2 viewPager;
+    private OnBoardingViewModel viewModel;
 
     private static final int[] ICONS = {
             R.drawable.ic_fitness, R.drawable.ic_fitness,
@@ -69,6 +68,14 @@ public class OnBoardingActivity extends AppCompatActivity {
                             WindowInsetsCompat.Type.displayCutout());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return WindowInsetsCompat.CONSUMED;
+        });
+
+        viewModel = new ViewModelProvider(this).get(OnBoardingViewModel.class);
+        viewModel.getOnboardingComplete().observe(this, done -> {
+            if (done != null && done) {
+                startActivity(new Intent(this, ExerciseListActivity.class));
+                finish();
+            }
         });
 
         viewPager = binding.onboardingViewpager;
@@ -114,12 +121,7 @@ public class OnBoardingActivity extends AppCompatActivity {
     }
 
     private void finishOnBoarding() {
-        getSharedPreferences(MainActivity.PREFS_NAME, MODE_PRIVATE)
-                .edit()
-                .putBoolean(MainActivity.KEY_ONBOARDING_DONE, true)
-                .apply();
-        startActivity(new Intent(this, ExerciseListActivity.class));
-        finish();
+        viewModel.finishOnboarding();
     }
 
     private class OnBoardingPagerAdapter extends RecyclerView.Adapter<OnBoardingPagerAdapter.VH> {
