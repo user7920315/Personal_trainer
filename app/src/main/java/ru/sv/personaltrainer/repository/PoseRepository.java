@@ -14,13 +14,10 @@ import com.google.mediapipe.tasks.vision.core.RunningMode;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import ru.sv.personaltrainer.exercises.BaseExercise;
-import ru.sv.personaltrainer.model.WorkoutResult;
 
 public class PoseRepository {
 
@@ -33,11 +30,10 @@ public class PoseRepository {
     private final ErrorDebouncer errorDebouncer;
 
     public interface PoseCallback {
-        void onResult(WorkoutResult result);
+        void onAnalysis(BaseExercise.AnalysisResult analysis, PoseLandmarkerResult poseResult);
     }
 
     private PoseCallback callback;
-    private String lastRepText = "Повторений: 0";
 
     public PoseRepository(Context context, BaseExercise exercise) throws Exception {
         this.currentExercise = exercise;
@@ -90,111 +86,18 @@ public class PoseRepository {
     private void onPoseResultInternal(PoseLandmarkerResult result) {
         if (result == null || result.landmarks().isEmpty()) {
             mainHandler.post(() -> {
-                if (callback != null) {
-                    WorkoutResult r = new WorkoutResult();
-                    r.mainFeedback = "Встаньте полностью в кадр";
-                    r.phaseText = "● ПОИСК...";
-                    r.phaseColor = 0xFFAAAAAA;
-                    r.repText = lastRepText;
-                    r.qualityText = "●●●●●";
-                    r.qualityColor = 0xFF00FF88;
-                    r.errors = new ArrayList<>();
-                    r.errorLandmarks = new ArrayList<>();
-                    r.poseResult = null;
-                    callback.onResult(r);
-                }
+                if (callback != null) callback.onAnalysis(null, null);
             });
             return;
         }
 
         BaseExercise.AnalysisResult rawAnalysis = currentExercise.analyze(result.landmarks().get(0));
         long nowMs = System.currentTimeMillis();
-        List<String> filteredErrors = errorDebouncer.filter(rawAnalysis.errors, nowMs);
-        WorkoutResult workoutResult = buildWorkoutResult(rawAnalysis, filteredErrors, result);
-
-        lastRepText = workoutResult.repText;
+        rawAnalysis.errors = errorDebouncer.filter(rawAnalysis.errors, nowMs);
 
         mainHandler.post(() -> {
-            if (callback != null) callback.onResult(workoutResult);
+            if (callback != null) callback.onAnalysis(rawAnalysis, result);
         });
-    }
-
-    private WorkoutResult buildWorkoutResult(BaseExercise.AnalysisResult raw,
-                                             List<String> filteredErrors,
-                                             PoseLandmarkerResult poseResult) {
-        WorkoutResult r = new WorkoutResult();
-        r.poseResult = poseResult;
-        r.phase = raw.phase;
-        r.repCount = raw.repCount;
-        r.holdSeconds = raw.holdSeconds;
-
-        if (filteredErrors.isEmpty()) {
-            r.mainFeedback = raw.mainFeedback.startsWith("⚠")
-                    ? buildPositiveFeedback(raw.phase) : raw.mainFeedback;
-            r.errors = new ArrayList<>();
-            r.errorLandmarks = new ArrayList<>();
-        } else {
-            r.errors = new ArrayList<>(filteredErrors);
-            r.errorLandmarks = new ArrayList<>(raw.errorLandmarks);
-            r.mainFeedback = filteredErrors.get(0);
-        }
-
-        r.repText = (r.holdSeconds >= 0)
-                ? formatHoldTime(r.holdSeconds)
-                : "Повторений: " + r.repCount;
-        r.phaseText = phaseToText(r.phase);
-        r.phaseColor = phaseToColor(r.phase);
-        r.qualityText = qualityToText(r.errors.size());
-        r.qualityColor = qualityToColor(r.errors.size());
-
-        return r;
-    }
-
-    private String formatHoldTime(int seconds) {
-        return seconds == 0 ? "⏱ Время: 0с" : "⏱ Время: " + seconds + "с";
-    }
-
-    private String buildPositiveFeedback(String phase) {
-        switch (phase) {
-            case "DOWN": return "✅ Хорошо! Держите позицию";
-            case "UP": return "✅ Отлично!";
-            case "HOLD": return "✅ Держите!";
-            default: return "✅ Начните упражнение";
-        }
-    }
-
-    private String phaseToText(String phase) {
-        switch (phase) {
-            case "DOWN": return "▼ ВНИЗ";
-            case "UP": return "▲ ВВЕРХ";
-            case "HOLD": return "⏸ ДЕРЖИ";
-            default: return "● ГОТОВ";
-        }
-    }
-
-    private int phaseToColor(String phase) {
-        switch (phase) {
-            case "DOWN": return 0xFF00FF88;
-            case "UP": return 0xFF00AAFF;
-            case "HOLD": return 0xFFFFAA00;
-            default: return 0xFFFFFFFF;
-        }
-    }
-
-    private String qualityToText(int errorCount) {
-        if (errorCount == 0) return "●●●●●";
-        if (errorCount == 1) return "●●●●○";
-        if (errorCount == 2) return "●●●○○";
-        if (errorCount == 3) return "●●○○○";
-        return "●○○○○";
-    }
-
-    private int qualityToColor(int errorCount) {
-        if (errorCount == 0) return 0xFF00FF88;
-        if (errorCount == 1) return 0xFF88FF00;
-        if (errorCount == 2) return 0xFFFFFF00;
-        if (errorCount == 3) return 0xFFFF8800;
-        return 0xFFFF0000;
     }
 
     public void resetExercise() {

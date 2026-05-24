@@ -1,25 +1,24 @@
 package ru.sv.personaltrainer;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 import android.widget.MediaController;
-import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 
 import ru.sv.personaltrainer.databinding.ActivityExerciseDetailBinding;
-import ru.sv.personaltrainer.exercises.ExerciseRegistry;
 import ru.sv.personaltrainer.model.ExerciseInfo;
+import ru.sv.personaltrainer.viewmodel.ExerciseDetailViewModel;
 
 public class ExerciseDetailActivity extends AppCompatActivity {
 
     private ActivityExerciseDetailBinding binding;
-    private ExerciseInfo exerciseInfo;
+    private ExerciseDetailViewModel viewModel;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -54,32 +53,28 @@ public class ExerciseDetailActivity extends AppCompatActivity {
             return;
         }
 
-        exerciseInfo = findExerciseInfo(exerciseId);
-        if (exerciseInfo == null) {
-            finish();
-            return;
-        }
+        viewModel = new ViewModelProvider(this).get(ExerciseDetailViewModel.class);
+        viewModel.loadExercise(exerciseId);
 
-        fillData();
-        setupVideo();
-        setupButtons(exerciseId);
+        viewModel.getExerciseInfo().observe(this, info -> {
+            if (info == null) {
+                finish();
+                return;
+            }
+            fillData(info);
+            setupVideo(info);
+            setupButtons(exerciseId);
+        });
     }
 
-    private ExerciseInfo findExerciseInfo(String id) {
-        for (ExerciseInfo info : ExerciseRegistry.getAll()) {
-            if (info.getId().equals(id)) return info;
-        }
-        return null;
+    private void fillData(ExerciseInfo info) {
+        binding.tvDetailTitle.setText(info.getEmoji() + " " + info.getTitle());
+        binding.tvDetailMeta.setText(info.getMuscleGroup() + "  •  " + info.getDifficulty());
+        binding.tvDetailDescription.setText(info.getDescription());
     }
 
-    private void fillData() {
-        binding.tvDetailTitle.setText(exerciseInfo.getEmoji() + " " + exerciseInfo.getTitle());
-        binding.tvDetailMeta.setText(exerciseInfo.getMuscleGroup() + "  •  " + exerciseInfo.getDifficulty());
-        binding.tvDetailDescription.setText(exerciseInfo.getDescription());
-    }
-
-    private void setupVideo() {
-        String videoFile = exerciseInfo.getVideoFileName();
+    private void setupVideo(ExerciseInfo info) {
+        String videoFile = info.getVideoFileName();
         try {
             String path = "file:///android_asset/videos/" + videoFile;
             binding.videoView.setVideoPath(path);

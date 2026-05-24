@@ -2,18 +2,16 @@ package ru.sv.personaltrainer;
 
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.Editable;
-import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.EditText;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.lifecycle.ViewModelProvider;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -22,15 +20,14 @@ import java.util.List;
 
 import ru.sv.personaltrainer.databinding.ActivityExerciseListBinding;
 import ru.sv.personaltrainer.databinding.ItemExerciseBinding;
-import ru.sv.personaltrainer.exercises.ExerciseRegistry;
 import ru.sv.personaltrainer.model.ExerciseInfo;
+import ru.sv.personaltrainer.viewmodel.ExerciseListViewModel;
 
 public class ExerciseListActivity extends AppCompatActivity {
 
     private ActivityExerciseListBinding binding;
+    private ExerciseListViewModel viewModel;
     private ExerciseAdapter adapter;
-    private List<ExerciseInfo> allExercises;
-    private List<ExerciseInfo> filteredExercises;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -48,27 +45,28 @@ public class ExerciseListActivity extends AppCompatActivity {
             return WindowInsetsCompat.CONSUMED;
         });
 
-        allExercises = ExerciseRegistry.getAll();
-        filteredExercises = new ArrayList<>(allExercises);
+        viewModel = new ViewModelProvider(this).get(ExerciseListViewModel.class);
 
         setupRecycler();
         setupSearch();
         setupProfile();
+
+        viewModel.getFilteredExercises().observe(this, list -> adapter.submitList(list));
     }
 
     private void setupRecycler() {
         binding.recyclerExercises.setLayoutManager(new LinearLayoutManager(this));
-        adapter = new ExerciseAdapter(filteredExercises, this::onExerciseClick);
+        adapter = new ExerciseAdapter(this::onExerciseClick);
         binding.recyclerExercises.setAdapter(adapter);
     }
 
     private void setupSearch() {
-        binding.etSearch.addTextChangedListener(new TextWatcher() {
+        binding.etSearch.addTextChangedListener(new android.text.TextWatcher() {
             @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-            @Override public void afterTextChanged(Editable s) {}
+            @Override public void afterTextChanged(android.text.Editable s) {}
             @Override
             public void onTextChanged(CharSequence s, int start, int b, int count) {
-                filterExercises(s.toString());
+                viewModel.filter(s.toString());
             }
         });
     }
@@ -77,22 +75,6 @@ public class ExerciseListActivity extends AppCompatActivity {
         binding.btnProfile.setOnClickListener(v -> {
             startActivity(new Intent(this, ProfileActivity.class));
         });
-    }
-
-    private void filterExercises(String query) {
-        filteredExercises.clear();
-        if (query.isEmpty()) {
-            filteredExercises.addAll(allExercises);
-        } else {
-            String lower = query.toLowerCase();
-            for (ExerciseInfo ex : allExercises) {
-                if (ex.getTitle().toLowerCase().contains(lower)
-                        || ex.getMuscleGroup().toLowerCase().contains(lower)) {
-                    filteredExercises.add(ex);
-                }
-            }
-        }
-        adapter.notifyDataSetChanged();
     }
 
     private void onExerciseClick(ExerciseInfo exercise) {
@@ -106,12 +88,16 @@ public class ExerciseListActivity extends AppCompatActivity {
             void onClick(ExerciseInfo exercise);
         }
 
-        private final List<ExerciseInfo> items;
+        private List<ExerciseInfo> items = new ArrayList<>();
         private final OnClickListener listener;
 
-        ExerciseAdapter(List<ExerciseInfo> items, OnClickListener listener) {
-            this.items = items;
+        ExerciseAdapter(OnClickListener listener) {
             this.listener = listener;
+        }
+
+        void submitList(List<ExerciseInfo> list) {
+            this.items = list != null ? list : new ArrayList<>();
+            notifyDataSetChanged();
         }
 
         @Override

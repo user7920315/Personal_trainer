@@ -209,14 +209,6 @@
                             android:layout_weight="1"
                             android:orientation="vertical">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="4dp"
-                                android:text="Рост (см)"
-                                android:textColor="#AAAAAA"
-                                android:textSize="@dimen/text_xs" />
-
                             <com.google.android.material.textfield.TextInputLayout
                                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                                 android:layout_width="match_parent"
@@ -227,7 +219,7 @@
                                     android:id="@+id/etHeight"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:hint="175"
+                                    android:hint="Рост (см)"
                                     android:inputType="numberDecimal"
                                     android:textColor="#FFFFFF"
                                     android:textColorHint="#666666"
@@ -244,13 +236,6 @@
                             android:layout_weight="1"
                             android:orientation="vertical">
 
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="4dp"
-                                android:text="Вес (кг)"
-                                android:textColor="#AAAAAA"
-                                android:textSize="@dimen/text_xs" />
 
                             <com.google.android.material.textfield.TextInputLayout
                                 style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -262,7 +247,7 @@
                                     android:id="@+id/etWeight"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:hint="70"
+                                    android:hint="Вес (кг)"
                                     android:inputType="numberDecimal"
                                     android:textColor="#FFFFFF"
                                     android:textColorHint="#666666"
@@ -274,14 +259,7 @@
 
                     </LinearLayout>
 
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="@dimen/spacing_sm"
-                        android:layout_marginBottom="4dp"
-                        android:text="Возраст"
-                        android:textColor="#AAAAAA"
-                        android:textSize="@dimen/text_xs" />
+
 
                     <com.google.android.material.textfield.TextInputLayout
                         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
@@ -293,7 +271,7 @@
                             android:id="@+id/etAge"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="25"
+                            android:hint="Возраст"
                             android:inputType="number"
                             android:textColor="#FFFFFF"
                             android:textColorHint="#666666"

@@ -6,8 +6,6 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
-import android.graphics.Matrix;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -37,11 +35,6 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
 import com.google.common.util.concurrent.ListenableFuture;
-import com.google.mediapipe.framework.image.BitmapImageBuilder;
-import com.google.mediapipe.tasks.core.BaseOptions;
-import com.google.mediapipe.tasks.vision.core.RunningMode;
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarker;
-import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
@@ -50,7 +43,7 @@ import java.util.concurrent.Executors;
 import ru.sv.personaltrainer.databinding.ActivityExerciseBinding;
 import ru.sv.personaltrainer.exercises.BaseExercise;
 import ru.sv.personaltrainer.exercises.ExerciseRegistry;
-import ru.sv.personaltrainer.exercises.PlankExercise;
+import ru.sv.personaltrainer.model.WearData;
 import ru.sv.personaltrainer.model.WorkoutResult;
 import ru.sv.personaltrainer.viewmodel.ExerciseViewModel;
 import ru.sv.personaltrainer.wear.WearHelper;
@@ -58,7 +51,6 @@ import ru.sv.personaltrainer.wear.WearHelper;
 public class ExerciseActivity extends AppCompatActivity {
 
     private static final String TAG = "ExerciseActivity";
-    private static final String MODEL_FILE = "pose_landmarker_full.task";
     private static final int AUDIO_PERMISSION_CODE = 200;
 
     private ActivityExerciseBinding binding;
@@ -72,7 +64,6 @@ public class ExerciseActivity extends AppCompatActivity {
     private static final long TTS_THRESHOLD_MS = 500L;
     private static final long MIN_SPEECH_INTERVAL_MS = 2500L;
 
-    private PoseLandmarker poseLandmarker;
     private ExecutorService cameraExecutor;
 
     private VideoRecorder videoRecorder;
@@ -116,27 +107,34 @@ public class ExerciseActivity extends AppCompatActivity {
             return;
         }
 
-        viewModel = new ViewModelProvider(this).get(ExerciseViewModel.class);
-        viewModel.initExercise(this, currentExercise);
+        viewModel = new ViewModelProvider(this,
+                new ExerciseViewModel.Factory(getApplication(), currentExercise))
+                .get(ExerciseViewModel.class);
 
         viewModel.getWorkoutResult().observe(this, this::onWorkoutResult);
         viewModel.getIsRecording().observe(this, this::updateRecordingUI);
-        viewModel.getTtsEnabled().observe(this, enabled -> updateTtsButton(enabled));
+        viewModel.getTtsEnabled().observe(this, this::updateTtsButton);
+        viewModel.getTtsEvent().observe(this, event -> {
+            String error = event.getContentIfNotHandled();
+            if (error != null && ttsInitialized && viewModel.isTtsEnabled()) {
+                speakError(error);
+            }
+        });
+        viewModel.getWearData().observe(this, this::sendDataToWear);
 
         initViews();
         applyInsets();
         initTextToSpeech();
-        initMediaPipe();
         initBlinkAnimation();
         initVideoRecorder();
 
         cameraExecutor = Executors.newSingleThreadExecutor();
         setupCameraPermission();
-        wearHelper = new WearHelper(this);
     }
 
-
     private void onWorkoutResult(WorkoutResult result) {
+        if (result == null) return;
+
         binding.tvRepCount.setText(result.repText);
         binding.tvFeedback.setText(result.mainFeedback);
         binding.tvPhase.setText(result.phaseText);
@@ -166,18 +164,7 @@ public class ExerciseActivity extends AppCompatActivity {
         } else {
             binding.layoutErrors.setVisibility(android.view.View.GONE);
         }
-
-        if (result.errors != null && !result.errors.isEmpty()
-                && ttsInitialized && viewModel.isTtsEnabled()) {
-            speakError(result.errors.get(0));
-        } else if (result.errors == null || result.errors.isEmpty()) {
-            lastSpokenError = null;
-            lastErrorStartTime = 0;
-        }
-
-        sendDataToWear(result);
     }
-
 
     private void initTextToSpeech() {
         textToSpeech = new TextToSpeech(this, status -> {
@@ -219,7 +206,6 @@ public class ExerciseActivity extends AppCompatActivity {
         }
     }
 
-
     private ActivityResultLauncher<String> cameraPermissionLauncher = registerForActivityResult(
             new ActivityResultContracts.RequestPermission(),
             isGranted -> {
@@ -246,7 +232,6 @@ public class ExerciseActivity extends AppCompatActivity {
         startCamera();
         wearHelper = new WearHelper(this);
     }
-
 
     private void initViews() {
         binding.tvExerciseName.setText(currentExercise.getName());
@@ -289,7 +274,6 @@ public class ExerciseActivity extends AppCompatActivity {
         }
     }
 
-
     private void applyInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.previewView, (view, windowInsets) -> {
             Insets insets = windowInsets.getInsets(
@@ -318,7 +302,6 @@ public class ExerciseActivity extends AppCompatActivity {
             return WindowInsetsCompat.CONSUMED;
         });
     }
-
 
     private void initVideoRecorder() {
         videoRecorder = new VideoRecorder(this);
@@ -355,7 +338,6 @@ public class ExerciseActivity extends AppCompatActivity {
             recordService = null;
         }
     };
-
 
     private void onRecordClick() {
         if (isRecording) {
@@ -419,27 +401,6 @@ public class ExerciseActivity extends AppCompatActivity {
         blinkAnimation.setRepeatCount(Animation.INFINITE);
     }
 
-
-    private void initMediaPipe() {
-        try {
-            BaseOptions base = BaseOptions.builder().setModelAssetPath(MODEL_FILE).build();
-            PoseLandmarker.PoseLandmarkerOptions opts = PoseLandmarker.PoseLandmarkerOptions.builder()
-                    .setBaseOptions(base)
-                    .setRunningMode(RunningMode.LIVE_STREAM)
-                    .setNumPoses(1)
-                    .setMinPoseDetectionConfidence(0.5f)
-                    .setMinPosePresenceConfidence(0.5f)
-                    .setMinTrackingConfidence(0.5f)
-                    .setResultListener((result, image) -> viewModel.analyzeFrame(null))
-                    .setErrorListener(e -> Log.e(TAG, "MP: " + e.getMessage()))
-                    .build();
-            poseLandmarker = PoseLandmarker.createFromOptions(this, opts);
-        } catch (Exception e) {
-            Log.e(TAG, "MediaPipe: " + e.getMessage());
-            finish();
-        }
-    }
-
     private void startCamera() {
         ListenableFuture<ProcessCameraProvider> future = ProcessCameraProvider.getInstance(this);
         future.addListener(() -> {
@@ -466,17 +427,14 @@ public class ExerciseActivity extends AppCompatActivity {
         viewModel.analyzeFrame(imageProxy);
     }
 
-
-    private void sendDataToWear(WorkoutResult result) {
+    private void sendDataToWear(WearData data) {
         if (wearHelper == null || !wearHelper.isAvailable()) return;
-        wearHelper.sendPhase(result.phaseText, result.phaseColor);
-        wearHelper.sendRepCount(result.repText);
-        if (result.errors != null && !result.errors.isEmpty()) {
-            String currentError = result.errors.get(0);
-            if (!currentError.equals(lastSentError)) {
-                String cleanError = currentError.replace("⚠ ", "").replace("✅ ", "").trim();
-                wearHelper.sendError(cleanError);
-                lastSentError = currentError;
+        wearHelper.sendPhase(data.phaseText, data.phaseColor);
+        wearHelper.sendRepCount(data.repText);
+        if (data.errorText != null && !data.errorText.isEmpty()) {
+            if (!data.errorText.equals(lastSentError)) {
+                wearHelper.sendError(data.errorText);
+                lastSentError = data.errorText;
             }
         } else {
             if (lastSentError != null) {
@@ -486,34 +444,11 @@ public class ExerciseActivity extends AppCompatActivity {
         }
     }
 
-
     @Override
     protected void onPause() {
         super.onPause();
         if (isRecording) stopRecording();
-
-        if (currentExercise != null) {
-            if ("PLANK".equals(exerciseId)) {
-                PlankExercise plank = (PlankExercise) currentExercise;
-                if (plank.getBestHoldSeconds() > 0) {
-                    ProfileActivity.saveWorkout(this, exerciseId,
-                            currentExercise.getName(), "🧘", plank.getBestHoldSeconds());
-                }
-            } else if (currentExercise.getRepCount() > 0) {
-                String icon;
-                switch (exerciseId) {
-                    case "SQUAT": icon = "🏋"; break;
-                    case "LUNGE": icon = "🦵"; break;
-                    case "GLUTE_BRIDGE": icon = "🍑"; break;
-                    case "BURPEE": icon = "🔥"; break;
-                    case "PULL_UP": icon = "🏅"; break;
-                    default: icon = "💪"; break;
-                }
-                ProfileActivity.saveWorkout(this, exerciseId,
-                        currentExercise.getName(), icon, currentExercise.getRepCount());
-            }
-            currentExercise.reset();
-        }
+        viewModel.finishWorkout(exerciseId);
     }
 
     @Override
@@ -539,6 +474,5 @@ public class ExerciseActivity extends AppCompatActivity {
             textToSpeech = null;
         }
         ttsInitialized = false;
-        if (poseLandmarker != null) poseLandmarker.close();
     }
 }
