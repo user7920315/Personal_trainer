@@ -175,8 +175,8 @@ public class ProfileActivity extends AppCompatActivity {
         String weightStr = etWeight.getText() != null ? etWeight.getText().toString().trim() : "";
         String ageStr = etAge.getText() != null ? etAge.getText().toString().trim() : "";
 
-        if (heightStr.isEmpty() || weightStr.isEmpty()) {
-            Toast.makeText(this, "Введите рост и вес", Toast.LENGTH_SHORT).show();
+        if (heightStr.isEmpty() || weightStr.isEmpty() || ageStr.isEmpty()) {
+            Toast.makeText(this, "Введены не все данные", Toast.LENGTH_SHORT).show();
             return;
         }
 
