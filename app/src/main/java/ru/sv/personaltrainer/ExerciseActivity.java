@@ -20,6 +20,7 @@ import android.widget.Toast;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
@@ -46,6 +47,7 @@ import ru.sv.personaltrainer.exercises.ExerciseRegistry;
 import ru.sv.personaltrainer.model.WearData;
 import ru.sv.personaltrainer.model.WorkoutResult;
 import ru.sv.personaltrainer.viewmodel.ExerciseViewModel;
+import ru.sv.personaltrainer.viewmodel.PermissionViewModel;
 import ru.sv.personaltrainer.wear.WearHelper;
 
 public class ExerciseActivity extends AppCompatActivity {
@@ -55,6 +57,7 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private ActivityExerciseBinding binding;
     private ExerciseViewModel viewModel;
+    private PermissionViewModel permissionViewModel;
 
     private TextToSpeech textToSpeech;
     private boolean ttsInitialized = false;
@@ -76,8 +79,7 @@ public class ExerciseActivity extends AppCompatActivity {
         @Override
         public void run() {
             recordSeconds++;
-            binding.tvRecordingTimer.setText(String.format(Locale.US, "%02d:%02d",
-                    recordSeconds / 60, recordSeconds % 60));
+            binding.tvRecordingTimer.setText(String.format(Locale.US, "%02d:%02d", recordSeconds / 60, recordSeconds % 60));
             timerHandler.postDelayed(this, 1000);
         }
     };
@@ -97,6 +99,8 @@ public class ExerciseActivity extends AppCompatActivity {
         binding = ActivityExerciseBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
+        keepScreenOn(true);
+
         exerciseId = getIntent().getStringExtra("EXERCISE_ID");
         if (exerciseId == null) exerciseId = "SQUAT";
 
@@ -107,10 +111,105 @@ public class ExerciseActivity extends AppCompatActivity {
             return;
         }
 
-        viewModel = new ViewModelProvider(this,
-                new ExerciseViewModel.Factory(getApplication(), currentExercise))
-                .get(ExerciseViewModel.class);
+        viewModel = new ViewModelProvider(this, new ExerciseViewModel.Factory(getApplication(), currentExercise)).get(ExerciseViewModel.class);
 
+        permissionViewModel = new ViewModelProvider(this).get(PermissionViewModel.class);
+        setupPermissionObserver();
+        setupExerciseObservers();
+
+        initViews();
+        applyInsets();
+        initTextToSpeech();
+        initBlinkAnimation();
+        initVideoRecorder();
+
+        cameraExecutor = Executors.newSingleThreadExecutor();
+    }
+
+    private void keepScreenOn(boolean keepOn) {
+        if (keepOn) {
+            getWindow().addFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        } else {
+            getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
+        }
+    }
+
+
+    private void setupPermissionObserver() {
+        permissionViewModel.getCameraPermissionState().observe(this, state -> {
+            if (state == null) return;
+
+            switch (state) {
+                case CHECKING:
+                    break;
+                case GRANTED:
+                    startCameraAndWear();
+                    break;
+                case REQUEST_DIALOG:
+                    permissionViewModel.markRequestLaunched();
+                    requestCameraPermission();
+                    break;
+                case SHOW_RATIONALE:
+                    showRationaleDialog();
+                    break;
+                case GO_TO_SETTINGS:
+                    showGoToSettingsDialog();
+                    break;
+                case WAITING_RESULT:
+                    break;
+            }
+        });
+    }
+
+    private void requestCameraPermission() {
+        cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
+    }
+
+    private final ActivityResultLauncher<String> cameraPermissionLauncher = registerForActivityResult(
+            new ActivityResultContracts.RequestPermission(),
+            isGranted -> {
+                boolean shouldShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(
+                        this, Manifest.permission.CAMERA);
+                permissionViewModel.onPermissionResult(isGranted, shouldShowRationale);
+            });
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        boolean canShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(
+                this, Manifest.permission.CAMERA);
+        permissionViewModel.checkCameraPermission(canShowRationale);
+    }
+
+    private void showRationaleDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Доступ к камере")
+                .setMessage("Камера нужна для анализа вашей техники упражнений в реальном времени. Без неё тренировка невозможна.")
+                .setPositiveButton("Разрешить", (dialog, which) -> {
+                    permissionViewModel.onRationaleShown();
+                })
+                .setNegativeButton("Отмена", (dialog, which) -> {
+                    Toast.makeText(this, "Без камеры тренировка невозможна", Toast.LENGTH_LONG).show();
+                    finish();
+                })
+                .setCancelable(false)
+                .show();
+    }
+
+    private void showGoToSettingsDialog() {
+        new AlertDialog.Builder(this)
+                .setTitle("Требуется доступ к камере")
+                .setMessage("Вы несколько раз отказали в доступе к камере. Чтобы продолжить тренировки, включите разрешение в настройках приложения.")
+                .setPositiveButton("Открыть настройки", (dialog, which) -> {
+                    permissionViewModel.openSettings();
+                    finish();
+                })
+                .setNegativeButton("Отмена", (dialog, which) -> finish())
+                .setCancelable(false)
+                .show();
+    }
+
+    private void setupExerciseObservers() {
         viewModel.getWorkoutResult().observe(this, this::onWorkoutResult);
         viewModel.getIsRecording().observe(this, this::updateRecordingUI);
         viewModel.getTtsEnabled().observe(this, this::updateTtsButton);
@@ -121,15 +220,6 @@ public class ExerciseActivity extends AppCompatActivity {
             }
         });
         viewModel.getWearData().observe(this, this::sendDataToWear);
-
-        initViews();
-        applyInsets();
-        initTextToSpeech();
-        initBlinkAnimation();
-        initVideoRecorder();
-
-        cameraExecutor = Executors.newSingleThreadExecutor();
-        setupCameraPermission();
     }
 
     private void onWorkoutResult(WorkoutResult result) {
@@ -143,12 +233,7 @@ public class ExerciseActivity extends AppCompatActivity {
         binding.tvQuality.setTextColor(result.qualityColor);
 
         if (result.poseResult != null) {
-            binding.poseOverlay.updateResults(
-                    result.poseResult,
-                    binding.previewView.getWidth(),
-                    binding.previewView.getHeight(),
-                    result.errorLandmarks
-            );
+            binding.poseOverlay.updateResults(result.poseResult, binding.previewView.getWidth(), binding.previewView.getHeight(), result.errorLandmarks);
         } else {
             binding.poseOverlay.updateResults(null, 0, 0, null);
         }
@@ -170,21 +255,26 @@ public class ExerciseActivity extends AppCompatActivity {
         textToSpeech = new TextToSpeech(this, status -> {
             if (status == TextToSpeech.SUCCESS) {
                 int result = textToSpeech.setLanguage(new Locale("ru", "RU"));
-                if (result == TextToSpeech.LANG_MISSING_DATA ||
-                        result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                     Log.e(TAG, "TTS: язык не поддерживается");
                 } else {
                     ttsInitialized = true;
                     textToSpeech.setSpeechRate(0.9f);
                     textToSpeech.setPitch(1.0f);
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
-                        @Override public void onStart(String id) {}
-                        @Override public void onDone(String id) {}
-                        @Override public void onError(String id) {}
+                        @Override
+                        public void onStart(String id) {
+                        }
+
+                        @Override
+                        public void onDone(String id) {
+                        }
+
+                        @Override
+                        public void onError(String id) {
+                        }
                     });
                 }
-            } else {
-                Log.e(TAG, "TTS: ошибка инициализации, статус=" + status);
             }
         });
     }
@@ -194,36 +284,13 @@ public class ExerciseActivity extends AppCompatActivity {
         if (!error.equals(lastSpokenError)) {
             lastErrorStartTime = now;
             lastSpokenError = error;
-        } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS
-                && !textToSpeech.isSpeaking()
-                && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
+        } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS && !textToSpeech.isSpeaking() && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
             String cleanMessage = error.replace("⚠ ", "").replace("✅ ", "");
             android.os.Bundle params = new android.os.Bundle();
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "error_feedback");
             textToSpeech.speak(cleanMessage, TextToSpeech.QUEUE_FLUSH, params, "error_feedback");
             lastSpeechTime = now;
             lastErrorStartTime = now + MIN_SPEECH_INTERVAL_MS;
-        }
-    }
-
-    private ActivityResultLauncher<String> cameraPermissionLauncher = registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(),
-            isGranted -> {
-                if (isGranted) {
-                    startCameraAndWear();
-                } else {
-                    Toast.makeText(this, "Для тренировки необходим доступ к камере",
-                            Toast.LENGTH_LONG).show();
-                    finish();
-                }
-            });
-
-    private void setupCameraPermission() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED) {
-            startCameraAndWear();
-        } else {
-            cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
         }
     }
 
@@ -276,26 +343,21 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void applyInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.previewView, (view, windowInsets) -> {
-            Insets insets = windowInsets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() |
-                            WindowInsetsCompat.Type.displayCutout());
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
 
             int topOffset = insets.top + getResources().getDimensionPixelSize(R.dimen.exercise_top_margin);
             int bottomOffset = insets.bottom + getResources().getDimensionPixelSize(R.dimen.feedback_card_margin);
 
-            android.view.ViewGroup.MarginLayoutParams repParams =
-                    (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams repParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
             repParams.topMargin = topOffset;
             binding.tvRepCount.setLayoutParams(repParams);
 
-            android.view.ViewGroup.MarginLayoutParams nameParams =
-                    (android.view.ViewGroup.MarginLayoutParams) binding.tvExerciseName.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams nameParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvExerciseName.getLayoutParams();
             nameParams.topMargin = topOffset;
             binding.tvExerciseName.setLayoutParams(nameParams);
 
             android.view.View card = binding.cardFeedback;
-            android.view.ViewGroup.MarginLayoutParams cardParams =
-                    (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams cardParams = (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
             cardParams.bottomMargin = bottomOffset;
             card.setLayoutParams(cardParams);
 
@@ -306,11 +368,15 @@ public class ExerciseActivity extends AppCompatActivity {
     private void initVideoRecorder() {
         videoRecorder = new VideoRecorder(this);
         videoRecorder.setCallback(new VideoRecorder.RecordingCallback() {
-            @Override public void onRecordingStarted() {}
+            @Override
+            public void onRecordingStarted() {
+            }
+
             @Override
             public void onRecordingSaved(String filePath) {
                 Toast.makeText(ExerciseActivity.this, "✅ Видео сохранено в Галерею", Toast.LENGTH_LONG).show();
             }
+
             @Override
             public void onRecordingError(String error) {
                 Toast.makeText(ExerciseActivity.this, "Ошибка: " + error, Toast.LENGTH_SHORT).show();
@@ -328,12 +394,15 @@ public class ExerciseActivity extends AppCompatActivity {
     }
 
     private final ServiceConnection serviceConnection = new ServiceConnection() {
-        @Override public void onServiceConnected(ComponentName name, IBinder binder) {
+        @Override
+        public void onServiceConnected(ComponentName name, IBinder binder) {
             ScreenRecordService.LocalBinder lb = (ScreenRecordService.LocalBinder) binder;
             recordService = lb.getService();
             serviceBound = true;
         }
-        @Override public void onServiceDisconnected(ComponentName name) {
+
+        @Override
+        public void onServiceDisconnected(ComponentName name) {
             serviceBound = false;
             recordService = null;
         }
@@ -344,18 +413,15 @@ public class ExerciseActivity extends AppCompatActivity {
             stopRecording();
             return;
         }
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO)
-                != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this,
-                    new String[]{Manifest.permission.RECORD_AUDIO}, AUDIO_PERMISSION_CODE);
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.RECORD_AUDIO}, AUDIO_PERMISSION_CODE);
         } else {
             startRecording();
         }
     }
 
     @Override
-    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions,
-                                           @NonNull int[] grantResults) {
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
         if (requestCode == AUDIO_PERMISSION_CODE) startRecording();
     }
@@ -409,10 +475,7 @@ public class ExerciseActivity extends AppCompatActivity {
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(binding.previewView.getSurfaceProvider());
 
-                ImageAnalysis analysis = new ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                        .build();
+                ImageAnalysis analysis = new ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888).build();
                 analysis.setAnalyzer(cameraExecutor, this::analyzeFrame);
 
                 provider.unbindAll();
@@ -454,6 +517,7 @@ public class ExerciseActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        keepScreenOn(false);
         binding = null;
         timerHandler.removeCallbacks(timerRunnable);
         if (isRecording && videoRecorder != null) videoRecorder.stopRecording();
