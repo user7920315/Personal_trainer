@@ -1,5 +1,8 @@
 package ru.sv.personaltrainer.exercises;
 
+import android.content.Context;
+
+import ru.sv.personaltrainer.R;
 import ru.sv.personaltrainer.model.ExerciseInfo;
 
 import java.util.Arrays;
@@ -7,193 +10,118 @@ import java.util.List;
 
 public class ExerciseRegistry {
 
-    public static List<ExerciseInfo> getAll() {
+    public static List<ExerciseInfo> getAll(Context context) {
         return Arrays.asList(
 
                 new ExerciseInfo(
                         "PUSH_UP",
-                        "Отжимания",
-                        "💪",
-                        "Грудь, Трицепс",
-                        "Средний",
-                        0xFFE94560,
-                        "Техника выполнения отжиманий:\n\n"
-                                + "1. Примите упор лёжа. Руки чуть шире плеч,\n"
-                                + "   пальцы смотрят вперёд.\n\n"
-                                + "2. Тело — прямая линия от головы до пяток.\n"
-                                + "   Не прогибайте поясницу.\n\n"
-                                + "3. На вдохе опускайтесь, пока грудь\n"
-                                + "   не окажется в 2–3 см от пола.\n\n"
-                                + "4. На выдохе жимом рук возвращайтесь\n"
-                                + "   в исходное положение.\n\n"
-                                + "⚠ Частые ошибки:\n"
-                                + "• Провисание таза вниз\n"
-                                + "• Неполная амплитуда движения\n"
-                                + "• Разведённые локти в стороны",
-                        "push_up.mp4"
+                        context.getString(R.string.exercise_push_up_name),
+                        context.getString(R.string.exercise_push_up_emoji),
+                        context.getString(R.string.exercise_push_up_muscles),
+                        context.getString(R.string.exercise_push_up_difficulty),
+                        R.color.exercise_push_up,
+                        context.getString(R.string.exercise_push_up_description),
+                        context.getString(R.string.exercise_push_up_video)
                 ),
 
                 new ExerciseInfo(
                         "SQUAT",
-                        "Приседания",
-                        "🏋",
-                        "Квадрицепс, Ягодицы",
-                        "Лёгкий",
-                        0xFF0F3460,
-                        "Техника выполнения приседаний:\n\n"
-                                + "1. Ноги на ширине плеч, носки слегка\n"
-                                + "   развёрнуты наружу (15–30°).\n\n"
-                                + "2. Руки вытяните вперёд или скрестите\n"
-                                + "   на груди для баланса.\n\n"
-                                + "3. На вдохе медленно опускайтесь,\n"
-                                + "   пока бёдра не станут параллельны полу.\n\n"
-                                + "4. Колени не должны выходить за носки.\n"
-                                + "   Пятки не отрывайте от пола.\n\n"
-                                + "5. На выдохе возвращайтесь в исходное\n"
-                                + "   положение, разгибая ноги.\n\n"
-                                + "⚠ Частые ошибки:\n"
-                                + "• Отрыв пяток от пола\n"
-                                + "• Колени «заваливаются» внутрь\n"
-                                + "• Слишком маленькая глубина приседа",
-                        "squat.mp4"
+                        context.getString(R.string.exercise_squat_name),
+                        context.getString(R.string.exercise_squat_emoji),
+                        context.getString(R.string.exercise_squat_muscles),
+                        context.getString(R.string.exercise_squat_difficulty),
+                        R.color.exercise_squat,
+                        context.getString(R.string.exercise_squat_description),
+                        context.getString(R.string.exercise_squat_video)
                 ),
 
                 new ExerciseInfo(
                         "PLANK",
-                        "Планка",
-                        "🧘",
-                        "Кор, Спина",
-                        "Лёгкий",
-                        0xFF16213E,
-                        "Техника выполнения планки:\n\n"
-                                + "1. Примите упор лёжа на предплечьях.\n"
-                                + "   Локти строго под плечами.\n\n"
-                                + "2. Тело образует прямую линию:\n"
-                                + "   голова, спина, ягодицы, пятки на одном уровне.\n\n"
-                                + "3. Напрягите мышцы кора и ягодиц.\n"
-                                + "   Не задерживайте дыхание.\n\n"
-                                + "4. Удерживайте положение от 20 секунд\n"
-                                + "   постепенно увеличивая время.\n\n"
-                                + "⚠ Частые ошибки:\n"
-                                + "• Таз поднят слишком высоко\n"
-                                + "• Провисание поясницы\n"
-                                + "• Опущенная или задранная голова",
-                        "plank.mp4"
+                        context.getString(R.string.exercise_plank_name),
+                        context.getString(R.string.exercise_plank_emoji),
+                        context.getString(R.string.exercise_plank_muscles),
+                        context.getString(R.string.exercise_plank_difficulty),
+                        R.color.exercise_plank,
+                        context.getString(R.string.exercise_plank_description),
+                        context.getString(R.string.exercise_plank_video)
                 ),
 
                 new ExerciseInfo(
                         "LUNGE",
-                        "Выпады",
-                        "🦵",
-                        "Квадрицепс, Ягодицы",
-                        "Средний",
-                        0xFF1B4332,
-                        "Техника выполнения выпадов:\n\n"
-                                + "1. Встаньте прямо, ноги вместе,\n"
-                                + "   руки на поясе или опущены вдоль тела.\n\n"
-                                + "2. Сделайте широкий шаг вперёд одной ногой.\n\n"
-                                + "3. Опускайтесь, пока колено задней ноги\n"
-                                + "   не окажется в 2–3 см от пола.\n\n"
-                                + "4. Переднее колено не выходит за носок.\n"
-                                + "   Корпус остаётся вертикальным.\n\n"
-                                + "5. Оттолкнитесь передней ногой и вернитесь.\n\n"
-                                + "⚠ Частые ошибки:\n"
-                                + "• Наклон корпуса вперёд\n"
-                                + "• Колено выходит за линию носка\n"
-                                + "• Маленький шаг вперёд",
-                        "lunge.mp4"
+                        context.getString(R.string.exercise_lunge_name),
+                        context.getString(R.string.exercise_lunge_emoji),
+                        context.getString(R.string.exercise_lunge_muscles),
+                        context.getString(R.string.exercise_lunge_difficulty),
+                        R.color.exercise_lunge,
+                        context.getString(R.string.exercise_lunge_description),
+                        context.getString(R.string.exercise_lunge_video)
                 ),
 
                 new ExerciseInfo(
                         "GLUTE_BRIDGE",
-                        "Ягодичный мостик",
-                        "\uD83C\uDF09",
-                        "Ягодицы, Бицепс бедра",
-                        "Лёгкий",
-                        0xFF4A1942,
-                        "Техника ягодичного мостика:\n\n"
-                                + "1. Лягте на спину, согните колени.\n"
-                                + "   Стопы на полу на ширине плеч.\n\n"
-                                + "2. Руки вдоль тела ладонями вниз.\n\n"
-                                + "3. На выдохе поднимите таз вверх,\n"
-                                + "   сжимая ягодицы в верхней точке.\n\n"
-                                + "4. Тело — прямая линия от колен до плеч.\n"
-                                + "   Удержите 1–2 секунды.\n\n"
-                                + "5. На вдохе медленно опустите таз.\n\n"
-                                + "⚠ Частые ошибки:\n"
-                                + "• Неполный подъём таза\n"
-                                + "• Колени разваливаются в стороны\n"
-                                + "• Отрыв плеч от пола",
-                        "glute_bridge.mp4"
+                        context.getString(R.string.exercise_glute_bridge_name),
+                        context.getString(R.string.exercise_glute_bridge_emoji),
+                        context.getString(R.string.exercise_glute_bridge_muscles),
+                        context.getString(R.string.exercise_glute_bridge_difficulty),
+                        R.color.exercise_glute_bridge,
+                        context.getString(R.string.exercise_glute_bridge_description),
+                        context.getString(R.string.exercise_glute_bridge_video)
                 ),
 
                 new ExerciseInfo(
                         "BURPEE",
-                        "Бёрпи",
-                        "🔥",
-                        "Всё тело",
-                        "Сложный",
-                        0xFF7B2D00,
-                        "Техника выполнения бёрпи:\n\n"
-                                + "1. Встаньте прямо, ноги на ширине плеч.\n\n"
-                                + "2. Присядьте и упритесь руками в пол.\n\n"
-                                + "3. Прыжком выбросьте ноги назад —\n"
-                                + "   вы в положении планки.\n\n"
-                                + "4. Выполните одно отжимание (опционально).\n\n"
-                                + "5. Прыжком подтяните ноги к рукам.\n\n"
-                                + "6. Выпрыгните вверх, подняв руки.\n\n"
-                                + "⚠ Частые ошибки:\n"
-                                + "• Провисание в положении планки\n"
-                                + "• Нет прыжка в финальной фазе\n"
-                                + "• Слишком быстрый темп в ущерб технике",
-                        "burpee.mp4"
+                        context.getString(R.string.exercise_burpee_name),
+                        context.getString(R.string.exercise_burpee_emoji),
+                        context.getString(R.string.exercise_burpee_muscles),
+                        context.getString(R.string.exercise_burpee_difficulty),
+                        R.color.exercise_burpee,
+                        context.getString(R.string.exercise_burpee_description),
+                        context.getString(R.string.exercise_burpee_video)
                 ),
 
                 new ExerciseInfo(
                         "PULL_UP",
-                        "Подтягивания",
-                        "🏅",
-                        "Широчайшие, Бицепс",
-                        "Сложный",
-                        0xFF1A3A5C,
-                        "Техника выполнения подтягиваний:\n\n"
-                                + "1. Повисните на перекладине хватом сверху,\n"
-                                + "   руки чуть шире плеч.\n\n"
-                                + "2. Сведите лопатки и слегка прогните грудь.\n\n"
-                                + "3. На выдохе подтягивайтесь, пока подбородок\n"
-                                + "   не окажется выше перекладины.\n\n"
-                                + "4. На вдохе плавно опускайтесь\n"
-                                + "   до полного выпрямления рук.\n\n"
-                                + "5. Не раскачивайтесь — работайте мышцами.\n\n"
-                                + "⚠ Частые ошибки:\n"
-                                + "• Раскачивание тела (читинг)\n"
-                                + "• Неполное опускание вниз\n"
-                                + "• Подбородок не достигает перекладины",
-                        "pull_up.mp4"
+                        context.getString(R.string.exercise_pull_up_name),
+                        context.getString(R.string.exercise_pull_up_emoji),
+                        context.getString(R.string.exercise_pull_up_muscles),
+                        context.getString(R.string.exercise_pull_up_difficulty),
+                        R.color.exercise_pull_up,
+                        context.getString(R.string.exercise_pull_up_description),
+                        context.getString(R.string.exercise_pull_up_video)
                 )
         );
     }
 
 
-    public static BaseExercise createExercise(String id) {
+    public static BaseExercise createExercise(String id, Context context) {
+        BaseExercise exercise;
         switch (id) {
             case "PUSH_UP":
-                return new PushUpExercise();
+                exercise = new PushUpExercise();
+                break;
             case "SQUAT":
-                return new SquatExercise();
+                exercise = new SquatExercise();
+                break;
             case "PLANK":
-                return new PlankExercise();
+                exercise = new PlankExercise();
+                break;
             case "LUNGE":
-                return new LungeExercise();
+                exercise = new LungeExercise();
+                break;
             case "GLUTE_BRIDGE":
-                return new GluteBridgeExercise();
+                exercise = new GluteBridgeExercise();
+                break;
             case "BURPEE":
-                return new BurpeeExercise();
+                exercise = new BurpeeExercise();
+                break;
             case "PULL_UP":
-                return new PullUpExercise();
+                exercise = new PullUpExercise();
+                break;
             default:
                 throw new IllegalArgumentException(
-                        "Неизвестное упражнение: " + id);
+                        String.format(context.getString(R.string.msg_unknown_exercise), id));
         }
+        exercise.setContext(context);
+        return exercise;
     }
 }

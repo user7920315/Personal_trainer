@@ -11,6 +11,7 @@ import android.widget.Toast;
 
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -176,7 +177,7 @@ public class ProfileActivity extends AppCompatActivity {
         String ageStr = etAge.getText() != null ? etAge.getText().toString().trim() : "";
 
         if (heightStr.isEmpty() || weightStr.isEmpty() || ageStr.isEmpty()) {
-            Toast.makeText(this, "Введены не все данные", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_not_all_data), Toast.LENGTH_SHORT).show();
             return;
         }
 
@@ -187,26 +188,26 @@ public class ProfileActivity extends AppCompatActivity {
             weight = Float.parseFloat(weightStr);
             if (!ageStr.isEmpty()) age = Integer.parseInt(ageStr);
         } catch (NumberFormatException e) {
-            Toast.makeText(this, "Некорректные данные", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_invalid_data), Toast.LENGTH_SHORT).show();
             return;
         }
 
         if (height < 50 || height > 300) {
-            Toast.makeText(this, "Введите корректный рост (50–300 см)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_height_error), Toast.LENGTH_SHORT).show();
             return;
         }
         if (weight < 10 || weight > 500) {
-            Toast.makeText(this, "Введите корректный вес (10–500 кг)", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_weight_error), Toast.LENGTH_SHORT).show();
             return;
         }
         if (age < 0 || age > 120) {
-            Toast.makeText(this, "Введите корректный возраст", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_age_error), Toast.LENGTH_SHORT).show();
             return;
         }
 
         String gender = isMale ? "male" : "female";
         viewModel.saveProfile(height, weight, age, gender);
-        Toast.makeText(this, "Данные сохранены", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.toast_data_saved), Toast.LENGTH_SHORT).show();
     }
 
     private void showBmiResult(BmiResult result) {
@@ -239,10 +240,10 @@ public class ProfileActivity extends AppCompatActivity {
             entries.add(new Entry(i, sorted.get(i).weight));
         }
 
-        LineDataSet dataSet = new LineDataSet(entries, "Вес (кг)");
-        dataSet.setColor(android.graphics.Color.parseColor("#E94560"));
-        dataSet.setCircleColor(android.graphics.Color.parseColor("#E94560"));
-        dataSet.setCircleHoleColor(android.graphics.Color.parseColor("#0F3460"));
+        LineDataSet dataSet = new LineDataSet(entries, getString(R.string.chart_label_weight));
+        dataSet.setColor(ContextCompat.getColor(this, R.color.primary));
+        dataSet.setCircleColor(ContextCompat.getColor(this, R.color.primary));
+        dataSet.setCircleHoleColor(ContextCompat.getColor(this, R.color.background_card));
         dataSet.setLineWidth(2.5f);
         dataSet.setCircleRadius(5f);
         dataSet.setCircleHoleRadius(2.5f);
@@ -257,10 +258,10 @@ public class ProfileActivity extends AppCompatActivity {
         });
         dataSet.setMode(sorted.size() > 1 ? LineDataSet.Mode.CUBIC_BEZIER : LineDataSet.Mode.LINEAR);
         dataSet.setDrawFilled(sorted.size() > 1);
-        dataSet.setFillColor(android.graphics.Color.parseColor("#33E94560"));
+        dataSet.setFillColor(ContextCompat.getColor(this, R.color.chart_fill));
 
         final List<WeightRecord> finalSorted = sorted;
-        final SimpleDateFormat sdf = new SimpleDateFormat("dd.MM", Locale.US);
+        final SimpleDateFormat sdf = new SimpleDateFormat(getString(R.string.chart_date_format), Locale.US);
 
         weightChart.setData(new LineData(dataSet));
         weightChart.setBackgroundColor(android.graphics.Color.TRANSPARENT);
@@ -274,10 +275,10 @@ public class ProfileActivity extends AppCompatActivity {
 
         XAxis xAxis = weightChart.getXAxis();
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-        xAxis.setTextColor(android.graphics.Color.parseColor("#AAAAAA"));
+        xAxis.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
         xAxis.setTextSize(10f);
-        xAxis.setGridColor(android.graphics.Color.parseColor("#22FFFFFF"));
-        xAxis.setAxisLineColor(android.graphics.Color.parseColor("#33FFFFFF"));
+        xAxis.setGridColor(ContextCompat.getColor(this, R.color.chart_grid));
+        xAxis.setAxisLineColor(ContextCompat.getColor(this, R.color.divider_light));
         xAxis.setGranularity(1f);
         xAxis.setLabelCount(Math.min(sorted.size(), 5), false);
         xAxis.setValueFormatter(new ValueFormatter() {
@@ -290,10 +291,10 @@ public class ProfileActivity extends AppCompatActivity {
         });
 
         YAxis yAxisLeft = weightChart.getAxisLeft();
-        yAxisLeft.setTextColor(android.graphics.Color.parseColor("#AAAAAA"));
+        yAxisLeft.setTextColor(ContextCompat.getColor(this, R.color.text_secondary));
         yAxisLeft.setTextSize(10f);
-        yAxisLeft.setGridColor(android.graphics.Color.parseColor("#22FFFFFF"));
-        yAxisLeft.setAxisLineColor(android.graphics.Color.parseColor("#33FFFFFF"));
+        yAxisLeft.setGridColor(ContextCompat.getColor(this, R.color.chart_grid));
+        yAxisLeft.setAxisLineColor(ContextCompat.getColor(this, R.color.divider_light));
 
         if (!entries.isEmpty()) {
             float minVal = entries.get(0).getY();
@@ -337,14 +338,14 @@ public class ProfileActivity extends AppCompatActivity {
     private void confirmClearHistory() {
         List<WorkoutRecord> current = viewModel.getWorkouts().getValue();
         if (current == null || current.isEmpty()) {
-            Toast.makeText(this, "История уже пуста", Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, getString(R.string.toast_history_empty), Toast.LENGTH_SHORT).show();
             return;
         }
         new AlertDialog.Builder(this)
-                .setTitle("Очистить историю?")
-                .setMessage("Все записи тренировок будут удалены.")
-                .setPositiveButton("Удалить", (d, w) -> viewModel.clearHistory())
-                .setNegativeButton("Отмена", null)
+                .setTitle(getString(R.string.dialog_clear_title))
+                .setMessage(getString(R.string.dialog_clear_message))
+                .setPositiveButton(getString(R.string.dialog_clear_delete), (d, w) -> viewModel.clearHistory())
+                .setNegativeButton(getString(R.string.dialog_clear_cancel), null)
                 .show();
     }
 

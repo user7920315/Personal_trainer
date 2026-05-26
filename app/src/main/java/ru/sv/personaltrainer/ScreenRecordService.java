@@ -9,13 +9,11 @@ import android.content.pm.ServiceInfo;
 import android.os.Binder;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
 public class ScreenRecordService extends Service {
 
-    private static final String TAG = "ScreenRecordService";
     private static final String CHANNEL_ID = "RecordingChannel";
     private static final int NOTIFICATION_ID = 1001;
 
@@ -47,9 +45,7 @@ public class ScreenRecordService extends Service {
             } else {
                 startForeground(NOTIFICATION_ID, notification);
             }
-            Log.d(TAG, "Foreground service запущен");
         } catch (Exception e) {
-            Log.e(TAG, "startForeground error: " + e.getMessage());
         }
 
         return START_NOT_STICKY;
@@ -73,7 +69,7 @@ public class ScreenRecordService extends Service {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
                     CHANNEL_ID,
-                    "Запись тренировки",
+                    getString(R.string.notification_channel_name),
                     NotificationManager.IMPORTANCE_LOW);
             channel.setSound(null, null);
             channel.enableVibration(false);
@@ -88,8 +84,8 @@ public class ScreenRecordService extends Service {
 
     private Notification buildNotification() {
         return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle("Персональный тренер")
-                .setContentText("Идёт запись тренировки...")
+                .setContentTitle(getString(R.string.notification_title))
+                .setContentText(getString(R.string.notification_text))
                 .setSmallIcon(android.R.drawable.ic_media_play)
                 .setPriority(NotificationCompat.PRIORITY_LOW)
                 .setOngoing(true)

@@ -1,8 +1,11 @@
 package ru.sv.personaltrainer.viewmodel;
 
+import android.app.Application;
+
+import androidx.annotation.NonNull;
+import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
-import androidx.lifecycle.ViewModel;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -10,14 +13,15 @@ import java.util.List;
 import ru.sv.personaltrainer.model.ExerciseInfo;
 import ru.sv.personaltrainer.repository.ExerciseRepository;
 
-public class ExerciseListViewModel extends ViewModel {
+public class ExerciseListViewModel extends AndroidViewModel {
 
     private final ExerciseRepository repository;
     private final List<ExerciseInfo> allExercises;
     private final MutableLiveData<List<ExerciseInfo>> filteredExercises = new MutableLiveData<>();
 
-    public ExerciseListViewModel() {
-        this.repository = new ExerciseRepository();
+    public ExerciseListViewModel(@NonNull Application application) {
+        super(application);
+        this.repository = new ExerciseRepository(application);
         this.allExercises = repository.getAllExercises();
         this.filteredExercises.setValue(new ArrayList<>(allExercises));
     }

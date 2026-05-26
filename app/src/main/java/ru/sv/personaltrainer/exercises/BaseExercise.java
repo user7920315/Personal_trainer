@@ -1,5 +1,7 @@
 package ru.sv.personaltrainer.exercises;
 
+import android.content.Context;
+
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.ArrayList;
@@ -29,6 +31,20 @@ public abstract class BaseExercise {
 
     protected int repCount = 0;
     protected boolean isDown = false;
+
+    protected Context context;
+
+    public void setContext(Context context) {
+        this.context = context;
+    }
+
+    protected String getString(int resId) {
+        return context != null ? context.getString(resId) : "";
+    }
+
+    protected String getString(int resId, Object... formatArgs) {
+        return context != null ? context.getString(resId, formatArgs) : "";
+    }
 
     public static class AnalysisResult {
         public List<String> errors = new ArrayList<>();

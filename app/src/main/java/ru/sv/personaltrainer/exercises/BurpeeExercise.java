@@ -4,11 +4,13 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
 
+import ru.sv.personaltrainer.R;
+
 public class BurpeeExercise extends BaseExercise {
 
     @Override
     public String getName() {
-        return "Берпи";
+        return getString(R.string.exercise_burpee_name);
     }
 
     private enum Stage {STAND, PLANK, PLANK_DONE, JUMP}
@@ -31,7 +33,7 @@ public class BurpeeExercise extends BaseExercise {
         AnalysisResult result = new AnalysisResult();
 
         if (!isValidData(lm)) {
-            result.mainFeedback = "Встаньте полностью в кадр";
+            result.mainFeedback = getString(R.string.msg_full_frame);
             result.repCount = repCount;
             return result;
         }
@@ -40,13 +42,13 @@ public class BurpeeExercise extends BaseExercise {
         boolean hasWrists = allVisible(lm, LEFT_WRIST, RIGHT_WRIST);
 
         if (!hasShoulders) {
-            result.mainFeedback = "Направьте камеру — должны быть видны плечи";
+            result.mainFeedback = getString(R.string.msg_camera_shoulders);
             result.repCount = repCount;
             return result;
         }
 
         if (!hasWrists) {
-            result.mainFeedback = "Направьте камеру — должны быть видны руки";
+            result.mainFeedback = getString(R.string.msg_camera_shoulders_hands);
             result.repCount = repCount;
             return result;
         }
@@ -139,16 +141,16 @@ public class BurpeeExercise extends BaseExercise {
         switch (stage) {
             case STAND:
                 return repCount == 0
-                        ? "✅ Упадите в планку"
-                        : "✅ Повторений: " + repCount + " — упадите в планку";
+                        ? getString(R.string.feedback_burpee_stand_start)
+                        : getString(R.string.feedback_burpee_stand_repeat, repCount);
             case PLANK:
-                return "✅ Сделайте отжимание";
+                return getString(R.string.feedback_burpee_plank);
             case PLANK_DONE:
-                return "✅ Вставайте и прыгайте!";
+                return getString(R.string.feedback_burpee_plank_done);
             case JUMP:
-                return "✅ Прыжок! Руки вверх!";
+                return getString(R.string.feedback_burpee_jump);
             default:
-                return "✅ Выполняйте упражнение";
+                return getString(R.string.feedback_burpee_default);
         }
     }
 

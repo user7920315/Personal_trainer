@@ -6,6 +6,8 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
 
+import ru.sv.personaltrainer.R;
+
 public class PlankExercise extends BaseExercise {
 
     private static final String TAG = "PlankExercise";
@@ -59,7 +61,7 @@ public class PlankExercise extends BaseExercise {
 
     @Override
     public String getName() {
-        return "🧘 Планка";
+        return getString(R.string.exercise_plank_name);
     }
 
     @Override
@@ -68,14 +70,14 @@ public class PlankExercise extends BaseExercise {
         result.phase = "HOLD";
 
         if (!isValidData(lm)) {
-            result.mainFeedback = "Встаньте полностью в кадр";
+            result.mainFeedback = getString(R.string.msg_full_frame);
             stopCleanStreak();
             result.holdSeconds = currentSeconds;
             return result;
         }
 
         if (!allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
-            result.mainFeedback = "Направьте камеру — должны быть видны плечи";
+            result.mainFeedback = getString(R.string.msg_camera_shoulders);
             result.phase = "";
             stopCleanStreak();
             result.holdSeconds = currentSeconds;
@@ -86,7 +88,7 @@ public class PlankExercise extends BaseExercise {
 
         ViewMode view = updateView();
         if (view == ViewMode.UNKNOWN) {
-            result.mainFeedback = "Встаньте боком или лицом к камере";
+            result.mainFeedback = getString(R.string.msg_stand_side_or_front);
             result.phase = "";
             stopCleanStreak();
             result.holdSeconds = currentSeconds;
@@ -205,9 +207,9 @@ public class PlankExercise extends BaseExercise {
 
     private String buildFeedback() {
         if (bestHoldSeconds == 0) {
-            return "✅ Держите планку ровно!";
+            return getString(R.string.feedback_plank_hold);
         }
-        return "✅ Держите! Лучшее время: " + bestHoldSeconds + "с";
+        return getString(R.string.feedback_plank_best_time, bestHoldSeconds);
     }
 
 
@@ -256,13 +258,13 @@ public class PlankExercise extends BaseExercise {
                 emaShoulderY, emaHipY, deviation));
 
         if (deviation > HIP_SAG_ERROR) {
-            result.addError("⚠ Тело провисает — напрягите пресс и ягодицы", LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_plank_hips_sag_strong), LEFT_HIP, RIGHT_HIP);
         } else if (deviation > HIP_SAG_WARN) {
-            result.addError("⚠ Тело немного провисает — подтяните пресс", LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_plank_hips_sag_weak), LEFT_HIP, RIGHT_HIP);
         } else if (deviation < HIP_HIGH_ERROR) {
-            result.addError("⚠ Таз слишком высоко — опустите бёдра", LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_plank_hips_high_strong), LEFT_HIP, RIGHT_HIP);
         } else if (deviation < HIP_HIGH_WARN) {
-            result.addError("⚠ Таз чуть высоковат — опустите немного", LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_plank_hips_high_weak), LEFT_HIP, RIGHT_HIP);
         }
     }
 
@@ -289,11 +291,11 @@ public class PlankExercise extends BaseExercise {
         if (diff > ARM_BODY_ANGLE_ERROR) {
             result.addError(
                     angleBetween < 90.0
-                            ? "⚠ Плечи ушли вперёд — поставьте руки под плечи"
-                            : "⚠ Плечи ушли назад — поставьте руки под плечи",
+                            ? getString(R.string.error_plank_shoulders_forward)
+                            : getString(R.string.error_plank_shoulders_back),
                     LEFT_SHOULDER, RIGHT_SHOULDER, LEFT_WRIST, RIGHT_WRIST);
         } else if (diff > ARM_BODY_ANGLE_WARN) {
-            result.addError("⚠ Поправьте положение рук — перпендикулярно телу", LEFT_SHOULDER, RIGHT_SHOULDER);
+            result.addError(getString(R.string.error_plank_arms_adjust), LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
 
@@ -305,13 +307,13 @@ public class PlankExercise extends BaseExercise {
         if (Math.abs(deviation) <= HEAD_NEUTRAL) return;
 
         if (deviation > HEAD_DROP_ERROR) {
-            result.addError("⚠ Голова сильно опущена — смотрите чуть вперёд", NOSE);
+            result.addError(getString(R.string.error_plank_head_down_strong), NOSE);
         } else if (deviation > HEAD_DROP_WARN) {
-            result.addError("⚠ Не опускайте голову вниз", NOSE);
+            result.addError(getString(R.string.error_plank_head_down_weak), NOSE);
         } else if (deviation < -HEAD_HIGH_ERROR) {
-            result.addError("⚠ Голова сильно задрана — смотрите в пол", NOSE);
+            result.addError(getString(R.string.error_plank_head_up_strong), NOSE);
         } else if (deviation < -HEAD_HIGH_WARN) {
-            result.addError("⚠ Не запрокидывайте голову", NOSE);
+            result.addError(getString(R.string.error_plank_head_up_weak), NOSE);
         }
     }
 
@@ -320,10 +322,10 @@ public class PlankExercise extends BaseExercise {
 
         if (Math.abs(diff) > SHOULDER_TILT_ERROR) {
             result.addError(
-                    diff > 0 ? "⚠ Левое плечо ниже — выровняйте корпус" : "⚠ Правое плечо ниже — выровняйте корпус",
+                    diff > 0 ? getString(R.string.error_plank_shoulder_tilt_left) : getString(R.string.error_plank_shoulder_tilt_right),
                     LEFT_SHOULDER, RIGHT_SHOULDER);
         } else if (Math.abs(diff) > SHOULDER_TILT_WARN) {
-            result.addError("⚠ Плечи немного перекошены — выровняйте", LEFT_SHOULDER, RIGHT_SHOULDER);
+            result.addError(getString(R.string.error_plank_shoulder_tilt_weak), LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
 
@@ -332,10 +334,10 @@ public class PlankExercise extends BaseExercise {
 
         if (Math.abs(diff) > KNEE_TILT_ERROR) {
             result.addError(
-                    diff > 0 ? "⚠ Левая нога ниже — выровняйте таз" : "⚠ Правая нога ниже — выровняйте таз",
+                    diff > 0 ? getString(R.string.error_plank_knee_tilt_left) : getString(R.string.error_plank_knee_tilt_right),
                     LEFT_KNEE, RIGHT_KNEE);
         } else if (Math.abs(diff) > KNEE_TILT_WARN) {
-            result.addError("⚠ Таз немного перекошен — выровняйте", LEFT_KNEE, RIGHT_KNEE);
+            result.addError(getString(R.string.error_plank_knee_tilt_weak), LEFT_KNEE, RIGHT_KNEE);
         }
     }
 
@@ -349,7 +351,7 @@ public class PlankExercise extends BaseExercise {
 
         float offset = (noseX - midShoulderX) / shoulderW;
         if (Math.abs(offset) > 0.25f) {
-            result.addError("⚠ Голова смещена в сторону — держите ровно", NOSE);
+            result.addError(getString(R.string.error_plank_head_side), NOSE);
         }
     }
 

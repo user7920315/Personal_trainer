@@ -6,6 +6,8 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
 
+import ru.sv.personaltrainer.R;
+
 public class LungeExercise extends BaseExercise {
 
     private static final String TAG = "LungeExercise";
@@ -63,7 +65,7 @@ public class LungeExercise extends BaseExercise {
 
     @Override
     public String getName() {
-        return "🦵 Выпады";
+        return getString(R.string.exercise_lunge_name);
     }
 
     @Override
@@ -71,12 +73,12 @@ public class LungeExercise extends BaseExercise {
         AnalysisResult result = new AnalysisResult();
 
         if (!isValidData(lm)) {
-            result.mainFeedback = "Встаньте полностью в кадр";
+            result.mainFeedback = getString(R.string.msg_full_frame);
             return result;
         }
 
         if (!anyVisible(lm, LEFT_KNEE, RIGHT_KNEE)) {
-            result.mainFeedback = "Не видно колен — отойдите от камеры";
+            result.mainFeedback = getString(R.string.msg_not_visible_knees);
             result.phase = "";
             return result;
         }
@@ -85,7 +87,7 @@ public class LungeExercise extends BaseExercise {
 
         ViewMode view = updateView();
         if (view == ViewMode.UNKNOWN) {
-            result.mainFeedback = "Встаньте боком или лицом к камере";
+            result.mainFeedback = getString(R.string.msg_stand_side_or_front);
             result.phase = "";
             return result;
         }
@@ -122,7 +124,7 @@ public class LungeExercise extends BaseExercise {
         float frontKneeAngle = getAngle(lm, frontHip, frontKnee, frontAnkle);
 
         if (frontKneeAngle < 0) {
-            result.mainFeedback = "Не видно суставов — встаньте боком";
+            result.mainFeedback = getString(R.string.msg_not_visible_joints_stand_side);
             result.phase = "";
             return;
         }
@@ -171,15 +173,15 @@ public class LungeExercise extends BaseExercise {
                                          int kneeIdx) {
         if (angle > SIDE_FRONT_KNEE_SHALLOW) {
             result.addError(
-                    "⚠ Опуститесь глубже — согните колено до 90°",
+                    getString(R.string.error_lunge_front_depth_shallow),
                     kneeIdx);
         } else if (angle > SIDE_FRONT_KNEE_IDEAL_MAX) {
             result.addError(
-                    "⚠ Чуть глубже — почти достаточно!",
+                    getString(R.string.error_lunge_front_depth_warn),
                     kneeIdx);
         } else if (angle < SIDE_FRONT_KNEE_TOO_DEEP) {
             result.addError(
-                    "⚠ Слишком глубокий выпад — поднимитесь чуть выше",
+                    getString(R.string.error_lunge_front_depth_deep),
                     kneeIdx);
         }
     }
@@ -190,11 +192,11 @@ public class LungeExercise extends BaseExercise {
                                         int kneeIdx) {
         if (angle > SIDE_BACK_KNEE_SHALLOW) {
             result.addError(
-                    "⚠ Опустите заднее колено ближе к полу",
+                    getString(R.string.error_lunge_back_depth_shallow),
                     kneeIdx);
         } else if (angle > SIDE_BACK_KNEE_IDEAL_MAX) {
             result.addError(
-                    "⚠ Заднее колено чуть высоко — опустите немного",
+                    getString(R.string.error_lunge_back_depth_warn),
                     kneeIdx);
         }
     }
@@ -223,11 +225,11 @@ public class LungeExercise extends BaseExercise {
 
         if (angle > TRUNK_LEAN_ERROR) {
             result.addError(
-                    "⚠ Сильный наклон вперёд — держите спину прямо",
+                    getString(R.string.error_lunge_trunk_lean_strong),
                     shIdx, hiIdx);
         } else if (angle > TRUNK_LEAN_WARN) {
             result.addError(
-                    "⚠ Немного наклонены вперёд — выпрямите корпус",
+                    getString(R.string.error_lunge_trunk_lean_weak),
                     shIdx);
         }
     }
@@ -254,7 +256,7 @@ public class LungeExercise extends BaseExercise {
 
         if (Math.abs(overToe) > KNEE_OVER_TOE_THRESHOLD) {
             result.addError(
-                    "⚠ Колено выходит за носок — перенесите вес на пятку",
+                    getString(R.string.error_lunge_knee_over_toe),
                     kneeIdx, toeIdx);
         }
     }
@@ -279,11 +281,11 @@ public class LungeExercise extends BaseExercise {
 
         if (liftRatio > HEEL_LIFT_ERROR) {
             result.addError(
-                    "⚠ Пятка оторвана от пола — прижмите её",
+                    getString(R.string.error_lunge_heel_lift),
                     heelIdx);
         } else if (liftRatio > HEEL_LIFT_WARN) {
             result.addError(
-                    "⚠ Пятка начинает отрываться — следите за ней",
+                    getString(R.string.error_lunge_heel_lift_warn),
                     heelIdx);
         }
     }
@@ -295,7 +297,7 @@ public class LungeExercise extends BaseExercise {
         float rAngle = getAngle(lm, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE);
 
         if (lAngle < 0 && rAngle < 0) {
-            result.mainFeedback = "Не видно суставов — встаньте прямо";
+            result.mainFeedback = getString(R.string.msg_not_visible_joints_stand_straight);
             result.phase = "";
             return;
         }
@@ -339,15 +341,15 @@ public class LungeExercise extends BaseExercise {
 
         if (angle > FRONT_KNEE_SHALLOW) {
             result.addError(
-                    "⚠ Опуститесь глубже — согните колено до 90°",
+                    getString(R.string.error_lunge_front_depth_shallow),
                     kneeIdx);
         } else if (angle > FRONT_KNEE_IDEAL_MAX) {
             result.addError(
-                    "⚠ Чуть глубже — почти достаточно!",
+                    getString(R.string.error_lunge_front_depth_warn),
                     kneeIdx);
         } else if (angle < FRONT_KNEE_TOO_DEEP) {
             result.addError(
-                    "⚠ Слишком глубокий выпад — поднимитесь чуть выше",
+                    getString(R.string.error_lunge_front_depth_deep),
                     kneeIdx);
         }
     }
@@ -364,14 +366,14 @@ public class LungeExercise extends BaseExercise {
 
         if (diff > FRONT_ASYMMETRY_ERROR) {
             String msg = lAngle > rAngle
-                    ? "⚠ Левая нога недостаточно согнута — выровняйте нагрузку"
-                    : "⚠ Правая нога недостаточно согнута — выровняйте нагрузку";
+                    ? getString(R.string.error_lunge_front_asymmetry_left)
+                    : getString(R.string.error_lunge_front_asymmetry_right);
             result.addError(msg,
                     lAngle > rAngle ? LEFT_KNEE : RIGHT_KNEE);
 
         } else if (diff > FRONT_ASYMMETRY_WARN) {
             result.addError(
-                    "⚠ Небольшая асимметрия ног — тяните нагрузку равномерно",
+                    getString(R.string.error_lunge_front_asymmetry_warn),
                     LEFT_KNEE, RIGHT_KNEE);
         }
     }
@@ -395,11 +397,11 @@ public class LungeExercise extends BaseExercise {
 
         if (ratio < FRONT_KNEE_CAVE_ERROR) {
             result.addError(
-                    "⚠ Колени заваливаются внутрь — разведите по линии стоп",
+                    getString(R.string.error_lunge_knees_inward),
                     LEFT_KNEE, RIGHT_KNEE);
         } else if (ratio < FRONT_KNEE_CAVE_WARN) {
             result.addError(
-                    "⚠ Немного разведите колени в стороны",
+                    getString(R.string.error_lunge_knees_inward_warn),
                     LEFT_KNEE, RIGHT_KNEE);
         }
     }
@@ -424,12 +426,12 @@ public class LungeExercise extends BaseExercise {
 
         if (angle > TRUNK_LEAN_ERROR) {
             result.addError(
-                    "⚠ Сильный наклон вперёд — держите спину прямо",
+                    getString(R.string.error_lunge_trunk_lean_strong),
                     LEFT_SHOULDER, RIGHT_SHOULDER,
                     LEFT_HIP, RIGHT_HIP);
         } else if (angle > TRUNK_LEAN_WARN) {
             result.addError(
-                    "⚠ Немного наклонены вперёд — выпрямите корпус",
+                    getString(R.string.error_lunge_trunk_lean_weak),
                     LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
@@ -449,12 +451,12 @@ public class LungeExercise extends BaseExercise {
 
         if (tilt > 0.30f) {
             String msg = emaLHipY > emaRHipY
-                    ? "⚠ Левый бок таза опущен — выровняйте таз"
-                    : "⚠ Правый бок таза опущен — выровняйте таз";
+                    ? getString(R.string.error_lunge_hip_tilt_left)
+                    : getString(R.string.error_lunge_hip_tilt_right);
             result.addError(msg, LEFT_HIP, RIGHT_HIP);
         } else if (tilt > 0.15f) {
             result.addError(
-                    "⚠ Таз немного перекошен — держите его ровно",
+                    getString(R.string.error_lunge_hip_tilt_weak),
                     LEFT_HIP, RIGHT_HIP);
         }
     }
@@ -569,14 +571,14 @@ public class LungeExercise extends BaseExercise {
 
     private String buildFeedback(String phase, ViewMode view) {
         String hint = view == ViewMode.FRONT
-                ? " (для анализа пятки встаньте боком)" : "";
+                ? getString(R.string.hint_lunge_side) : "";
         switch (phase) {
             case "DOWN":
-                return "✅ Хорошо! Держите позицию" + hint;
+                return getString(R.string.feedback_lunge_down) + hint;
             case "UP":
-                return "✅ Повторений: " + repCount + hint;
+                return getString(R.string.feedback_lunge_up, repCount) + hint;
             default:
-                return "✅ Начните выпад" + hint;
+                return getString(R.string.feedback_lunge_start) + hint;
         }
     }
 

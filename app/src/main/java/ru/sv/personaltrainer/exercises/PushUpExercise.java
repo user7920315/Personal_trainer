@@ -4,11 +4,13 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
 
+import ru.sv.personaltrainer.R;
+
 public class PushUpExercise extends BaseExercise {
 
     @Override
     public String getName() {
-        return "💪 Отжимания";
+        return getString(R.string.exercise_push_up_name);
     }
 
     @Override
@@ -16,7 +18,7 @@ public class PushUpExercise extends BaseExercise {
         AnalysisResult result = new AnalysisResult();
 
         if (!isValidData(lm)) {
-            result.mainFeedback = "Встаньте полностью в кадр";
+            result.mainFeedback = getString(R.string.msg_full_frame);
             return result;
         }
 
@@ -37,7 +39,7 @@ public class PushUpExercise extends BaseExercise {
         boolean hasNose = isVisible(lm, NOSE);
 
         if (!hasShoulders) {
-            result.mainFeedback = "Направьте камеру — должны быть видны плечи";
+            result.mainFeedback = getString(R.string.msg_camera_shoulders);
             result.phase = "";
             return result;
         }
@@ -51,7 +53,7 @@ public class PushUpExercise extends BaseExercise {
 
         float avgElbow;
         if (leftElbow < 0 && rightElbow < 0) {
-            result.mainFeedback = "Не видно локтей — отойдите от камеры";
+            result.mainFeedback = getString(R.string.msg_not_visible_joints);
             return result;
         } else if (leftElbow < 0) avgElbow = rightElbow;
         else if (rightElbow < 0) avgElbow = leftElbow;
@@ -74,20 +76,20 @@ public class PushUpExercise extends BaseExercise {
             if (shoulderW > 0 && elbowW > 0
                     && elbowW > shoulderW * 1.5f) {
                 result.addError(
-                        "⚠ Локти слишком широко — держите ближе к телу",
+                        getString(R.string.error_push_up_elbows_wide),
                         LEFT_ELBOW, RIGHT_ELBOW);
             }
         }
 
         if (result.phase.equals("UP") && avgElbow < 150f) {
             result.addError(
-                    "⚠ Полностью разгибайте руки в верхней точке",
+                    getString(R.string.error_push_up_not_full_extension),
                     LEFT_ELBOW, RIGHT_ELBOW);
         }
 
         if (result.phase.equals("DOWN") && avgElbow > 110f) {
             result.addError(
-                    "⚠ Опускайтесь ниже — грудь ближе к полу",
+                    getString(R.string.error_push_up_not_low_enough),
                     LEFT_ELBOW, RIGHT_ELBOW);
         }
 
@@ -98,8 +100,8 @@ public class PushUpExercise extends BaseExercise {
         result.repCount = repCount;
         result.mainFeedback = result.errors.isEmpty()
                 ? (result.phase.equals("DOWN")
-                ? "✅ Хорошо! Опускайтесь ниже"
-                : "✅ Отлично! Повторений: " + repCount)
+                ? getString(R.string.feedback_push_up_down)
+                : getString(R.string.feedback_push_up_up, repCount))
                 : result.errors.get(0);
 
         return result;
@@ -127,12 +129,12 @@ public class PushUpExercise extends BaseExercise {
 
                 if (diff > 0.04f) {
                     result.addError(
-                            "⚠ Таз провисает — напрягите пресс и ягодицы",
+                            getString(R.string.error_push_up_hips_sag),
                             LEFT_HIP, RIGHT_HIP);
 
                 } else if (diff < -0.04f) {
                     result.addError(
-                            "⚠ Таз задран вверх — опустите его",
+                            getString(R.string.error_push_up_hips_high),
                             LEFT_HIP, RIGHT_HIP);
                 }
 
@@ -141,7 +143,7 @@ public class PushUpExercise extends BaseExercise {
                             LEFT_SHOULDER, LEFT_HIP, LEFT_KNEE);
                     if (backAngle >= 0 && backAngle < 150f) {
                         result.addError(
-                                "⚠ Выпрямите спину — не прогибайтесь в пояснице",
+                                getString(R.string.error_push_up_back_not_straight),
                                 LEFT_HIP, RIGHT_HIP);
                     }
                 }
@@ -160,7 +162,7 @@ public class PushUpExercise extends BaseExercise {
 
             if (tilt > 0.05f) {
                 result.addError(
-                        "⚠ Плечи перекошены — держите их ровно",
+                        getString(R.string.error_push_up_shoulders_tilted),
                         LEFT_SHOULDER, RIGHT_SHOULDER);
             }
 
@@ -169,11 +171,11 @@ public class PushUpExercise extends BaseExercise {
                 if (shoulderY >= 0) {
                     if (noseY > shoulderY + 0.08f) {
                         result.addError(
-                                "⚠ Держите голову прямо — не опускайте подбородок",
+                                getString(R.string.error_push_up_head_down),
                                 NOSE);
                     } else if (noseY < shoulderY - 0.08f) {
                         result.addError(
-                                "⚠ Не запрокидывайте голову",
+                                getString(R.string.error_push_up_head_up),
                                 NOSE);
                     }
                 }
@@ -191,17 +193,17 @@ public class PushUpExercise extends BaseExercise {
 
             if (tilt > 0.05) {
                 result.addError(
-                        "⚠ Плечи перекошены — держите их ровно",
+                        getString(R.string.error_push_up_shoulders_tilted),
                         LEFT_SHOULDER, RIGHT_SHOULDER);
             }
 
             if (noseY > shoulderY + 0.08f) {
                 result.addError(
-                        "⚠ Держите голову прямо — не опускайте подбородок",
+                        getString(R.string.error_push_up_head_down),
                         NOSE);
             } else if (noseY < shoulderY - 0.08f) {
                 result.addError(
-                        "⚠ Не запрокидывайте голову",
+                        getString(R.string.error_push_up_head_up),
                         NOSE);
             }
         }

@@ -6,6 +6,8 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
 
+import ru.sv.personaltrainer.R;
+
 public class GluteBridgeExercise extends BaseExercise {
 
     private static final String TAG = "GluteBridgeExercise";
@@ -68,7 +70,7 @@ public class GluteBridgeExercise extends BaseExercise {
 
     @Override
     public String getName() {
-        return "Ягодичный мостик";
+        return getString(R.string.exercise_glute_bridge_name);
     }
 
     @Override
@@ -76,12 +78,12 @@ public class GluteBridgeExercise extends BaseExercise {
         AnalysisResult result = new AnalysisResult();
 
         if (!isValidData(lm)) {
-            result.mainFeedback = "Лягте полностью в кадр";
+            result.mainFeedback = getString(R.string.msg_full_frame);
             return result;
         }
 
         if (!anyVisible(lm, LEFT_HIP, RIGHT_HIP)) {
-            result.mainFeedback = "Не видно таза — направьте камеру сбоку";
+            result.mainFeedback = getString(R.string.msg_not_visible_hips);
             result.phase = "";
             return result;
         }
@@ -92,8 +94,8 @@ public class GluteBridgeExercise extends BaseExercise {
         if (!baselineCaptured) {
             captureBaseline();
             result.mainFeedback = baselineCaptured
-                    ? "✅ Готово! Начните упражнение"
-                    : String.format("Калибровка... %d%%",
+                    ? getString(R.string.feedback_glute_ready)
+                    : String.format(getString(R.string.msg_calibration_progress),
                     baseFrameCount * 100 / BASE_FRAMES);
             result.phase = "";
             return result;
@@ -101,7 +103,7 @@ public class GluteBridgeExercise extends BaseExercise {
 
         float currentHipY = getAvgHipY();
         if (currentHipY < 0) {
-            result.mainFeedback = "Не видно таза";
+            result.mainFeedback = getString(R.string.msg_not_visible_hips);
             result.phase = "";
             return result;
         }
@@ -179,19 +181,19 @@ public class GluteBridgeExercise extends BaseExercise {
 
         if (deviation > HIP_POS_SAG_ERROR) {
             result.addError(
-                    "⚠ Таз провисает — напрягите ягодицы сильнее",
+                    getString(R.string.error_glute_hips_sag_strong),
                     LEFT_HIP, RIGHT_HIP);
         } else if (deviation > HIP_POS_SAG_WARN) {
             result.addError(
-                    "⚠ Поднимите таз чуть выше",
+                    getString(R.string.error_glute_hips_sag_weak),
                     LEFT_HIP, RIGHT_HIP);
         } else if (deviation < HIP_POS_HIGH_ERROR) {
             result.addError(
-                    "⚠ Таз задран слишком высоко — опустите немного",
+                    getString(R.string.error_glute_hips_high_strong),
                     LEFT_HIP, RIGHT_HIP);
         } else if (deviation < HIP_POS_HIGH_WARN) {
             result.addError(
-                    "⚠ Таз чуть высоковат",
+                    getString(R.string.error_glute_hips_high_weak),
                     LEFT_HIP, RIGHT_HIP);
         }
     }
@@ -201,11 +203,11 @@ public class GluteBridgeExercise extends BaseExercise {
                                         float angle) {
         if (angle > KNEE_TOO_FAR) {
             result.addError(
-                    "⚠ Придвиньте стопы ближе к ягодицам",
+                    getString(R.string.error_glute_knee_far),
                     LEFT_KNEE, RIGHT_KNEE);
         } else if (angle < KNEE_TOO_CLOSE) {
             result.addError(
-                    "⚠ Отодвиньте стопы немного дальше от ягодиц",
+                    getString(R.string.error_glute_knee_close),
                     LEFT_KNEE, RIGHT_KNEE);
         }
     }
@@ -224,11 +226,11 @@ public class GluteBridgeExercise extends BaseExercise {
 
         if (lift > SHOULDER_LIFT_ERROR) {
             result.addError(
-                    "⚠ Плечи отрываются от пола — зафиксируйте",
+                    getString(R.string.error_glute_shoulders_lift_strong),
                     LEFT_SHOULDER, RIGHT_SHOULDER);
         } else if (lift > SHOULDER_LIFT_WARN) {
             result.addError(
-                    "⚠ Плечи немного приподнимаются — прижмите",
+                    getString(R.string.error_glute_shoulders_lift_weak),
                     LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
@@ -242,11 +244,11 @@ public class GluteBridgeExercise extends BaseExercise {
             Log.d(TAG, String.format("LHeel lift=%.3f", lift));
             if (lift > HEEL_LIFT_ERROR) {
                 result.addError(
-                        "⚠ Левая пятка оторвана — прижмите к полу",
+                        getString(R.string.error_glute_heel_lift_left_strong),
                         LEFT_HEEL);
             } else if (lift > HEEL_LIFT_WARN) {
                 result.addError(
-                        "⚠ Левая пятка начинает отрываться",
+                        getString(R.string.error_glute_heel_lift_left_weak),
                         LEFT_HEEL);
             }
         }
@@ -256,11 +258,11 @@ public class GluteBridgeExercise extends BaseExercise {
             Log.d(TAG, String.format("RHeel lift=%.3f", lift));
             if (lift > HEEL_LIFT_ERROR) {
                 result.addError(
-                        "⚠ Правая пятка оторвана — прижмите к полу",
+                        getString(R.string.error_glute_heel_lift_right_strong),
                         RIGHT_HEEL);
             } else if (lift > HEEL_LIFT_WARN) {
                 result.addError(
-                        "⚠ Правая пятка начинает отрываться",
+                        getString(R.string.error_glute_heel_lift_right_weak),
                         RIGHT_HEEL);
             }
         }
@@ -280,11 +282,11 @@ public class GluteBridgeExercise extends BaseExercise {
 
             if (lift > WRIST_LIFT_ERROR) {
                 result.addError(
-                        "⚠ Левая кисть поднята — положите на пол",
+                        getString(R.string.error_glute_wrist_lift_left_strong),
                         LEFT_WRIST);
             } else if (lift > WRIST_LIFT_WARN) {
                 result.addError(
-                        "⚠ Левая кисть чуть приподнята — опустите",
+                        getString(R.string.error_glute_wrist_lift_left_weak),
                         LEFT_WRIST);
             }
         }
@@ -302,11 +304,11 @@ public class GluteBridgeExercise extends BaseExercise {
 
             if (lift > WRIST_LIFT_ERROR) {
                 result.addError(
-                        "⚠ Правая кисть поднята — положите на пол",
+                        getString(R.string.error_glute_wrist_lift_right_strong),
                         RIGHT_WRIST);
             } else if (lift > WRIST_LIFT_WARN) {
                 result.addError(
-                        "⚠ Правая кисть чуть приподнята — опустите",
+                        getString(R.string.error_glute_wrist_lift_right_weak),
                         RIGHT_WRIST);
             }
         }
@@ -329,11 +331,11 @@ public class GluteBridgeExercise extends BaseExercise {
 
             if (lift > ARM_LIFT_ERROR) {
                 result.addError(
-                        "⚠ Левая рука поднята — положите на пол",
+                        getString(R.string.error_glute_arm_lift_left_strong),
                         LEFT_ELBOW, LEFT_SHOULDER);
             } else if (lift > ARM_LIFT_WARN) {
                 result.addError(
-                        "⚠ Левая рука чуть приподнята — опустите",
+                        getString(R.string.error_glute_arm_lift_left_weak),
                         LEFT_ELBOW);
             }
         }
@@ -352,11 +354,11 @@ public class GluteBridgeExercise extends BaseExercise {
 
             if (lift > ARM_LIFT_ERROR) {
                 result.addError(
-                        "⚠ Правая рука поднята — положите на пол",
+                        getString(R.string.error_glute_arm_lift_right_strong),
                         RIGHT_ELBOW, RIGHT_SHOULDER);
             } else if (lift > ARM_LIFT_WARN) {
                 result.addError(
-                        "⚠ Правая рука чуть приподнята — опустите",
+                        getString(R.string.error_glute_arm_lift_right_weak),
                         RIGHT_ELBOW);
             }
         }
@@ -453,14 +455,14 @@ public class GluteBridgeExercise extends BaseExercise {
         switch (phase) {
             case "UP":
                 return hipRise >= HIP_RISE_GOOD
-                        ? "✅ Отлично! Держите таз наверху"
-                        : "✅ Поднимайтесь выше";
+                        ? getString(R.string.feedback_glute_up_good)
+                        : getString(R.string.feedback_glute_up_higher);
             case "DOWN":
                 return repCount > 0
-                        ? "✅ Повторений: " + repCount
-                        : "✅ Поднимите таз вверх";
+                        ? getString(R.string.feedback_glute_down, repCount)
+                        : getString(R.string.feedback_glute_start);
             default:
-                return "✅ Лягте и начните упражнение";
+                return getString(R.string.feedback_glute_lie_down);
         }
     }
 

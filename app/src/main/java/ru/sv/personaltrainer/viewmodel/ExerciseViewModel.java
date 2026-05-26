@@ -13,6 +13,7 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
 import java.util.ArrayList;
 
+import ru.sv.personaltrainer.R;
 import ru.sv.personaltrainer.exercises.BaseExercise;
 import ru.sv.personaltrainer.model.Event;
 import ru.sv.personaltrainer.model.WearData;
@@ -32,7 +33,7 @@ public class ExerciseViewModel extends AndroidViewModel {
     private final MutableLiveData<Event<String>> ttsEvent = new MutableLiveData<>();
     private final MutableLiveData<WearData> wearData = new MutableLiveData<>();
 
-    private String lastRepText = "Повторений: 0";
+    private String lastRepText;
 
     public LiveData<WorkoutResult> getWorkoutResult() { return workoutResult; }
     public LiveData<Boolean> getIsRecording() { return isRecording; }
@@ -43,6 +44,7 @@ public class ExerciseViewModel extends AndroidViewModel {
     public ExerciseViewModel(@NonNull Application application, BaseExercise exercise) {
         super(application);
         this.currentExercise = exercise;
+        this.lastRepText = getString(R.string.vm_reps_format, 0);
         this.workoutRepository = new WorkoutRepository(application);
         try {
             this.poseRepository = new PoseRepository(application, exercise);
@@ -99,13 +101,13 @@ public class ExerciseViewModel extends AndroidViewModel {
 
     private String getIconForExercise(String id) {
         switch (id) {
-            case "SQUAT": return "🏋";
-            case "LUNGE": return "🦵";
-            case "GLUTE_BRIDGE": return "🍑";
-            case "BURPEE": return "🔥";
-            case "PULL_UP": return "🏅";
-            case "PLANK": return "🧘";
-            default: return "💪";
+            case "SQUAT": return getString(R.string.icon_squat);
+            case "LUNGE": return getString(R.string.icon_lunge);
+            case "GLUTE_BRIDGE": return getString(R.string.icon_glute);
+            case "BURPEE": return getString(R.string.icon_burpee);
+            case "PULL_UP": return getString(R.string.icon_pullup);
+            case "PLANK": return getString(R.string.icon_plank);
+            default: return getString(R.string.icon_default);
         }
     }
 
@@ -115,12 +117,12 @@ public class ExerciseViewModel extends AndroidViewModel {
         r.poseResult = poseResult;
 
         if (raw == null) {
-            r.mainFeedback = "Встаньте полностью в кадр";
-            r.phaseText = "● ПОИСК...";
-            r.phaseColor = 0xFFAAAAAA;
+            r.mainFeedback = getString(R.string.vm_search_pose);
+            r.phaseText = getString(R.string.vm_phase_search);
+            r.phaseColor = getColor(R.color.phase_search);
             r.repText = lastRepText;
-            r.qualityText = "●●●●●";
-            r.qualityColor = 0xFF00FF88;
+            r.qualityText = getString(R.string.vm_quality_full);
+            r.qualityColor = getColor(R.color.quality_perfect);
             r.errors = new ArrayList<>();
             r.errorLandmarks = new ArrayList<>();
             return r;
@@ -142,7 +144,7 @@ public class ExerciseViewModel extends AndroidViewModel {
 
         r.repText = (r.holdSeconds >= 0)
                 ? formatHoldTime(r.holdSeconds)
-                : "Повторений: " + r.repCount;
+                : getString(R.string.vm_reps_format, r.repCount);
         lastRepText = r.repText;
 
         r.phaseText = phaseToText(r.phase);
@@ -154,50 +156,50 @@ public class ExerciseViewModel extends AndroidViewModel {
     }
 
     private String formatHoldTime(int seconds) {
-        return seconds == 0 ? "⏱ Время: 0с" : "⏱ Время: " + seconds + "с";
+        return seconds == 0 ? getString(R.string.vm_hold_time_zero) : getString(R.string.vm_hold_time_format, seconds);
     }
 
     private String buildPositiveFeedback(String phase) {
         switch (phase) {
-            case "DOWN": return "✅ Хорошо! Держите позицию";
-            case "UP": return "✅ Отлично!";
-            case "HOLD": return "✅ Держите!";
-            default: return "✅ Начните упражнение";
+            case "DOWN": return getString(R.string.vm_feedback_down);
+            case "UP": return getString(R.string.vm_feedback_up);
+            case "HOLD": return getString(R.string.vm_feedback_hold);
+            default: return getString(R.string.vm_feedback_start);
         }
     }
 
     private String phaseToText(String phase) {
         switch (phase) {
-            case "DOWN": return "▼ ВНИЗ";
-            case "UP": return "▲ ВВЕРХ";
-            case "HOLD": return "⏸ ДЕРЖИ";
-            default: return "● ГОТОВ";
+            case "DOWN": return getString(R.string.vm_phase_down);
+            case "UP": return getString(R.string.vm_phase_up);
+            case "HOLD": return getString(R.string.vm_phase_hold);
+            default: return getString(R.string.vm_phase_ready);
         }
     }
 
     private int phaseToColor(String phase) {
         switch (phase) {
-            case "DOWN": return 0xFF00FF88;
-            case "UP": return 0xFF00AAFF;
-            case "HOLD": return 0xFFFFAA00;
-            default: return 0xFFFFFFFF;
+            case "DOWN": return getColor(R.color.phase_down);
+            case "UP": return getColor(R.color.phase_up);
+            case "HOLD": return getColor(R.color.phase_hold);
+            default: return getColor(R.color.phase_ready);
         }
     }
 
     private String qualityToText(int errorCount) {
-        if (errorCount == 0) return "●●●●●";
-        if (errorCount == 1) return "●●●●○";
-        if (errorCount == 2) return "●●●○○";
-        if (errorCount == 3) return "●●○○○";
-        return "●○○○○";
+        if (errorCount == 0) return getString(R.string.vm_quality_full);
+        if (errorCount == 1) return getString(R.string.vm_quality_1);
+        if (errorCount == 2) return getString(R.string.vm_quality_2);
+        if (errorCount == 3) return getString(R.string.vm_quality_3);
+        return getString(R.string.vm_quality_bad);
     }
 
     private int qualityToColor(int errorCount) {
-        if (errorCount == 0) return 0xFF00FF88;
-        if (errorCount == 1) return 0xFF88FF00;
-        if (errorCount == 2) return 0xFFFFFF00;
-        if (errorCount == 3) return 0xFFFF8800;
-        return 0xFFFF0000;
+        if (errorCount == 0) return getColor(R.color.quality_perfect);
+        if (errorCount == 1) return getColor(R.color.quality_good);
+        if (errorCount == 2) return getColor(R.color.quality_ok);
+        if (errorCount == 3) return getColor(R.color.quality_bad);
+        return getColor(R.color.quality_poor);
     }
 
     @Override
@@ -223,5 +225,17 @@ public class ExerciseViewModel extends AndroidViewModel {
             }
             throw new IllegalArgumentException("Unknown ViewModel class");
         }
+    }
+
+    private String getString(int resId) {
+        return getApplication().getString(resId);
+    }
+
+    private String getString(int resId, Object... formatArgs) {
+        return getApplication().getString(resId, formatArgs);
+    }
+
+    private int getColor(int resId) {
+        return getApplication().getResources().getColor(resId, null);
     }
 }

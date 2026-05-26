@@ -9,6 +9,8 @@ import com.google.android.gms.wearable.MessageClient;
 import com.google.android.gms.wearable.Node;
 import com.google.android.gms.wearable.Wearable;
 
+import ru.sv.personaltrainer.R;
+
 public class WearHelper {
 
     private static final String TAG = "WearHelper";
@@ -32,10 +34,10 @@ public class WearHelper {
         int status = api.isGooglePlayServicesAvailable(context);
         if (status == ConnectionResult.SUCCESS) {
             apiReady = true;
-            Log.d(TAG, "✅ Wear API доступен");
+            Log.d(TAG, context.getString(R.string.wear_api_available));
         } else {
             apiReady = false;
-            Log.w(TAG, "⚠️ Wear API недоступен (код: " + status + "). Ожидание сопряжения или реального устройства...");
+            Log.w(TAG, String.format(context.getString(R.string.wear_api_unavailable), status));
         }
     }
 
@@ -68,14 +70,12 @@ public class WearHelper {
         Wearable.getNodeClient(context).getConnectedNodes()
                 .addOnSuccessListener(nodes -> {
                     if (nodes.isEmpty()) {
-                        Log.w(TAG, "⌚ Нет подключенных узлов");
+                        Log.w(TAG, context.getString(R.string.wear_no_nodes));
                         return;
                     }
                     for (Node node : nodes) {
                         messageClient.sendMessage(node.getId(), path, msg.getBytes());
                     }
                 });
-
-        //.addOnFailureListener(e -> Log.e(TAG, "Ошибка сети Wear", e));
     }
 }

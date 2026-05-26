@@ -14,6 +14,8 @@ import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
 import java.util.List;
 
+import ru.sv.personaltrainer.R;
+
 public class PoseOverlayView extends View {
 
     private final Paint pointPaint = new Paint();
@@ -34,21 +36,15 @@ public class PoseOverlayView extends View {
     private static final float PULSE_STEP = 0.5f;
 
     private static final int[][] POSE_CONNECTIONS = {
-            // Голова
             {0, 1}, {1, 2}, {2, 3}, {3, 7},
             {0, 4}, {4, 5}, {5, 6}, {6, 8},
             {9, 10},
-            // Торс
             {11, 12}, {11, 23}, {12, 24}, {23, 24},
-            // Левая рука
             {11, 13}, {13, 15}, {15, 17},
             {15, 19}, {15, 21}, {17, 19},
-            // Правая рука
             {12, 14}, {14, 16}, {16, 18},
             {16, 20}, {16, 22}, {18, 20},
-            // Левая нога
             {23, 25}, {25, 27}, {27, 29}, {27, 31}, {29, 31},
-            // Правая нога
             {24, 26}, {26, 28}, {28, 30}, {28, 32}, {30, 32}
     };
 
@@ -83,7 +79,7 @@ public class PoseOverlayView extends View {
         pointPaint.setStyle(Paint.Style.FILL);
         pointPaint.setAntiAlias(true);
 
-        linePaint.setColor(Color.GREEN);
+        linePaint.setColor(getResources().getColor(R.color.pose_line_green, null));
         linePaint.setStrokeWidth(5f);
         linePaint.setStyle(Paint.Style.STROKE);
         linePaint.setAntiAlias(true);
@@ -93,7 +89,7 @@ public class PoseOverlayView extends View {
         errorPaint.setStyle(Paint.Style.FILL);
         errorPaint.setAntiAlias(true);
 
-        errorStroke.setColor(Color.WHITE);
+        errorStroke.setColor(getResources().getColor(R.color.pose_error_stroke, null));
         errorStroke.setStyle(Paint.Style.STROKE);
         errorStroke.setStrokeWidth(2.5f);
         errorStroke.setAntiAlias(true);
@@ -220,13 +216,13 @@ public class PoseOverlayView extends View {
                                  float x, float y, int index) {
         float radius = isKeyLandmark(index) ? 10f : 7f;
 
-        pointPaint.setColor(0x44000000);
+        pointPaint.setColor(getResources().getColor(R.color.pose_point_shadow, null));
         canvas.drawCircle(x + 1f, y + 1f, radius, pointPaint);
 
-        pointPaint.setColor(Color.WHITE);
+        pointPaint.setColor(getResources().getColor(R.color.pose_point_white, null));
         canvas.drawCircle(x, y, radius, pointPaint);
 
-        pointPaint.setColor(0xAAFFFFFF);
+        pointPaint.setColor(getResources().getColor(R.color.pose_point_highlight, null));
         canvas.drawCircle(
                 x - radius * 0.3f,
                 y - radius * 0.3f,
@@ -239,16 +235,20 @@ public class PoseOverlayView extends View {
         RadialGradient gradient = new RadialGradient(
                 x, y,
                 pulseRadius * 1.5f,
-                new int[]{0x88FF0000, 0x44FF0000, 0x00FF0000},
+                new int[]{
+                        getResources().getColor(R.color.pose_glow_1, null),
+                        getResources().getColor(R.color.pose_glow_2, null),
+                        getResources().getColor(R.color.pose_glow_3, null)
+                },
                 new float[]{0f, 0.5f, 1f},
                 Shader.TileMode.CLAMP);
         glowPaint.setShader(gradient);
         canvas.drawCircle(x, y, pulseRadius * 1.5f, glowPaint);
 
-        errorPaint.setColor(0xAAFF0000);
+        errorPaint.setColor(getResources().getColor(R.color.pose_error_red, null));
         canvas.drawCircle(x, y, pulseRadius, errorPaint);
 
-        errorPaint.setColor(0xFFFF3333);
+        errorPaint.setColor(getResources().getColor(R.color.pose_error_bright, null));
         canvas.drawCircle(x, y, 14f, errorPaint);
 
         canvas.drawCircle(x, y, 14f, errorStroke);
@@ -308,9 +308,9 @@ public class PoseOverlayView extends View {
         boolean endLeft = isLeftLandmark(endIdx);
         boolean endRight = isRightLandmark(endIdx);
 
-        if (startLeft || endLeft) return 0xFF00BFFF;
-        if (startRight || endRight) return 0xFFFFD700;
-        return 0xFF00FF00;
+        if (startLeft || endLeft) return getResources().getColor(R.color.pose_line_left, null);
+        if (startRight || endRight) return getResources().getColor(R.color.pose_line_right, null);
+        return getResources().getColor(R.color.pose_line_green, null);
     }
 
     private boolean isLeftLandmark(int index) {
