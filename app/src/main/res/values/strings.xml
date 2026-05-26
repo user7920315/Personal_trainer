@@ -15,28 +15,28 @@
     <string name="msg_stand_side_or_front">Встаньте боком или лицом к камере</string>
     <string name="msg_unknown_exercise">Неизвестное упражнение: %s</string>
 
-    <string name="exercise_push_up_name">💪 Отжимания</string>
+    <string name="exercise_push_up_name">Отжимания</string>
     <string name="exercise_push_up_emoji">💪</string>
     <string name="exercise_push_up_muscles">Грудь, Трицепс</string>
     <string name="exercise_push_up_difficulty">Средний</string>
     <string name="exercise_push_up_video">push_up.mp4</string>
     <string name="exercise_push_up_description">Техника выполнения отжиманий:\n\n1. Примите упор лёжа. Руки чуть шире плеч,\n   пальцы смотрят вперёд.\n\n2. Тело — прямая линия от головы до пяток.\n   Не прогибайте поясницу.\n\n3. На вдохе опускайтесь, пока грудь\n   не окажется в 2–3 см от пола.\n\n4. На выдохе жимом рук возвращайтесь\n   в исходное положение.\n\n⚠ Частые ошибки:\n• Провисание таза вниз\n• Неполная амплитуда движения\n• Разведённые локти в стороны</string>
 
-    <string name="exercise_squat_name">🏋 Приседания</string>
+    <string name="exercise_squat_name">Приседания</string>
     <string name="exercise_squat_emoji">🏋</string>
     <string name="exercise_squat_muscles">Квадрицепс, Ягодицы</string>
     <string name="exercise_squat_difficulty">Лёгкий</string>
     <string name="exercise_squat_video">squat.mp4</string>
     <string name="exercise_squat_description">Техника выполнения приседаний:\n\n1. Ноги на ширине плеч, носки слегка\n   развёрнуты наружу (15–30°).\n\n2. Руки вытяните вперёд или скрестите\n   на груди для баланса.\n\n3. На вдохе медленно опускайтесь,\n   пока бёдра не станут параллельны полу.\n\n4. Колени не должны выходить за носки.\n   Пятки не отрывайте от пола.\n\n5. На выдохе возвращайтесь в исходное\n   положение, разгибая ноги.\n\n⚠ Частые ошибки:\n• Отрыв пяток от пола\n• Колени «заваливаются» внутрь\n• Слишком маленькая глубина приседа</string>
 
-    <string name="exercise_plank_name">🧘 Планка</string>
+    <string name="exercise_plank_name">Планка</string>
     <string name="exercise_plank_emoji">🧘</string>
     <string name="exercise_plank_muscles">Кор, Спина</string>
     <string name="exercise_plank_difficulty">Лёгкий</string>
     <string name="exercise_plank_video">plank.mp4</string>
     <string name="exercise_plank_description">Техника выполнения планки:\n\n1. Примите упор лёжа на предплечьях.\n   Локти строго под плечами.\n\n2. Тело образует прямую линию:\n   голова, спина, ягодицы, пятки на одном уровне.\n\n3. Напрягите мышцы кора и ягодиц.\n   Не задерживайте дыхание.\n\n4. Удерживайте положение от 20 секунд\n   постепенно увеличивая время.\n\n⚠ Частые ошибки:\n• Таз поднят слишком высоко\n• Провисание поясницы\n• Опущенная или задранная голова</string>
 
-    <string name="exercise_lunge_name">🦵 Выпады</string>
+    <string name="exercise_lunge_name">Выпады</string>
     <string name="exercise_lunge_emoji">🦵</string>
     <string name="exercise_lunge_muscles">Квадрицепс, Ягодицы</string>
     <string name="exercise_lunge_difficulty">Средний</string>
@@ -57,7 +57,7 @@
     <string name="exercise_burpee_video">burpee.mp4</string>
     <string name="exercise_burpee_description">Техника выполнения бёрпи:\n\n1. Встаньте прямо, ноги на ширине плеч.\n\n2. Присядьте и упритесь руками в пол.\n\n3. Прыжком выбросьте ноги назад —\n   вы в положении планки.\n\n4. Выполните одно отжимание (опционально).\n\n5. Прыжком подтяните ноги к рукам.\n\n6. Выпрыгните вверх, подняв руки.\n\n⚠ Частые ошибки:\n• Провисание в положении планки\n• Нет прыжка в финальной фазе\n• Слишком быстрый темп в ущерб технике</string>
 
-    <string name="exercise_pull_up_name">🏅 Подтягивания</string>
+    <string name="exercise_pull_up_name">Подтягивания</string>
     <string name="exercise_pull_up_emoji">🏅</string>
     <string name="exercise_pull_up_muscles">Широчайшие, Бицепс</string>
     <string name="exercise_pull_up_difficulty">Сложный</string>

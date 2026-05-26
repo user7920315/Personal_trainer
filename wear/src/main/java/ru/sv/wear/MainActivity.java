@@ -2,17 +2,15 @@ package ru.sv.wear;
 
 import android.graphics.Color;
 import android.os.Bundle;
-import android.util.Log;
 
 import androidx.activity.ComponentActivity;
 import androidx.lifecycle.ViewModelProvider;
 
 import ru.sv.wear.databinding.ActivityMainBinding;
 import ru.sv.wear.viewmodel.WearViewModel;
+import androidx.core.content.ContextCompat;
 
 public class MainActivity extends ComponentActivity {
-
-    private static final String TAG = "WearMainActivity";
 
     private ActivityMainBinding binding;
     private WearViewModel viewModel;
@@ -41,7 +39,7 @@ public class MainActivity extends ComponentActivity {
         viewModel.getErrorVisible().observe(this, visible -> {
             binding.tvError.setVisibility(visible ? android.view.View.VISIBLE : android.view.View.GONE);
             if (visible) {
-                binding.tvError.setTextColor(Color.parseColor("#FF5555"));
+                binding.tvError.setTextColor(ContextCompat.getColor(this, R.color.error_red));
             }
         });
 
@@ -63,7 +61,6 @@ public class MainActivity extends ComponentActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        Log.d(TAG, "onDestroy");
         binding = null;
     }
 }

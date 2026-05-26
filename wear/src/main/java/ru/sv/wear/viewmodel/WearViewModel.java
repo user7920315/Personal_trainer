@@ -8,7 +8,9 @@ import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 import androidx.lifecycle.Transformations;
 
+import ru.sv.wear.R;
 import ru.sv.wear.repository.WearRepository;
+import androidx.core.content.ContextCompat;
 
 public class WearViewModel extends AndroidViewModel {
 
@@ -20,13 +22,14 @@ public class WearViewModel extends AndroidViewModel {
 
     public WearViewModel(@NonNull Application application) {
         super(application);
-        repository = new WearRepository();
+        repository = new WearRepository(application);
+        repository.setContext(application);
 
         connectionText = Transformations.map(connectionStatus, connected ->
-                connected ? "●●●" : "○○○"
+                connected ? getApplication().getString(R.string.connection_connected) : getApplication().getString(R.string.connection_disconnected)
         );
         connectionColor = Transformations.map(connectionStatus, connected ->
-                connected ? 0xFF00FF88 : 0xFFFF5555
+                connected ? ContextCompat.getColor(getApplication(), R.color.success_green) : ContextCompat.getColor(getApplication(), R.color.error_red)
         );
     }
 
