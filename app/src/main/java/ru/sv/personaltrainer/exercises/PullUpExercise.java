@@ -6,6 +6,8 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
 
+import ru.sv.personaltrainer.R;
+
 public class PullUpExercise extends BaseExercise {
 
     private static final String TAG = "PullUpExercise";
@@ -64,7 +66,7 @@ public class PullUpExercise extends BaseExercise {
 
     @Override
     public String getName() {
-        return "🏅 Подтягивания";
+        return getString(R.string.exercise_pull_up_name);
     }
 
     @Override
@@ -72,12 +74,12 @@ public class PullUpExercise extends BaseExercise {
         AnalysisResult result = new AnalysisResult();
 
         if (!isValidData(lm)) {
-            result.mainFeedback = "Встаньте полностью в кадр";
+            result.mainFeedback = getString(R.string.msg_full_frame);
             return result;
         }
 
         if (!anyVisible(lm, LEFT_ELBOW, RIGHT_ELBOW)) {
-            result.mainFeedback = "Не видно рук — отойдите от камеры";
+            result.mainFeedback = getString(R.string.msg_not_visible_arms);
             result.phase = "";
             return result;
         }
@@ -91,7 +93,7 @@ public class PullUpExercise extends BaseExercise {
         float avgElbowAngle = getAvgElbowAngle(lm);
 
         if (avgElbowAngle < 0) {
-            result.mainFeedback = "Не видно суставов — отойдите от камеры";
+            result.mainFeedback = getString(R.string.msg_not_visible_joints);
             result.phase = "";
             return result;
         }
@@ -150,12 +152,11 @@ public class PullUpExercise extends BaseExercise {
 
         if (angle < ELBOW_FULL_EXTEND_ERROR) {
             result.addError(
-                    "⚠ Полностью разогните руки внизу — "
-                            + "до полного виса",
+                    getString(R.string.error_pull_up_not_full_extension),
                     LEFT_ELBOW, RIGHT_ELBOW);
         } else if (angle < ELBOW_FULL_EXTEND_WARN) {
             result.addError(
-                    "⚠ Чуть разогните руки в нижней точке",
+                    getString(R.string.error_pull_up_not_full_extension_warn),
                     LEFT_ELBOW, RIGHT_ELBOW);
         }
     }
@@ -166,7 +167,7 @@ public class PullUpExercise extends BaseExercise {
         if (!result.phase.equals("UP")) return;
         if (!checkChinOverBar(lm)) {
             result.addError(
-                    "⚠ Подтянитесь выше — подбородок должен быть над перекладиной",
+                    getString(R.string.error_pull_up_chin_not_over),
                     NOSE,
                     LEFT_WRIST, RIGHT_WRIST);
         }
@@ -193,12 +194,12 @@ public class PullUpExercise extends BaseExercise {
         if (diff > ELBOW_ASYMMETRY_ERROR) {
             result.addError(
                     lA > rA
-                            ? "⚠ Левая рука слабее — тянете больше правой"
-                            : "⚠ Правая рука слабее — тянете больше левой",
+                            ? getString(R.string.error_pull_up_asymmetry_left)
+                            : getString(R.string.error_pull_up_asymmetry_right),
                     lA > rA ? LEFT_ELBOW : RIGHT_ELBOW);
         } else if (diff > ELBOW_ASYMMETRY_WARN) {
             result.addError(
-                    "⚠ Небольшая асимметрия рук — тяните равномерно",
+                    getString(R.string.error_pull_up_asymmetry_warn),
                     LEFT_ELBOW, RIGHT_ELBOW);
         }
     }
@@ -211,11 +212,11 @@ public class PullUpExercise extends BaseExercise {
 
         if (emaSwingX > SWING_ERROR) {
             result.addError(
-                    "⚠ Сильная раскачка — тяните без маятника",
+                    getString(R.string.error_pull_up_swing_strong),
                     LEFT_SHOULDER, RIGHT_SHOULDER);
         } else if (emaSwingX > SWING_WARN) {
             result.addError(
-                    "⚠ Небольшая раскачка — держите корпус стабильно",
+                    getString(R.string.error_pull_up_swing_weak),
                     LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
@@ -235,7 +236,7 @@ public class PullUpExercise extends BaseExercise {
 
         if (ratio > ELBOW_WIDTH_RATIO_MAX) {
             result.addError(
-                    "⚠ Локти слишком широко — возьмитесь чуть уже",
+                    getString(R.string.error_pull_up_elbows_wide),
                     LEFT_ELBOW, RIGHT_ELBOW);
         }
     }
@@ -252,11 +253,11 @@ public class PullUpExercise extends BaseExercise {
 
         if (offset > LEG_SWING_ERROR) {
             result.addError(
-                    "⚠ Ноги отклоняются — скрестите и держите неподвижно",
+                    getString(R.string.error_pull_up_legs_deviate),
                     LEFT_HIP, RIGHT_HIP);
         } else if (offset > LEG_SWING_WARN) {
             result.addError(
-                    "⚠ Небольшое отклонение ног — держите их прямо",
+                    getString(R.string.error_pull_up_legs_deviate_weak),
                     LEFT_HIP, RIGHT_HIP);
         }
     }
@@ -322,11 +323,11 @@ public class PullUpExercise extends BaseExercise {
     private String buildFeedback(String phase) {
         switch (phase) {
             case "UP":
-                return "✅ Подтянулись! Повторений: " + repCount;
+                return getString(R.string.feedback_pull_up_up, repCount);
             case "DOWN":
-                return "✅ Полный вис — начните тянуться";
+                return getString(R.string.feedback_pull_up_down);
             default:
-                return "✅ Повисните на перекладине";
+                return getString(R.string.feedback_pull_up_start);
         }
     }
 

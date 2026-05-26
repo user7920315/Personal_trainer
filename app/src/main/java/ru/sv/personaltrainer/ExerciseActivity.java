@@ -12,7 +12,6 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
-import android.util.Log;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Toast;
@@ -52,7 +51,6 @@ import ru.sv.personaltrainer.wear.WearHelper;
 
 public class ExerciseActivity extends AppCompatActivity {
 
-    private static final String TAG = "ExerciseActivity";
     private static final int AUDIO_PERMISSION_CODE = 200;
 
     private ActivityExerciseBinding binding;
@@ -105,7 +103,7 @@ public class ExerciseActivity extends AppCompatActivity {
         if (exerciseId == null) exerciseId = "SQUAT";
 
         try {
-            currentExercise = ExerciseRegistry.createExercise(exerciseId);
+            currentExercise = ExerciseRegistry.createExercise(exerciseId, this);
         } catch (Exception e) {
             finish();
             return;
@@ -133,7 +131,6 @@ public class ExerciseActivity extends AppCompatActivity {
             getWindow().clearFlags(android.view.WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
         }
     }
-
 
     private void setupPermissionObserver() {
         permissionViewModel.getCameraPermissionState().observe(this, state -> {
@@ -183,13 +180,13 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void showRationaleDialog() {
         new AlertDialog.Builder(this)
-                .setTitle("Доступ к камере")
-                .setMessage("Камера нужна для анализа вашей техники упражнений в реальном времени. Без неё тренировка невозможна.")
-                .setPositiveButton("Разрешить", (dialog, which) -> {
+                .setTitle(getString(R.string.dialog_camera_title))
+                .setMessage(getString(R.string.dialog_camera_message))
+                .setPositiveButton(getString(R.string.dialog_camera_allow), (dialog, which) -> {
                     permissionViewModel.onRationaleShown();
                 })
-                .setNegativeButton("Отмена", (dialog, which) -> {
-                    Toast.makeText(this, "Без камеры тренировка невозможна", Toast.LENGTH_LONG).show();
+                .setNegativeButton(getString(R.string.dialog_camera_cancel), (dialog, which) -> {
+                    Toast.makeText(this, getString(R.string.toast_no_camera), Toast.LENGTH_LONG).show();
                     finish();
                 })
                 .setCancelable(false)
@@ -198,13 +195,13 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void showGoToSettingsDialog() {
         new AlertDialog.Builder(this)
-                .setTitle("Требуется доступ к камере")
-                .setMessage("Вы несколько раз отказали в доступе к камере. Чтобы продолжить тренировки, включите разрешение в настройках приложения.")
-                .setPositiveButton("Открыть настройки", (dialog, which) -> {
+                .setTitle(getString(R.string.dialog_settings_title))
+                .setMessage(getString(R.string.dialog_settings_message))
+                .setPositiveButton(getString(R.string.dialog_settings_open), (dialog, which) -> {
                     permissionViewModel.openSettings();
                     finish();
                 })
-                .setNegativeButton("Отмена", (dialog, which) -> finish())
+                .setNegativeButton(getString(R.string.dialog_camera_cancel), (dialog, which) -> finish())
                 .setCancelable(false)
                 .show();
     }
@@ -256,7 +253,6 @@ public class ExerciseActivity extends AppCompatActivity {
             if (status == TextToSpeech.SUCCESS) {
                 int result = textToSpeech.setLanguage(new Locale("ru", "RU"));
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                    Log.e(TAG, "TTS: язык не поддерживается");
                 } else {
                     ttsInitialized = true;
                     textToSpeech.setSpeechRate(0.9f);
@@ -285,7 +281,7 @@ public class ExerciseActivity extends AppCompatActivity {
             lastErrorStartTime = now;
             lastSpokenError = error;
         } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS && !textToSpeech.isSpeaking() && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
-            String cleanMessage = error.replace("⚠ ", "").replace("✅ ", "");
+            String cleanMessage = error.replace(getString(R.string.error_prefix_warning), "").replace(getString(R.string.error_prefix_ok), "");
             android.os.Bundle params = new android.os.Bundle();
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "error_feedback");
             textToSpeech.speak(cleanMessage, TextToSpeech.QUEUE_FLUSH, params, "error_feedback");
@@ -303,7 +299,7 @@ public class ExerciseActivity extends AppCompatActivity {
     private void initViews() {
         binding.tvExerciseName.setText(currentExercise.getName());
         if ("PLANK".equals(exerciseId)) {
-            binding.tvRepCount.setText("⏱ Время: 0с");
+            binding.tvRepCount.setText(getString(R.string.hold_time_zero));
         }
         binding.btnBack.setOnClickListener(v -> finish());
         binding.btnReset.setOnClickListener(v -> {
@@ -318,15 +314,15 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void resetUI() {
         if ("PLANK".equals(exerciseId)) {
-            binding.tvRepCount.setText("⏱ Время: 0с");
+            binding.tvRepCount.setText(getString(R.string.hold_time_zero));
         } else {
-            binding.tvRepCount.setText("Повторений: 0");
+            binding.tvRepCount.setText(String.format(getString(R.string.vm_reps_format), 0));
         }
-        binding.tvFeedback.setText("Встаньте в кадр для начала");
-        binding.tvPhase.setText("● ГОТОВ");
-        binding.tvPhase.setTextColor(0xFFFFFFFF);
-        binding.tvQuality.setText("●●●●●");
-        binding.tvQuality.setTextColor(0xFF00FF88);
+        binding.tvFeedback.setText(getString(R.string.feedback_start));
+        binding.tvPhase.setText(getString(R.string.phase_ready));
+        binding.tvPhase.setTextColor(ContextCompat.getColor(this, R.color.video_white));
+        binding.tvQuality.setText(getString(R.string.vm_quality_full));
+        binding.tvQuality.setTextColor(ContextCompat.getColor(this, R.color.accent));
         binding.layoutErrors.setVisibility(android.view.View.GONE);
         if (wearHelper != null) wearHelper.sendReset();
         lastSentError = null;
@@ -334,7 +330,7 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void updateTtsButton(boolean enabled) {
         if (binding.btnToggleTts == null) return;
-        binding.btnToggleTts.setText(enabled ? "🔊" : "🔇");
+        binding.btnToggleTts.setText(enabled ? getString(R.string.tts_enabled_emoji) : getString(R.string.tts_disabled_emoji));
         binding.btnToggleTts.setAlpha(enabled ? 1.0f : 0.5f);
         if (!enabled && ttsInitialized && textToSpeech != null && textToSpeech.isSpeaking()) {
             textToSpeech.stop();
@@ -374,12 +370,12 @@ public class ExerciseActivity extends AppCompatActivity {
 
             @Override
             public void onRecordingSaved(String filePath) {
-                Toast.makeText(ExerciseActivity.this, "✅ Видео сохранено в Галерею", Toast.LENGTH_LONG).show();
+                Toast.makeText(ExerciseActivity.this, getString(R.string.toast_video_saved), Toast.LENGTH_LONG).show();
             }
 
             @Override
             public void onRecordingError(String error) {
-                Toast.makeText(ExerciseActivity.this, "Ошибка: " + error, Toast.LENGTH_SHORT).show();
+                Toast.makeText(ExerciseActivity.this, String.format(getString(R.string.error_format), error), Toast.LENGTH_SHORT).show();
                 isRecording = false;
                 viewModel.setRecording(false);
                 timerHandler.removeCallbacks(timerRunnable);
@@ -433,7 +429,7 @@ public class ExerciseActivity extends AppCompatActivity {
         recordSeconds = 0;
         updateRecordingUI(true);
         timerHandler.postDelayed(timerRunnable, 1000);
-        Toast.makeText(this, "Запись началась", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.toast_recording_started), Toast.LENGTH_SHORT).show();
     }
 
     private void stopRecording() {
@@ -447,13 +443,13 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void updateRecordingUI(boolean rec) {
         if (rec) {
-            binding.btnRecord.setText("⏹ Стоп");
+            binding.btnRecord.setText(getString(R.string.btn_stop));
             binding.btnRecord.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.holo_red_dark));
             binding.layoutRecordingIndicator.setVisibility(android.view.View.VISIBLE);
             binding.viewRecordingDot.startAnimation(blinkAnimation);
             binding.tvRecordingTimer.setText("00:00");
         } else {
-            binding.btnRecord.setText("⏺ Запись");
+            binding.btnRecord.setText(getString(R.string.btn_record));
             binding.btnRecord.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.darker_gray));
             binding.layoutRecordingIndicator.setVisibility(android.view.View.GONE);
             binding.viewRecordingDot.clearAnimation();
@@ -481,7 +477,6 @@ public class ExerciseActivity extends AppCompatActivity {
                 provider.unbindAll();
                 provider.bindToLifecycle(this, CameraSelector.DEFAULT_FRONT_CAMERA, preview, analysis);
             } catch (Exception e) {
-                Log.e(TAG, "Camera: " + e.getMessage());
             }
         }, ContextCompat.getMainExecutor(this));
     }
@@ -526,7 +521,6 @@ public class ExerciseActivity extends AppCompatActivity {
                 if (recordService != null) recordService.stopRecordingService();
                 unbindService(serviceConnection);
             } catch (Exception e) {
-                Log.e(TAG, "unbind: " + e.getMessage());
             }
             serviceBound = false;
             recordService = null;

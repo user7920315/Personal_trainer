@@ -1,3 +1,325 @@
+<?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">MyTrainer</string>
+
+    <string name="msg_full_frame">Встаньте полностью в кадр</string>
+    <string name="msg_camera_shoulders">Направьте камеру — должны быть видны плечи</string>
+    <string name="msg_camera_shoulders_hands">Направьте камеру — должны быть видны руки</string>
+    <string name="msg_not_visible_arms">Не видно рук — отойдите от камеры</string>
+    <string name="msg_not_visible_joints">Не видно суставов — отойдите от камеры</string>
+    <string name="msg_not_visible_joints_stand_side">Не видно суставов — встаньте боком</string>
+    <string name="msg_not_visible_joints_stand_straight">Не видно суставов — встаньте прямо</string>
+    <string name="msg_not_visible_knees">Не видно колен — отойдите от камеры</string>
+    <string name="msg_not_visible_knee">Не видно колена — встаньте в кадр</string>
+    <string name="msg_not_visible_hips">Не видно таза — направьте камеру сбоку</string>
+    <string name="msg_stand_side_or_front">Встаньте боком или лицом к камере</string>
+    <string name="msg_unknown_exercise">Неизвестное упражнение: %s</string>
+
+    <string name="exercise_push_up_name">💪 Отжимания</string>
+    <string name="exercise_push_up_emoji">💪</string>
+    <string name="exercise_push_up_muscles">Грудь, Трицепс</string>
+    <string name="exercise_push_up_difficulty">Средний</string>
+    <string name="exercise_push_up_video">push_up.mp4</string>
+    <string name="exercise_push_up_description">Техника выполнения отжиманий:\n\n1. Примите упор лёжа. Руки чуть шире плеч,\n   пальцы смотрят вперёд.\n\n2. Тело — прямая линия от головы до пяток.\n   Не прогибайте поясницу.\n\n3. На вдохе опускайтесь, пока грудь\n   не окажется в 2–3 см от пола.\n\n4. На выдохе жимом рук возвращайтесь\n   в исходное положение.\n\n⚠ Частые ошибки:\n• Провисание таза вниз\n• Неполная амплитуда движения\n• Разведённые локти в стороны</string>
+
+    <string name="exercise_squat_name">🏋 Приседания</string>
+    <string name="exercise_squat_emoji">🏋</string>
+    <string name="exercise_squat_muscles">Квадрицепс, Ягодицы</string>
+    <string name="exercise_squat_difficulty">Лёгкий</string>
+    <string name="exercise_squat_video">squat.mp4</string>
+    <string name="exercise_squat_description">Техника выполнения приседаний:\n\n1. Ноги на ширине плеч, носки слегка\n   развёрнуты наружу (15–30°).\n\n2. Руки вытяните вперёд или скрестите\n   на груди для баланса.\n\n3. На вдохе медленно опускайтесь,\n   пока бёдра не станут параллельны полу.\n\n4. Колени не должны выходить за носки.\n   Пятки не отрывайте от пола.\n\n5. На выдохе возвращайтесь в исходное\n   положение, разгибая ноги.\n\n⚠ Частые ошибки:\n• Отрыв пяток от пола\n• Колени «заваливаются» внутрь\n• Слишком маленькая глубина приседа</string>
+
+    <string name="exercise_plank_name">🧘 Планка</string>
+    <string name="exercise_plank_emoji">🧘</string>
+    <string name="exercise_plank_muscles">Кор, Спина</string>
+    <string name="exercise_plank_difficulty">Лёгкий</string>
+    <string name="exercise_plank_video">plank.mp4</string>
+    <string name="exercise_plank_description">Техника выполнения планки:\n\n1. Примите упор лёжа на предплечьях.\n   Локти строго под плечами.\n\n2. Тело образует прямую линию:\n   голова, спина, ягодицы, пятки на одном уровне.\n\n3. Напрягите мышцы кора и ягодиц.\n   Не задерживайте дыхание.\n\n4. Удерживайте положение от 20 секунд\n   постепенно увеличивая время.\n\n⚠ Частые ошибки:\n• Таз поднят слишком высоко\n• Провисание поясницы\n• Опущенная или задранная голова</string>
+
+    <string name="exercise_lunge_name">🦵 Выпады</string>
+    <string name="exercise_lunge_emoji">🦵</string>
+    <string name="exercise_lunge_muscles">Квадрицепс, Ягодицы</string>
+    <string name="exercise_lunge_difficulty">Средний</string>
+    <string name="exercise_lunge_video">lunge.mp4</string>
+    <string name="exercise_lunge_description">Техника выполнения выпадов:\n\n1. Встаньте прямо, ноги вместе,\n   руки на поясе или опущены вдоль тела.\n\n2. Сделайте широкий шаг вперёд одной ногой.\n\n3. Опускайтесь, пока колено задней ноги\n   не окажется в 2–3 см от пола.\n\n4. Переднее колено не выходит за носок.\n   Корпус остаётся вертикальным.\n\n5. Оттолкнитесь передней ногой и вернитесь.\n\n⚠ Частые ошибки:\n• Наклон корпуса вперёд\n• Колено выходит за линию носка\n• Маленький шаг вперёд</string>
+
+    <string name="exercise_glute_bridge_name">Ягодичный мостик</string>
+    <string name="exercise_glute_bridge_emoji">\uD83C\uDF09</string>
+    <string name="exercise_glute_bridge_muscles">Ягодицы, Бицепс бедра</string>
+    <string name="exercise_glute_bridge_difficulty">Лёгкий</string>
+    <string name="exercise_glute_bridge_video">glute_bridge.mp4</string>
+    <string name="exercise_glute_bridge_description">Техника ягодичного мостика:\n\n1. Лягте на спину, согните колени.\n   Стопы на полу на ширине плеч.\n\n2. Руки вдоль тела ладонями вниз.\n\n3. На выдохе поднимите таз вверх,\n   сжимая ягодицы в верхней точке.\n\n4. Тело — прямая линия от колен до плеч.\n   Удержите 1–2 секунды.\n\n5. На вдохе медленно опустите таз.\n\n⚠ Частые ошибки:\n• Неполный подъём таза\n• Колени разваливаются в стороны\n• Отрыв плеч от пола</string>
+
+    <string name="exercise_burpee_name">Берпи</string>
+    <string name="exercise_burpee_emoji">🔥</string>
+    <string name="exercise_burpee_muscles">Всё тело</string>
+    <string name="exercise_burpee_difficulty">Сложный</string>
+    <string name="exercise_burpee_video">burpee.mp4</string>
+    <string name="exercise_burpee_description">Техника выполнения бёрпи:\n\n1. Встаньте прямо, ноги на ширине плеч.\n\n2. Присядьте и упритесь руками в пол.\n\n3. Прыжком выбросьте ноги назад —\n   вы в положении планки.\n\n4. Выполните одно отжимание (опционально).\n\n5. Прыжком подтяните ноги к рукам.\n\n6. Выпрыгните вверх, подняв руки.\n\n⚠ Частые ошибки:\n• Провисание в положении планки\n• Нет прыжка в финальной фазе\n• Слишком быстрый темп в ущерб технике</string>
+
+    <string name="exercise_pull_up_name">🏅 Подтягивания</string>
+    <string name="exercise_pull_up_emoji">🏅</string>
+    <string name="exercise_pull_up_muscles">Широчайшие, Бицепс</string>
+    <string name="exercise_pull_up_difficulty">Сложный</string>
+    <string name="exercise_pull_up_video">pull_up.mp4</string>
+    <string name="exercise_pull_up_description">Техника выполнения подтягиваний:\n\n1. Повисните на перекладине хватом сверху,\n   руки чуть шире плеч.\n\n2. Сведите лопатки и слегка прогните грудь.\n\n3. На выдохе подтягивайтесь, пока подбородок\n   не окажется выше перекладины.\n\n4. На вдохе плавно опускайтесь\n   до полного выпрямления рук.\n\n5. Не раскачивайтесь — работайте мышцами.\n\n⚠ Частые ошибки:\n• Раскачивание тела (читинг)\n• Неполное опускание вниз\n• Подбородок не достигает перекладины</string>
+
+    <string name="error_squat_depth_shallow">⚠ Приседайте глубже — опустите таз до уровня колен</string>
+    <string name="error_squat_depth_shallow_warn">⚠ Чуть глубже — почти достаточно!</string>
+    <string name="error_squat_depth_deep">⚠ Слишком глубокий присед — поднимитесь чуть выше</string>
+    <string name="error_squat_depth_deep_warn">⚠ Очень глубокий присед — следите за коленями</string>
+    <string name="error_squat_back_parallel">⚠ Спина не параллельна голени — выпрямите корпус</string>
+    <string name="error_squat_back_warn">⚠ Держите спину параллельно голени</string>
+    <string name="error_squat_heel_lift_left">⚠ Левая пятка оторвана! Прижимайте пятку к полу</string>
+    <string name="error_squat_heel_lift_left_warn">⚠ Левая пятка начинает подниматься</string>
+    <string name="error_squat_heel_lift_right">⚠ Правая пятка оторвана! Прижимайте пятку к полу</string>
+    <string name="error_squat_heel_lift_right_warn">⚠ Правая пятка начинает подниматься</string>
+    <string name="error_squat_knee_over_toe">⚠ Колено выходит за носок — перенесите вес на пятки</string>
+    <string name="error_squat_knees_inward">⚠ Колени заваливаются внутрь — разведите по линии стоп</string>
+    <string name="error_squat_knees_inward_warn">⚠ Слегка разведите колени</string>
+    <string name="error_squat_asymmetry_left">⚠ Левое колено сгибается меньше — выровняйте нагрузку</string>
+    <string name="error_squat_asymmetry_right">⚠ Правое колено сгибается меньше — выровняйте нагрузку</string>
+    <string name="feedback_squat_down">✅ Хорошо! Держите спину</string>
+    <string name="feedback_squat_up">✅ Повторений: %d</string>
+    <string name="feedback_squat_start">✅ Начните приседать</string>
+    <string name="hint_squat_side"> (встаньте боком для анализа спины)</string>
+
+    <string name="error_push_up_elbows_wide">⚠ Локти слишком широко — держите ближе к телу</string>
+    <string name="error_push_up_not_full_extension">⚠ Полностью разгибайте руки в верхней точке</string>
+    <string name="error_push_up_not_low_enough">⚠ Опускайтесь ниже — грудь ближе к полу</string>
+    <string name="error_push_up_hips_sag">⚠ Таз провисает — напрягите пресс и ягодицы</string>
+    <string name="error_push_up_hips_high">⚠ Таз задран вверх — опустите его</string>
+    <string name="error_push_up_back_not_straight">⚠ Выпрямите спину — не прогибайтесь в пояснице</string>
+    <string name="error_push_up_shoulders_tilted">⚠ Плечи перекошены — держите их ровно</string>
+    <string name="error_push_up_head_down">⚠ Держите голову прямо — не опускайте подбородок</string>
+    <string name="error_push_up_head_up">⚠ Не запрокидывайте голову</string>
+    <string name="feedback_push_up_down">✅ Хорошо! Опускайтесь ниже</string>
+    <string name="feedback_push_up_up">✅ Отлично! Повторений: %d</string>
+
+    <string name="error_pull_up_not_full_extension">⚠ Полностью разогните руки внизу — до полного виса</string>
+    <string name="error_pull_up_not_full_extension_warn">⚠ Чуть разогните руки в нижней точке</string>
+    <string name="error_pull_up_chin_not_over">⚠ Подтянитесь выше — подбородок должен быть над перекладиной</string>
+    <string name="error_pull_up_asymmetry_left">⚠ Левая рука слабее — тянете больше правой</string>
+    <string name="error_pull_up_asymmetry_right">⚠ Правая рука слабее — тянете больше левой</string>
+    <string name="error_pull_up_asymmetry_warn">⚠ Небольшая асимметрия рук — тяните равномерно</string>
+    <string name="error_pull_up_swing_strong">⚠ Сильная раскачка — тяните без маятника</string>
+    <string name="error_pull_up_swing_weak">⚠ Небольшая раскачка — держите корпус стабильно</string>
+    <string name="error_pull_up_elbows_wide">⚠ Локти слишком широко — возьмитесь чуть уже</string>
+    <string name="error_pull_up_legs_deviate">⚠ Ноги отклоняются — скрестите и держите неподвижно</string>
+    <string name="error_pull_up_legs_deviate_weak">⚠ Небольшое отклонение ног — держите их прямо</string>
+    <string name="feedback_pull_up_up">✅ Подтянулись! Повторений: %d</string>
+    <string name="feedback_pull_up_down">✅ Полный вис — начните тянуться</string>
+    <string name="feedback_pull_up_start">✅ Повисните на перекладине</string>
+
+    <string name="error_plank_hips_sag_strong">⚠ Тело провисает — напрягите пресс и ягодицы</string>
+    <string name="error_plank_hips_sag_weak">⚠ Тело немного провисает — подтяните пресс</string>
+    <string name="error_plank_hips_high_strong">⚠ Таз слишком высоко — опустите бёдра</string>
+    <string name="error_plank_hips_high_weak">⚠ Таз чуть высоковат — опустите немного</string>
+    <string name="error_plank_shoulders_forward">⚠ Плечи ушли вперёд — поставьте руки под плечи</string>
+    <string name="error_plank_shoulders_back">⚠ Плечи ушли назад — поставьте руки под плечи</string>
+    <string name="error_plank_arms_adjust">⚠ Поправьте положение рук — перпендикулярно телу</string>
+    <string name="error_plank_head_down_strong">⚠ Голова сильно опущена — смотрите чуть вперёд</string>
+    <string name="error_plank_head_down_weak">⚠ Не опускайте голову вниз</string>
+    <string name="error_plank_head_up_strong">⚠ Голова сильно задрана — смотрите в пол</string>
+    <string name="error_plank_head_up_weak">⚠ Не запрокидывайте голову</string>
+    <string name="error_plank_shoulder_tilt_left">⚠ Левое плечо ниже — выровняйте корпус</string>
+    <string name="error_plank_shoulder_tilt_right">⚠ Правое плечо ниже — выровняйте корпус</string>
+    <string name="error_plank_shoulder_tilt_weak">⚠ Плечи немного перекошены — выровняйте</string>
+    <string name="error_plank_knee_tilt_left">⚠ Левая нога ниже — выровняйте таз</string>
+    <string name="error_plank_knee_tilt_right">⚠ Правая нога ниже — выровняйте таз</string>
+    <string name="error_plank_knee_tilt_weak">⚠ Таз немного перекошен — выровняйте</string>
+    <string name="error_plank_head_side">⚠ Голова смещена в сторону — держите ровно</string>
+    <string name="feedback_plank_hold">✅ Держите планку ровно!</string>
+    <string name="feedback_plank_best_time">✅ Держите! Лучшее время: %dс</string>
+
+    <string name="error_lunge_front_depth_shallow">⚠ Опуститесь глубже — согните колено до 90°</string>
+    <string name="error_lunge_front_depth_warn">⚠ Чуть глубже — почти достаточно!</string>
+    <string name="error_lunge_front_depth_deep">⚠ Слишком глубокий выпад — поднимитесь чуть выше</string>
+    <string name="error_lunge_back_depth_shallow">⚠ Опустите заднее колено ближе к полу</string>
+    <string name="error_lunge_back_depth_warn">⚠ Заднее колено чуть высоко — опустите немного</string>
+    <string name="error_lunge_trunk_lean_strong">⚠ Сильный наклон вперёд — держите спину прямо</string>
+    <string name="error_lunge_trunk_lean_weak">⚠ Немного наклонены вперёд — выпрямите корпус</string>
+    <string name="error_lunge_knee_over_toe">⚠ Колено выходит за носок — перенесите вес на пятку</string>
+    <string name="error_lunge_heel_lift">⚠ Пятка оторвана от пола — прижмите её</string>
+    <string name="error_lunge_heel_lift_warn">⚠ Пятка начинает отрываться — следите за ней</string>
+    <string name="error_lunge_front_asymmetry_left">⚠ Левая нога недостаточно согнута — выровняйте нагрузку</string>
+    <string name="error_lunge_front_asymmetry_right">⚠ Правая нога недостаточно согнута — выровняйте нагрузку</string>
+    <string name="error_lunge_front_asymmetry_warn">⚠ Небольшая асимметрия ног — тяните нагрузку равномерно</string>
+    <string name="error_lunge_knees_inward">⚠ Колени заваливаются внутрь — разведите по линии стоп</string>
+    <string name="error_lunge_knees_inward_warn">⚠ Немного разведите колени в стороны</string>
+    <string name="error_lunge_hip_tilt_left">⚠ Левый бок таза опущен — выровняйте таз</string>
+    <string name="error_lunge_hip_tilt_right">⚠ Правый бок таза опущен — выровняйте таз</string>
+    <string name="error_lunge_hip_tilt_weak">⚠ Таз немного перекошен — держите его ровно</string>
+    <string name="feedback_lunge_down">✅ Хорошо! Держите позицию</string>
+    <string name="feedback_lunge_up">✅ Повторений: %d</string>
+    <string name="feedback_lunge_start">✅ Начните выпад</string>
+    <string name="hint_lunge_side"> (для анализа пятки встаньте боком)</string>
+
+    <string name="msg_calibration_progress">Калибровка... %d%%</string>
+    <string name="feedback_glute_ready">✅ Готово! Начните упражнение</string>
+    <string name="error_glute_hips_sag_strong">⚠ Таз провисает — напрягите ягодицы сильнее</string>
+    <string name="error_glute_hips_sag_weak">⚠ Поднимите таз чуть выше</string>
+    <string name="error_glute_hips_high_strong">⚠ Таз задран слишком высоко — опустите немного</string>
+    <string name="error_glute_hips_high_weak">⚠ Таз чуть высоковат</string>
+    <string name="error_glute_knee_close">⚠ Придвиньте стопы ближе к ягодицам</string>
+    <string name="error_glute_knee_far">⚠ Отодвиньте стопы немного дальше от ягодиц</string>
+    <string name="error_glute_shoulders_lift_strong">⚠ Плечи отрываются от пола — зафиксируйте</string>
+    <string name="error_glute_shoulders_lift_weak">⚠ Плечи немного приподнимаются — прижмите</string>
+    <string name="error_glute_heel_lift_left_strong">⚠ Левая пятка оторвана — прижмите к полу</string>
+    <string name="error_glute_heel_lift_left_weak">⚠ Левая пятка начинает отрываться</string>
+    <string name="error_glute_heel_lift_right_strong">⚠ Правая пятка оторвана — прижмите к полу</string>
+    <string name="error_glute_heel_lift_right_weak">⚠ Правая пятка начинает отрываться</string>
+    <string name="error_glute_wrist_lift_left_strong">⚠ Левая кисть поднята — положите на пол</string>
+    <string name="error_glute_wrist_lift_left_weak">⚠ Левая кисть чуть приподнята — опустите</string>
+    <string name="error_glute_wrist_lift_right_strong">⚠ Правая кисть поднята — положите на пол</string>
+    <string name="error_glute_wrist_lift_right_weak">⚠ Правая кисть чуть приподнята — опустите</string>
+    <string name="error_glute_arm_lift_left_strong">⚠ Левая рука поднята — положите на пол</string>
+    <string name="error_glute_arm_lift_left_weak">⚠ Левая рука чуть приподнята — опустите</string>
+    <string name="error_glute_arm_lift_right_strong">⚠ Правая рука поднята — положите на пол</string>
+    <string name="error_glute_arm_lift_right_weak">⚠ Правая рука чуть приподнята — опустите</string>
+    <string name="feedback_glute_up_good">✅ Отлично! Держите таз наверху</string>
+    <string name="feedback_glute_up_higher">✅ Поднимайтесь выше</string>
+    <string name="feedback_glute_down">✅ Повторений: %d</string>
+    <string name="feedback_glute_start">✅ Поднимите таз вверх</string>
+    <string name="feedback_glute_lie_down">✅ Лягте и начните упражнение</string>
+
+    <string name="feedback_burpee_stand_start">✅ Упадите в планку</string>
+    <string name="feedback_burpee_stand_repeat">✅ Повторений: %d — упадите в планку</string>
+    <string name="feedback_burpee_plank">✅ Сделайте отжимание</string>
+    <string name="feedback_burpee_plank_done">✅ Вставайте и прыгайте!</string>
+    <string name="feedback_burpee_jump">✅ Прыжок! Руки вверх!</string>
+    <string name="feedback_burpee_default">✅ Выполняйте упражнение</string>
+
+    <string name="onboarding_title_1">Добро пожаловать!</string>
+    <string name="onboarding_title_2">Анализ в реальном времени</string>
+    <string name="onboarding_title_3">Голосовые подсказки</string>
+    <string name="onboarding_title_4">Запись тренировки</string>
+    <string name="onboarding_title_5">Готовы начать?</string>
+
+    <string name="onboarding_desc_1">"Персональный тренер" следит за вашей техникой\nс помощью камеры телефона и нейросети.\nПолучайте мгновенные советы прямо во время\nвыполнения упражнений!</string>
+    <string name="onboarding_desc_2">Направьте камеру на себя во время тренировки.\n\nНейросеть обнаруживает ключевые точки\nна вашем теле и анализирует технику\nв режиме реального времени.</string>
+    <string name="onboarding_desc_3">При ошибке техники вы сразу услышите подсказку:\n• «Выпрямите спину»\n• «Опуститесь глубже»\n• «Не отрывайте пятки от пола»\n\nПриложение само считает повторения.</string>
+    <string name="onboarding_desc_4">Кнопка "⏺ Запись" сохраняет видео\nвашей тренировки в Галерею.\nКнопка "↺ Сброс" обнуляет счётчик.\nКнопка "← Назад" возвращает к выбору упражнения.</string>
+    <string name="onboarding_desc_5">Выберите упражнение из списка,\nвстаньте перед камерой\nи начните тренироваться!\n\nТренер всегда рядом 💪</string>
+
+    <string name="onboarding_btn_next">Далее →</string>
+    <string name="onboarding_btn_start">Начать!</string>
+
+    <string name="profile_onboarding_title_1">⚖ Индекс массы тела</string>
+    <string name="profile_onboarding_title_2">🧮 Рассчитать ИМТ</string>
+    <string name="profile_onboarding_title_3">📈 Динамика веса</string>
+    <string name="profile_onboarding_title_4">🏆 Статистика</string>
+    <string name="profile_onboarding_title_5">📋 История тренировок</string>
+
+    <string name="profile_onboarding_text_1">Введите ваш пол, рост, вес и возраст.\n\nЭти данные используются для расчёта\nиндекса массы тела (ИМТ) и отслеживания\nдинамики вашего веса.</string>
+    <string name="profile_onboarding_text_2">Нажмите эту кнопку после ввода данных.\n\nПриложение рассчитает ваш ИМТ и покажет,\nсоответствует ли он норме с учётом\nвашего пола и возраста.</string>
+    <string name="profile_onboarding_text_3">Здесь отображается график изменения\nвашего веса со временем.\n\nКаждый раз при нажатии «Рассчитать ИМТ»\nвес автоматически записывается в историю.</string>
+    <string name="profile_onboarding_text_4">Три ключевых показателя вашей активности:\n\n• Красный  — всего тренировок\n• Жёлтый   — дней подряд (серия)\n• Синий    — тренировок на этой неделе</string>
+    <string name="profile_onboarding_text_5">Здесь сохраняется история последних 20\nтренировок с датой и количеством повторений.\n\nКнопка «Очистить» удаляет всю историю.</string>
+
+    <string name="profile_onboarding_btn_next">Далее →</string>
+    <string name="profile_onboarding_btn_done">Готово!</string>
+
+    <string name="profile_bmi_severe_deficit">Выраженный\nдефицит</string>
+    <string name="profile_bmi_underweight">Недостаточный\nвес</string>
+    <string name="profile_bmi_normal">Норма ✓</string>
+    <string name="profile_bmi_overweight">Избыточный\nвес</string>
+    <string name="profile_bmi_obesity_1">Ожирение I</string>
+    <string name="profile_bmi_obesity_2">Ожирение II</string>
+    <string name="profile_bmi_obesity_3">Ожирение III</string>
+    <string name="profile_bmi_norm_male">Норма для мужчин: 18.5 – 24.9</string>
+    <string name="profile_bmi_norm_female">Норма для женщин: 18.5 – 24.9</string>
+    <string name="profile_bmi_norm_format">Норма для %s %d лет: %.1f – %.1f%s</string>
+    <string name="men">мужчин</string>
+    <string name="women">женщин</string>
+
+    <string name="vm_search_pose">Встаньте полностью в кадр</string>
+    <string name="vm_phase_search">● ПОИСК...</string>
+    <string name="vm_reps_format">Повторений: %d</string>
+    <string name="vm_hold_time_format">⏱ Время: %ds</string>
+    <string name="vm_hold_time_zero">⏱ Время: 0с</string>
+    <string name="vm_feedback_down">✅ Хорошо! Держите позицию</string>
+    <string name="vm_feedback_up">✅ Отлично!</string>
+    <string name="vm_feedback_hold">✅ Держите!</string>
+    <string name="vm_feedback_start">✅ Начните упражнение</string>
+    <string name="vm_phase_down">▼ ВНИЗ</string>
+    <string name="vm_phase_up">▲ ВВЕРХ</string>
+    <string name="vm_phase_hold">⏸ ДЕРЖИ</string>
+    <string name="vm_phase_ready">● ГОТОВ</string>
+    <string name="vm_quality_full">●●●●●</string>
+    <string name="vm_quality_1">●●●●○</string>
+    <string name="vm_quality_2">●●●○○</string>
+    <string name="vm_quality_3">●●○○○</string>
+    <string name="vm_quality_bad">●○○○○</string>
+
+    <string name="icon_squat">🏋</string>
+    <string name="icon_lunge">🦵</string>
+    <string name="icon_glute">🍑</string>
+    <string name="icon_burpee">🔥</string>
+    <string name="icon_pullup">🏅</string>
+    <string name="icon_plank">🧘</string>
+    <string name="icon_default">💪</string>
+
+    <string name="btn_stop">⏹ Стоп</string>
+    <string name="btn_record">⏺ Запись</string>
+    <string name="toast_recording_started">Запись началась</string>
+    <string name="toast_video_saved">✅ Видео сохранено в Галерею</string>
+    <string name="toast_no_camera">Без камеры тренировка невозможна</string>
+    <string name="toast_data_saved">Данные сохранены</string>
+    <string name="dialog_camera_title">Доступ к камере</string>
+    <string name="dialog_camera_message">Камера нужна для анализа вашей техники упражнений в реальном времени. Без неё тренировка невозможна.</string>
+    <string name="dialog_camera_allow">Разрешить</string>
+    <string name="dialog_settings_title">Требуется доступ к камере</string>
+    <string name="dialog_settings_message">Вы несколько раз отказали в доступе к камере. Чтобы продолжить тренировки, включите разрешение в настройках приложения.</string>
+    <string name="dialog_settings_open">Открыть настройки</string>
+    <string name="tts_language_error">TTS: язык не поддерживается</string>
+    <string name="phase_ready">● ГОТОВ</string>
+    <string name="hold_time_zero">⏱ Время: 0с</string>
+    <string name="feedback_start">Встаньте в кадр для начала</string>
+
+    <string name="video_path_format">file:///android_asset/videos/%s</string>
+
+    <string name="toast_not_all_data">Введены не все данные</string>
+    <string name="toast_invalid_data">Некорректные данные</string>
+    <string name="toast_height_error">Введите корректный рост (50–300 см)</string>
+    <string name="toast_weight_error">Введите корректный вес (10–500 кг)</string>
+    <string name="toast_age_error">Введите корректный возраст</string>
+    <string name="dialog_clear_title">Очистить историю?</string>
+    <string name="dialog_clear_message">Все записи тренировок будут удалены.</string>
+    <string name="dialog_clear_delete">Удалить</string>
+    <string name="dialog_clear_cancel">Отмена</string>
+    <string name="toast_history_empty">История уже пуста</string>
+    <string name="chart_label_weight">Вес (кг)</string>
+    <string name="chart_date_format">dd.MM</string>
+    <string name="history_date_format">dd.MM.yyyy  HH:mm</string>
+    <string name="icon_default_workout">💪</string>
+
+    <string name="notification_channel_name">Запись тренировки</string>
+    <string name="notification_title">Персональный тренер</string>
+    <string name="notification_text">Идёт запись тренировки...</string>
+
+    <string name="recorder_error_create_file">Не удалось создать файл</string>
+    <string name="recorder_error_empty_file">Файл записи пуст</string>
+    <string name="recorder_error_gallery">Не удалось создать запись в галерее</string>
+    <string name="recorder_log_started">Запись начата: %s</string>
+    <string name="recorder_log_encoder_ready">Encoder готов: %dx%d</string>
+    <string name="recorder_log_eos">EOS получен</string>
+    <string name="recorder_log_resources_released">Ресурсы освобождены</string>
+    <string name="recorder_log_saving">Сохраняем: %d байт</string>
+    <string name="recorder_log_file_empty">Файл пуст: %d байт</string>
+
+    <string name="wear_api_available">✅ Wear API доступен</string>
+    <string name="wear_api_unavailable">⚠️ Wear API недоступен (код: %d). Ожидание сопряжения или реального устройства...</string>
+    <string name="wear_no_nodes">⌚ Нет подключенных узлов</string>
+
+    <string name="btn_back">← Назад</string>
+    <string name="btn_reset">↺ Сброс</string>
+
+    <string name="video_analysis_title">Анализ техники</string>
+    <string name="tts_enabled_emoji">🔊</string>
+    <string name="tts_disabled_emoji">🔇</string>
+    <string name="error_prefix_warning">⚠ </string>
+    <string name="error_prefix_ok">✅ </string>
+    <string name="dialog_camera_cancel">Отмена</string>
+    <string name="error_format">Ошибка: %s</string>
 </resources>

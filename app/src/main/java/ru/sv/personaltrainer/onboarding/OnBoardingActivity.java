@@ -34,24 +34,22 @@ public class OnBoardingActivity extends AppCompatActivity {
             R.drawable.ic_fitness, R.drawable.ic_fitness, R.drawable.ic_fitness
     };
 
-    private static final String[] TITLES = {
-            "Добро пожаловать!",
-            "Анализ в реальном времени",
-            "Голосовые подсказки",
-            "Запись тренировки",
-            "Готовы начать?"
+    private static final int[] TITLE_RES = {
+            R.string.onboarding_title_1, R.string.onboarding_title_2,
+            R.string.onboarding_title_3, R.string.onboarding_title_4,
+            R.string.onboarding_title_5
     };
 
-    private static final String[] DESCRIPTIONS = {
-            "\"Персональный тренер\" следит за вашей техникой\nс помощью камеры телефона и нейросети.\nПолучайте мгновенные советы прямо во время\nвыполнения упражнений!",
-            "Направьте камеру на себя во время тренировки.\n\nНейросеть обнаруживает ключевые точки\nна вашем теле и анализирует технику\nв режиме реального времени.",
-            "При ошибке техники вы сразу услышите подсказку:\n• «Выпрямите спину»\n• «Опуститесь глубже»\n• «Не отрывайте пятки от пола»\n\nПриложение само считает повторения.",
-            "Кнопка \"⏺ Запись\" сохраняет видео\nвашей тренировки в Галерею.\nКнопка \"↺ Сброс\" обнуляет счётчик.\nКнопка \"← Назад\" возвращает к выбору упражнения.",
-            "Выберите упражнение из списка,\nвстаньте перед камерой\nи начните тренироваться!\n\nТренер всегда рядом 💪"
+    private static final int[] DESC_RES = {
+            R.string.onboarding_desc_1, R.string.onboarding_desc_2,
+            R.string.onboarding_desc_3, R.string.onboarding_desc_4,
+            R.string.onboarding_desc_5
     };
 
     private static final int[] BACKGROUNDS = {
-            0xFF1A1A2E, 0xFF0F3460, 0xFF16213E, 0xFF533483, 0xFF1B4332
+            R.color.onboarding_bg_1, R.color.onboarding_bg_2,
+            R.color.onboarding_bg_3, R.color.onboarding_bg_4,
+            R.color.onboarding_bg_5
     };
 
     @Override
@@ -94,7 +92,7 @@ public class OnBoardingActivity extends AppCompatActivity {
         binding.btnSkip.setOnClickListener(v -> finishOnBoarding());
         binding.btnNext.setOnClickListener(v -> {
             int current = viewPager.getCurrentItem();
-            if (current < TITLES.length - 1) {
+            if (current < TITLE_RES.length - 1) {
                 viewPager.setCurrentItem(current + 1, true);
             } else {
                 finishOnBoarding();
@@ -103,18 +101,18 @@ public class OnBoardingActivity extends AppCompatActivity {
     }
 
     private void updateButtonText(int position) {
-        if (position == TITLES.length - 1) {
-            binding.btnNext.setText("Начать!");
+        if (position == TITLE_RES.length - 1) {
+            binding.btnNext.setText(R.string.onboarding_btn_start);
             binding.btnSkip.setVisibility(View.INVISIBLE);
         } else {
-            binding.btnNext.setText("Далее →");
+            binding.btnNext.setText(R.string.onboarding_btn_next);
             binding.btnSkip.setVisibility(View.VISIBLE);
         }
     }
 
     private void updateDots(int selectedPosition) {
         StringBuilder sb = new StringBuilder();
-        for (int i = 0; i < TITLES.length; i++) {
+        for (int i = 0; i < TITLE_RES.length; i++) {
             sb.append(i == selectedPosition ? "● " : "○ ");
         }
         binding.tvDots.setText(sb.toString().trim());
@@ -137,14 +135,14 @@ public class OnBoardingActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(@NonNull VH holder, int pos) {
             holder.b.onboardingImage.setImageResource(ICONS[pos]);
-            holder.b.onboardingTitle.setText(TITLES[pos]);
-            holder.b.onboardingDescription.setText(DESCRIPTIONS[pos]);
-            holder.b.getRoot().setBackgroundColor(BACKGROUNDS[pos]);
+            holder.b.onboardingTitle.setText(TITLE_RES[pos]);
+            holder.b.onboardingDescription.setText(DESC_RES[pos]);
+            holder.b.getRoot().setBackgroundColor(getColor(BACKGROUNDS[pos]));
         }
 
         @Override
         public int getItemCount() {
-            return TITLES.length;
+            return TITLE_RES.length;
         }
 
         class VH extends RecyclerView.ViewHolder {

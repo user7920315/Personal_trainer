@@ -6,6 +6,8 @@ import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
 
+import ru.sv.personaltrainer.R;
+
 public class SquatExercise extends BaseExercise {
 
     private static final String TAG = "SquatExercise";
@@ -62,7 +64,7 @@ public class SquatExercise extends BaseExercise {
 
     @Override
     public String getName() {
-        return "🏋 Приседания";
+        return getString(R.string.exercise_squat_name);
     }
 
     @Override
@@ -70,7 +72,7 @@ public class SquatExercise extends BaseExercise {
         AnalysisResult result = new AnalysisResult();
 
         if (!isValidData(lm)) {
-            result.mainFeedback = "Встаньте полностью в кадр";
+            result.mainFeedback = getString(R.string.msg_full_frame);
             return result;
         }
 
@@ -78,16 +80,14 @@ public class SquatExercise extends BaseExercise {
 
         ViewMode view = updateView(lm);
         if (view == ViewMode.UNKNOWN) {
-            result.mainFeedback =
-                    "Встаньте боком или лицом к камере";
+            result.mainFeedback = getString(R.string.msg_stand_side_or_front);
             result.phase = "";
             return result;
         }
 
         Side side = selectBestSide(lm);
         if (side == null || side.kneeAngle < 0) {
-            result.mainFeedback =
-                    "Не видно колена — встаньте в кадр";
+            result.mainFeedback = getString(R.string.msg_not_visible_knee);
             result.phase = "";
             return result;
         }
@@ -213,25 +213,22 @@ public class SquatExercise extends BaseExercise {
 
         if (ratio < DEPTH_TOO_SHALLOW_ERR) {
             result.addError(
-                    "⚠ Приседайте глубже — "
-                            + "опустите таз до уровня колен",
+                    getString(R.string.error_squat_depth_shallow),
                     s.hipIdx, s.kneeIdx);
 
         } else if (ratio < DEPTH_TOO_SHALLOW_WARN) {
             result.addError(
-                    "⚠ Чуть глубже — почти достаточно!",
+                    getString(R.string.error_squat_depth_shallow_warn),
                     s.hipIdx, s.kneeIdx);
 
         } else if (ratio > DEPTH_TOO_DEEP_ERR) {
             result.addError(
-                    "⚠ Слишком глубокий присед — "
-                            + "поднимитесь чуть выше",
+                    getString(R.string.error_squat_depth_deep),
                     s.hipIdx, s.kneeIdx);
 
         } else if (ratio > DEPTH_TOO_DEEP_WARN) {
             result.addError(
-                    "⚠ Очень глубокий присед — "
-                            + "следите за коленями",
+                    getString(R.string.error_squat_depth_deep_warn),
                     s.hipIdx, s.kneeIdx);
         }
 
@@ -267,12 +264,11 @@ public class SquatExercise extends BaseExercise {
 
         if (diff > BACK_DIFF_ERROR) {
             result.addError(
-                    "⚠ Спина не параллельна голени — "
-                            + "выпрямите корпус",
+                    getString(R.string.error_squat_back_parallel),
                     s.shoulderIdx, s.hipIdx);
         } else if (diff > BACK_DIFF_WARN) {
             result.addError(
-                    "⚠ Держите спину параллельно голени",
+                    getString(R.string.error_squat_back_warn),
                     s.hipIdx);
         }
     }
@@ -304,13 +300,12 @@ public class SquatExercise extends BaseExercise {
 
         if (deviation > HEEL_ERROR) {
             result.addError(
-                    "⚠ " + name + " пятка оторвана! "
-                            + "Прижимайте пятку к полу",
+                    getString(isLeft ? R.string.error_squat_heel_lift_left : R.string.error_squat_heel_lift_right),
                     heelIdx, footIdxIdx);
 
         } else if (deviation > HEEL_WARN) {
             result.addError(
-                    "⚠ " + name + " пятка начинает подниматься",
+                    getString(isLeft ? R.string.error_squat_heel_lift_left_warn : R.string.error_squat_heel_lift_right_warn),
                     heelIdx);
         }
     }
@@ -330,8 +325,7 @@ public class SquatExercise extends BaseExercise {
 
         if (Math.abs(kneeRel) > Math.abs(toeRel) + KNEE_OVER_TOE) {
             result.addError(
-                    "⚠ Колено выходит за носок — "
-                            + "перенесите вес на пятки",
+                    getString(R.string.error_squat_knee_over_toe),
                     s.kneeIdx, s.toeIdx);
         }
     }
@@ -348,12 +342,11 @@ public class SquatExercise extends BaseExercise {
 
         if (ratio < KNEE_CAVE_ERROR) {
             result.addError(
-                    "⚠ Колени заваливаются внутрь — "
-                            + "разведите по линии стоп",
+                    getString(R.string.error_squat_knees_inward),
                     LEFT_KNEE, RIGHT_KNEE);
         } else if (ratio < KNEE_CAVE_WARN) {
             result.addError(
-                    "⚠ Слегка разведите колени",
+                    getString(R.string.error_squat_knees_inward_warn),
                     LEFT_KNEE, RIGHT_KNEE);
         }
     }
@@ -368,10 +361,8 @@ public class SquatExercise extends BaseExercise {
         float diff = Math.abs(lA - rA);
         if (diff > KNEE_ASYMMETRY) {
             result.addError(lA > rA
-                            ? "⚠ Левое колено сгибается меньше — "
-                            + "выровняйте нагрузку"
-                            : "⚠ Правое колено сгибается меньше — "
-                            + "выровняйте нагрузку",
+                            ? getString(R.string.error_squat_asymmetry_left)
+                            : getString(R.string.error_squat_asymmetry_right),
                     lA > rA ? LEFT_KNEE : RIGHT_KNEE);
         }
     }
@@ -559,14 +550,14 @@ public class SquatExercise extends BaseExercise {
 
     private String buildFeedback(String phase, ViewMode view) {
         String hint = view == ViewMode.FRONT
-                ? " (встаньте боком для анализа спины)" : "";
+                ? getString(R.string.hint_squat_side) : "";
         switch (phase) {
             case "DOWN":
-                return "✅ Хорошо! Держите спину" + hint;
+                return getString(R.string.feedback_squat_down) + hint;
             case "UP":
-                return "✅ Повторений: " + repCount + hint;
+                return getString(R.string.feedback_squat_up, repCount) + hint;
             default:
-                return "✅ Начните приседать" + hint;
+                return getString(R.string.feedback_squat_start) + hint;
         }
     }
 

@@ -22,7 +22,6 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
-import android.util.Log;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
@@ -39,9 +38,10 @@ import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 
+import androidx.core.content.ContextCompat;
+
 public class VideoRecorder {
 
-    private static final String TAG = "VideoRecorder";
     private static final String MIME_TYPE = "video/avc";
     private static final int BIT_RATE = 8_000_000;
     private static final int FRAME_RATE = 30;
@@ -49,12 +49,10 @@ public class VideoRecorder {
     private static final int VIDEO_WIDTH = 720;
     private static final int VIDEO_HEIGHT = 1280;
 
-
-    private static final int COLOR_LEFT_LIMB = 0xFF00BFFF; // голубой
-    private static final int COLOR_RIGHT_LIMB = 0xFFFFD700; // жёлтый
-    private static final int COLOR_CENTER = 0xFF00FF00; // зелёный
-    private static final int COLOR_ERROR_LINE = 0xFFFF0000; // красный
-
+    private static final int COLOR_LEFT_LIMB = 0xFF00BFFF;
+    private static final int COLOR_RIGHT_LIMB = 0xFFFFD700;
+    private static final int COLOR_CENTER = 0xFF00FF00;
+    private static final int COLOR_ERROR_LINE = 0xFFFF0000;
 
     private static final int[][] POSE_CONNECTIONS = {
             {0, 1}, {1, 2}, {2, 3}, {3, 7},
@@ -74,14 +72,12 @@ public class VideoRecorder {
             12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32
     };
 
-
     private volatile boolean isRecording = false;
     private volatile boolean acceptingFrames = false;
     private volatile long startTimeUs = -1;
 
     private boolean muxerStarted = false;
     private int videoTrackIndex = -1;
-
 
     private MediaCodec encoder;
     private android.view.Surface encoderSurface;
@@ -101,13 +97,11 @@ public class VideoRecorder {
     private final Paint paintGlow;
     private final Paint paintDivider;
 
-
     private final Context context;
 
     private volatile String exerciseNameForRecord = null;
-    private volatile String qualityForRecord = "●●●●●";
-    private volatile int qualityColorForRecord = 0xFF00FF88;
-
+    private volatile String qualityForRecord = null;
+    private volatile int qualityColorForRecord = 0;
 
     public interface RecordingCallback {
         void onRecordingStarted();
@@ -118,7 +112,6 @@ public class VideoRecorder {
     }
 
     private RecordingCallback callback;
-
 
     public VideoRecorder(Context context) {
         this.context = context;
@@ -163,14 +156,13 @@ public class VideoRecorder {
         this.callback = callback;
     }
 
-
     public void startRecording() {
         if (isRecording) return;
 
         try {
             outputFilePath = createOutputFile();
             if (outputFilePath == null) {
-                notifyError("Не удалось создать файл");
+                notifyError(context.getString(R.string.recorder_error_create_file));
                 return;
             }
 
@@ -184,11 +176,9 @@ public class VideoRecorder {
             acceptingFrames = true;
             startTimeUs = -1;
 
-            Log.d(TAG, "Запись начата: " + outputFilePath);
             if (callback != null) callback.onRecordingStarted();
 
         } catch (Exception e) {
-            Log.e(TAG, "Ошибка старта: " + e.getMessage());
             notifyError(e.getMessage());
             release();
         }
@@ -214,10 +204,7 @@ public class VideoRecorder {
 
         muxer = new MediaMuxer(outputFilePath,
                 MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-
-        Log.d(TAG, "Encoder готов: " + VIDEO_WIDTH + "x" + VIDEO_HEIGHT);
     }
-
 
     public void submitFrame(
             Bitmap cameraFrame,
@@ -237,7 +224,6 @@ public class VideoRecorder {
         if (cameraFrame == null || cameraFrame.isRecycled()) return;
         if (encoderHandler == null) return;
 
-
         this.exerciseNameForRecord = exerciseName;
         this.qualityForRecord = quality;
         this.qualityColorForRecord = qualityColor;
@@ -248,16 +234,13 @@ public class VideoRecorder {
         try {
             copy = cameraFrame.copy(Bitmap.Config.ARGB_8888, false);
         } catch (Exception e) {
-            Log.e(TAG, "Bitmap copy: " + e.getMessage());
             return;
         }
-
 
         final PoseLandmarkerResult resultCopy = poseResult;
         final List<Integer> errorsCopy = errorLandmarks != null
                 ? new java.util.ArrayList<>(errorLandmarks)
                 : null;
-
 
         final String repSnap = repText;
         final String phaseSnap = phaseText;
@@ -279,13 +262,11 @@ public class VideoRecorder {
                         colorSnap, nameSnap,
                         qualitySnap, qualColorSnap, tsUs);
             } catch (Exception e) {
-                Log.e(TAG, "submitFrame: " + e.getMessage());
             } finally {
                 if (!copy.isRecycled()) copy.recycle();
             }
         });
     }
-
 
     private void writeFrameToSurface(
             Bitmap cameraFrame,
@@ -304,9 +285,7 @@ public class VideoRecorder {
             canvas = encoderSurface.lockCanvas(null);
             if (canvas == null) return;
 
-
             canvas.drawColor(Color.BLACK);
-
 
             drawCameraFrame(canvas, cameraFrame);
 
@@ -321,14 +300,12 @@ public class VideoRecorder {
                     exerciseName, quality, qualityColor, tsUs);
 
         } catch (Exception e) {
-            Log.e(TAG, "writeFrame: " + e.getMessage());
             return;
         } finally {
             if (canvas != null && encoderSurface != null) {
                 try {
                     encoderSurface.unlockCanvasAndPost(canvas);
                 } catch (Exception e) {
-                    Log.e(TAG, "unlockCanvas: " + e.getMessage());
                 }
             }
         }
@@ -353,7 +330,6 @@ public class VideoRecorder {
         canvas.drawBitmap(frame, null,
                 new RectF(dx, dy, dx + sw, dy + sh), null);
     }
-
 
     private void drawSkeleton(Canvas canvas,
                               PoseLandmarkerResult poseResult,
@@ -416,13 +392,13 @@ public class VideoRecorder {
                                  float x, float y, int index) {
         float radius = isKeyLandmark(index) ? 10f : 7f;
 
-        paintPoint.setColor(0x44000000);
+        paintPoint.setColor(ContextCompat.getColor(context, R.color.video_shadow));
         canvas.drawCircle(x + 1f, y + 1f, radius, paintPoint);
 
         paintPoint.setColor(Color.WHITE);
         canvas.drawCircle(x, y, radius, paintPoint);
 
-        paintPoint.setColor(0xAAFFFFFF);
+        paintPoint.setColor(ContextCompat.getColor(context, R.color.video_highlight));
         canvas.drawCircle(
                 x - radius * 0.3f,
                 y - radius * 0.3f,
@@ -436,17 +412,16 @@ public class VideoRecorder {
         try {
             RadialGradient gradient = new RadialGradient(
                     x, y, radius * 2f,
-                    new int[]{0x88FF0000, 0x44FF0000, 0x00FF0000},
+                    new int[]{ContextCompat.getColor(context, R.color.video_glow_1), ContextCompat.getColor(context, R.color.video_glow_2), ContextCompat.getColor(context, R.color.video_glow_3)},
                     new float[]{0f, 0.5f, 1f},
                     Shader.TileMode.CLAMP);
             paintGlow.setShader(gradient);
             canvas.drawCircle(x, y, radius * 2f, paintGlow);
             paintGlow.setShader(null);
         } catch (Exception e) {
-            Log.w(TAG, "RadialGradient: " + e.getMessage());
         }
 
-        paintErrorPoint.setColor(0xFFFF3333);
+        paintErrorPoint.setColor(ContextCompat.getColor(context, R.color.video_error_bright));
         canvas.drawCircle(x, y, radius, paintErrorPoint);
 
         canvas.drawCircle(x, y, radius, paintErrorStroke);
@@ -527,7 +502,6 @@ public class VideoRecorder {
                 quality, qualityColor, density, W, H);
     }
 
-
     private void drawRepCounter(Canvas canvas, String text,
                                 float density, int W) {
 
@@ -546,7 +520,7 @@ public class VideoRecorder {
         float right = left + textW + padding * 2;
         float bot = top + textSize + padding * 2;
 
-        paintBg.setColor(0xBB000000);
+        paintBg.setColor(ContextCompat.getColor(context, R.color.video_bg_black));
         canvas.drawRoundRect(left, top, right, bot,
                 dp(8, density), dp(8, density), paintBg);
 
@@ -555,7 +529,6 @@ public class VideoRecorder {
                 top + padding + textSize * 0.85f,
                 paintText);
     }
-
 
     private void drawExerciseName(Canvas canvas, String name,
                                   float density, int W) {
@@ -576,7 +549,7 @@ public class VideoRecorder {
         float top = marginT;
         float bot = top + textSize + padding * 2;
 
-        paintBg.setColor(0xBBE94560);
+        paintBg.setColor(ContextCompat.getColor(context, R.color.primary));
         canvas.drawRoundRect(left, top, right, bot,
                 dp(8, density), dp(8, density), paintBg);
 
@@ -585,7 +558,6 @@ public class VideoRecorder {
                 top + padding + textSize * 0.85f,
                 paintText);
     }
-
 
     private void drawPhase(Canvas canvas, String text,
                            int color, float density, int W) {
@@ -605,7 +577,7 @@ public class VideoRecorder {
         float right = left + textW + padding * 2;
         float bot = top + textSize + padding * 2;
 
-        paintBg.setColor(0xBB003322);
+        paintBg.setColor(ContextCompat.getColor(context, R.color.video_phase_bg));
         canvas.drawRoundRect(left, top, right, bot,
                 dp(8, density), dp(8, density), paintBg);
 
@@ -615,13 +587,11 @@ public class VideoRecorder {
                 paintText);
     }
 
-
     private void drawRecordingIndicator(Canvas canvas,
                                         long tsUs,
                                         float density) {
         long elapsed = (startTimeUs > 0)
                 ? (tsUs - startTimeUs) / 1_000_000L : 0L;
-
 
         if (elapsed % 2 != 0) return;
 
@@ -648,24 +618,21 @@ public class VideoRecorder {
         float left = marginS;
         float top = marginT;
 
-        paintBg.setColor(0xBB000000);
+        paintBg.setColor(ContextCompat.getColor(context, R.color.video_bg_black));
         canvas.drawRoundRect(left, top,
                 left + blockW, top + blockH,
                 dp(6, density), dp(6, density), paintBg);
-
 
         paintRec.setColor(Color.RED);
         float dotCX = left + padding + dotSize / 2f;
         float dotCY = top + blockH / 2f;
         canvas.drawCircle(dotCX, dotCY, dotSize / 2f, paintRec);
 
-
         canvas.drawText(ts,
                 left + padding + dotSize + dotMarginEnd,
                 top + blockH / 2f + textSize * 0.35f,
                 paintText);
     }
-
 
     private void drawFeedbackCard(Canvas canvas,
                                   String feedbackText,
@@ -683,7 +650,6 @@ public class VideoRecorder {
         float feedbackSize = sp(15, density);
         float separatorH = dp(20, density);
 
-
         float cardW = W - marginH * 2 - padding * 2;
         int lineCount = countLines(feedbackText,
                 feedbackSize, cardW);
@@ -700,26 +666,23 @@ public class VideoRecorder {
         float cardB = H - marginB;
         float cardT = cardB - cardH;
 
-
-        paintBg.setColor(0xEE1A1A2E);
+        paintBg.setColor(ContextCompat.getColor(context, R.color.background_dark));
         canvas.drawRoundRect(cardL, cardT, cardR, cardB,
                 radius, radius, paintBg);
 
         float curY = cardT + padding;
 
-
         {
             paintText.setTextSize(titleSize);
-            paintText.setColor(0xFFE94560);
+            paintText.setColor(ContextCompat.getColor(context, R.color.primary));
             paintText.setTypeface(Typeface.DEFAULT_BOLD);
-            canvas.drawText("Анализ техники",
+            canvas.drawText(context.getString(R.string.video_analysis_title),
                     cardL + padding,
                     curY + titleSize * 0.85f,
                     paintText);
 
-
-            String q = (quality != null) ? quality : "●●●●●";
-            int qc = (qualityColor != 0) ? qualityColor : 0xFF00FF88;
+            String q = (quality != null) ? quality : context.getString(R.string.vm_quality_full);
+            int qc = (qualityColor != 0) ? qualityColor : ContextCompat.getColor(context, R.color.accent);
             paintText.setColor(qc);
             float qW = paintText.measureText(q);
             canvas.drawText(q,
@@ -730,16 +693,14 @@ public class VideoRecorder {
             curY += titleSize + dp(10, density);
         }
 
-
         {
-            paintDivider.setColor(0x33FFFFFF);
+            paintDivider.setColor(ContextCompat.getColor(context, R.color.divider_light));
             canvas.drawLine(
                     cardL + padding, curY,
                     cardR - padding, curY,
                     paintDivider);
             curY += separatorH;
         }
-
 
         if (feedbackText != null && !feedbackText.isEmpty()) {
             paintText.setTextSize(feedbackSize);
@@ -752,7 +713,6 @@ public class VideoRecorder {
                     feedbackSize, dp(4, density));
         }
     }
-
 
     private void drawWrappedText(Canvas canvas, String text,
                                  float x, float y,
@@ -782,7 +742,6 @@ public class VideoRecorder {
         }
     }
 
-
     private int countLines(String text, float textSize, float maxW) {
         if (text == null || text.isEmpty()) return 1;
 
@@ -806,16 +765,13 @@ public class VideoRecorder {
         return lines;
     }
 
-
     private float dp(float dp, float density) {
         return dp * density;
     }
 
-
     private float sp(float sp, float density) {
         return sp * density;
     }
-
 
     private void drainEncoder(boolean endOfStream) {
         if (encoder == null) return;
@@ -824,7 +780,6 @@ public class VideoRecorder {
             try {
                 encoder.signalEndOfInputStream();
             } catch (Exception e) {
-                Log.e(TAG, "signalEOS: " + e.getMessage());
             }
         }
 
@@ -847,7 +802,6 @@ public class VideoRecorder {
                             muxer.addTrack(encoder.getOutputFormat());
                     muxer.start();
                     muxerStarted = true;
-                    Log.d(TAG, "Muxer запущен");
                 }
 
             } else if (idx >= 0) {
@@ -869,13 +823,11 @@ public class VideoRecorder {
 
                 if ((info.flags
                         & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                    Log.d(TAG, "EOS получен");
                     break;
                 }
             }
         }
     }
-
 
     public void stopRecording() {
         if (!isRecording) return;
@@ -883,15 +835,12 @@ public class VideoRecorder {
         isRecording = false;
         acceptingFrames = false;
 
-        Log.d(TAG, "Остановка записи...");
-
         new Thread(() -> {
             if (encoderHandler != null) {
                 try {
                     CountDownLatch latch = new CountDownLatch(1);
                     encoderHandler.post(latch::countDown);
                     boolean done = latch.await(3, TimeUnit.SECONDS);
-                    if (!done) Log.w(TAG, "EncoderThread timeout");
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
                 }
@@ -911,7 +860,6 @@ public class VideoRecorder {
             try {
                 drainEncoder(true);
             } catch (Exception e) {
-                Log.e(TAG, "Final drain: " + e.getMessage());
             }
 
             release();
@@ -926,7 +874,6 @@ public class VideoRecorder {
                 encoder.stop();
                 encoder.release();
             } catch (Exception e) {
-                Log.e(TAG, "Encoder: " + e.getMessage());
             }
             encoder = null;
         }
@@ -934,7 +881,6 @@ public class VideoRecorder {
             try {
                 encoderSurface.release();
             } catch (Exception e) {
-                Log.e(TAG, "Surface: " + e.getMessage());
             }
             encoderSurface = null;
         }
@@ -943,7 +889,6 @@ public class VideoRecorder {
                 if (muxerStarted) muxer.stop();
                 muxer.release();
             } catch (Exception e) {
-                Log.e(TAG, "Muxer: " + e.getMessage());
             }
             muxer = null;
         }
@@ -955,7 +900,6 @@ public class VideoRecorder {
         muxerStarted = false;
         videoTrackIndex = -1;
         startTimeUs = -1;
-        Log.d(TAG, "Ресурсы освобождены");
     }
 
     private String createOutputFile() {
@@ -964,8 +908,7 @@ public class VideoRecorder {
         File dir = context.getExternalFilesDir(
                 Environment.DIRECTORY_MOVIES);
         if (dir == null) dir = context.getFilesDir();
-        if (!dir.exists()) //noinspection ResultOfMethodCallIgnored
-            dir.mkdirs();
+        if (!dir.exists()) dir.mkdirs();
         return new File(dir, "workout_" + ts + ".mp4")
                 .getAbsolutePath();
     }
@@ -975,12 +918,9 @@ public class VideoRecorder {
 
         File src = new File(outputFilePath);
         if (!src.exists() || src.length() == 0) {
-            Log.e(TAG, "Файл пуст: " + src.length() + " байт");
-            notifyError("Файл записи пуст");
+            notifyError(context.getString(R.string.recorder_error_empty_file));
             return;
         }
-
-        Log.d(TAG, "Сохраняем: " + src.length() + " байт");
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues v = new ContentValues();
@@ -1008,16 +948,14 @@ public class VideoRecorder {
                     v.put(MediaStore.Video.Media.IS_PENDING, 0);
                     context.getContentResolver()
                             .update(uri, v, null, null);
-                    //noinspection ResultOfMethodCallIgnored
                     src.delete();
                     notifySaved(outputFilePath);
 
                 } catch (Exception e) {
-                    Log.e(TAG, "MediaStore: " + e.getMessage());
                     notifyError(e.getMessage());
                 }
             } else {
-                notifyError("Не удалось создать запись в галерее");
+                notifyError(context.getString(R.string.recorder_error_gallery));
             }
         } else {
             context.sendBroadcast(new Intent(

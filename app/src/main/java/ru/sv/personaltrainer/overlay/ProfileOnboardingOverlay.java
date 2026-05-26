@@ -25,38 +25,20 @@ public class ProfileOnboardingOverlay {
 
     private static final String KEY_DONE = "profile_onboarding_done";
 
-    private static final String[] TITLES = {
-            "⚖ Индекс массы тела",
-            "🧮 Рассчитать ИМТ",
-            "📈 Динамика веса",
-            "🏆 Статистика",
-            "📋 История тренировок"
+    private static final int[] TITLE_RES = {
+            R.string.profile_onboarding_title_1,
+            R.string.profile_onboarding_title_2,
+            R.string.profile_onboarding_title_3,
+            R.string.profile_onboarding_title_4,
+            R.string.profile_onboarding_title_5
     };
 
-    private static final String[] TEXTS = {
-            "Введите ваш пол, рост, вес и возраст.\n\n"
-                    + "Эти данные используются для расчёта\n"
-                    + "индекса массы тела (ИМТ) и отслеживания\n"
-                    + "динамики вашего веса.",
-
-            "Нажмите эту кнопку после ввода данных.\n\n"
-                    + "Приложение рассчитает ваш ИМТ и покажет,\n"
-                    + "соответствует ли он норме с учётом\n"
-                    + "вашего пола и возраста.",
-
-            "Здесь отображается график изменения\n"
-                    + "вашего веса со временем.\n\n"
-                    + "Каждый раз при нажатии «Рассчитать ИМТ»\n"
-                    + "вес автоматически записывается в историю.",
-
-            "Три ключевых показателя вашей активности:\n\n"
-                    + "• Красный  — всего тренировок\n"
-                    + "• Жёлтый   — дней подряд (серия)\n"
-                    + "• Синий    — тренировок на этой неделе",
-
-            "Здесь сохраняется история последних 20\n"
-                    + "тренировок с датой и количеством повторений.\n\n"
-                    + "Кнопка «Очистить» удаляет всю историю."
+    private static final int[] TEXT_RES = {
+            R.string.profile_onboarding_text_1,
+            R.string.profile_onboarding_text_2,
+            R.string.profile_onboarding_text_3,
+            R.string.profile_onboarding_text_4,
+            R.string.profile_onboarding_text_5
     };
 
     private static final int[] TARGET_IDS = {
@@ -182,8 +164,8 @@ public class ProfileOnboardingOverlay {
                 .inflate(R.layout.item_profile_onboarding_card,
                         root, false);
 
-        ((TextView) card.findViewById(R.id.tvOnbTitle)).setText(TITLES[step]);
-        ((TextView) card.findViewById(R.id.tvOnbText)).setText(TEXTS[step]);
+        ((TextView) card.findViewById(R.id.tvOnbTitle)).setText(TITLE_RES[step]);
+        ((TextView) card.findViewById(R.id.tvOnbText)).setText(TEXT_RES[step]);
         ((TextView) card.findViewById(R.id.tvOnbCounter))
                 .setText((step + 1) + " / " + TARGET_IDS.length);
 
@@ -191,7 +173,7 @@ public class ProfileOnboardingOverlay {
         Button btnSkip = card.findViewById(R.id.btnOnbSkip);
 
         boolean last = (step == TARGET_IDS.length - 1);
-        btnNext.setText(last ? "Готово!" : "Далее →");
+        btnNext.setText(last ? R.string.profile_onboarding_btn_done : R.string.profile_onboarding_btn_next);
         btnSkip.setVisibility(last ? View.GONE : View.VISIBLE);
 
         btnNext.setOnClickListener(v -> {
@@ -296,14 +278,14 @@ public class ProfileOnboardingOverlay {
 
             setLayerType(LAYER_TYPE_SOFTWARE, null);
 
-            dimPaint.setColor(Color.parseColor("#CC000000"));
+            dimPaint.setColor(getResources().getColor(R.color.spotlight_dim, null));
             dimPaint.setStyle(Paint.Style.FILL);
 
             clearPaint.setAntiAlias(true);
             clearPaint.setXfermode(
                     new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
-            borderPaint.setColor(Color.parseColor("#E94560"));
+            borderPaint.setColor(getResources().getColor(R.color.spotlight_border, null));
             borderPaint.setStyle(Paint.Style.STROKE);
             borderPaint.setStrokeWidth(
                     3f * ctx.getResources().getDisplayMetrics().density);
