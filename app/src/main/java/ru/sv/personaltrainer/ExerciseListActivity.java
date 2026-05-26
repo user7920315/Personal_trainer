@@ -7,6 +7,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.ContextCompat;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -114,7 +115,7 @@ public class ExerciseListActivity extends AppCompatActivity {
             holder.b.tvTitle.setText(ex.getTitle());
             holder.b.tvMuscles.setText(ex.getMuscleGroup());
             holder.b.tvDifficulty.setText("● " + ex.getDifficulty());
-            holder.b.cardRoot.setBackgroundColor(ex.getColor());
+            holder.b.cardRoot.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), ex.getColor()));
             holder.b.getRoot().setOnClickListener(v -> listener.onClick(ex));
         }
 

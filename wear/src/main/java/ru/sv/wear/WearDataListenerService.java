@@ -1,7 +1,6 @@
 package ru.sv.wear;
 
 import android.app.Application;
-import android.util.Log;
 
 import com.google.android.gms.wearable.MessageEvent;
 import com.google.android.gms.wearable.WearableListenerService;
@@ -11,7 +10,6 @@ import ru.sv.wear.viewmodel.WearViewModel;
 
 public class WearDataListenerService extends WearableListenerService {
 
-    private static final String TAG = "WearDataListener";
     private static final String PATH_ERROR = "/exercise/error";
     private static final String PATH_PHASE = "/exercise/phase";
     private static final String PATH_RESET = "/exercise/reset";
@@ -30,7 +28,6 @@ public class WearDataListenerService extends WearableListenerService {
             }
         }
         if (repository == null) {
-            Log.e(TAG, "Repository not available — создаём временный");
             repository = new WearRepository();
         }
     }
@@ -40,13 +37,11 @@ public class WearDataListenerService extends WearableListenerService {
         super.onMessageReceived(messageEvent);
 
         if (repository == null) {
-            Log.w(TAG, "Repository is null");
             return;
         }
 
         String path = messageEvent.getPath();
         String message = new String(messageEvent.getData());
-        Log.d(TAG, "Получено: path=" + path + " data=" + message);
 
         switch (path) {
             case PATH_ERROR:
@@ -62,14 +57,12 @@ public class WearDataListenerService extends WearableListenerService {
                 handleRepCount(message);
                 break;
             default:
-                Log.w(TAG, "Неизвестный путь: " + path);
         }
     }
 
     private void handlePhase(String data) {
         String[] parts = data.split("\\|");
         if (parts.length != 2) {
-            Log.e(TAG, "Неверный формат фазы: " + data);
             return;
         }
         try {
@@ -77,7 +70,6 @@ public class WearDataListenerService extends WearableListenerService {
             int color = (int) Long.parseLong(parts[1], 16);
             repository.updatePhase(phaseText, color);
         } catch (NumberFormatException e) {
-            Log.e(TAG, "Ошибка парсинга цвета: " + parts[1], e);
         }
     }
 
@@ -86,12 +78,10 @@ public class WearDataListenerService extends WearableListenerService {
     }
 
     private void handleError(String errorText) {
-        Log.d(TAG, "Ошибка: " + errorText);
         repository.updateError(errorText);
     }
 
     private void handleReset() {
-        Log.d(TAG, "Сброс");
         repository.reset();
     }
 }

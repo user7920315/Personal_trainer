@@ -8,18 +8,46 @@ import androidx.lifecycle.MutableLiveData;
 
 import java.util.HashMap;
 import java.util.Map;
+import androidx.core.content.ContextCompat;
+
+import ru.sv.wear.R;
 
 public class WearRepository {
+
+    private android.content.Context context;
+
+    public WearRepository() {
+        this.phaseText = new MutableLiveData<>("⏳ Поиск...");
+        this.phaseColor = new MutableLiveData<>(0xFFAAAAAA);
+        this.errorText = new MutableLiveData<>("");
+        this.errorVisible = new MutableLiveData<>(false);
+        this.repCount = new MutableLiveData<>("0");
+        this.connected = new MutableLiveData<>(false);
+    }
+
+    public WearRepository(android.content.Context context) {
+        this.context = context;
+        this.phaseText = new MutableLiveData<>(context.getString(R.string.phase_search));
+        this.phaseColor = new MutableLiveData<>(ContextCompat.getColor(context, R.color.phase_search_gray));
+        this.errorText = new MutableLiveData<>("");
+        this.errorVisible = new MutableLiveData<>(false);
+        this.repCount = new MutableLiveData<>("0");
+        this.connected = new MutableLiveData<>(false);
+    }
+
+    public void setContext(android.content.Context context) {
+        this.context = context;
+    }
 
     private final Handler mainHandler = new Handler(Looper.getMainLooper());
     private final Map<String, String> lastValues = new HashMap<>();
 
-    private final MutableLiveData<String> phaseText = new MutableLiveData<>("⏳ Поиск...");
-    private final MutableLiveData<Integer> phaseColor = new MutableLiveData<>(0xFFAAAAAA);
-    private final MutableLiveData<String> errorText = new MutableLiveData<>("");
-    private final MutableLiveData<Boolean> errorVisible = new MutableLiveData<>(false);
-    private final MutableLiveData<String> repCount = new MutableLiveData<>("0");
-    private final MutableLiveData<Boolean> connected = new MutableLiveData<>(false);
+    private final MutableLiveData<String> phaseText;
+    private final MutableLiveData<Integer> phaseColor;
+    private final MutableLiveData<String> errorText;
+    private final MutableLiveData<Boolean> errorVisible;
+    private final MutableLiveData<String> repCount;
+    private final MutableLiveData<Boolean> connected;
 
     public LiveData<String> getPhaseText() { return phaseText; }
     public LiveData<Integer> getPhaseColor() { return phaseColor; }
@@ -65,8 +93,8 @@ public class WearRepository {
     public void reset() {
         lastValues.clear();
         mainHandler.post(() -> {
-            phaseText.setValue("ГОТОВ");
-            phaseColor.setValue(0xFFFFFFFF);
+            phaseText.setValue(context != null ? context.getString(R.string.phase_ready) : "ГОТОВ");
+            phaseColor.setValue(context != null ? ContextCompat.getColor(context, R.color.white) : 0xFFFFFFFF);
             errorVisible.setValue(false);
             repCount.setValue("0");
         });

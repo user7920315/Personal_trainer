@@ -4,4 +4,5 @@
     <color name="white">#FFFFFF</color>
     <color name="error_red">#FF5555</color>
     <color name="success_green">#00FF88</color>
+    <color name="phase_search_gray">#FFAAAAAA</color>
 </resources>
