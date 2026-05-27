@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000">
+    android:background="@color/black">
 
     <androidx.camera.view.PreviewView
         android:id="@+id/previewView"
@@ -30,11 +30,11 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/exercise_side_margin"
         android:layout_marginTop="@dimen/exercise_top_margin"
-        android:background="#BB000000"
+        android:background="@color/video_bg_black"
         android:maxLines="1"
         android:padding="@dimen/spacing_sm"
-        android:text="Повторений: 0"
-        android:textColor="#FFFFFF"
+        android:text="@string/rep_count_zero"
+        android:textColor="@color/white"
         android:textSize="@dimen/rep_count_text"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
@@ -46,13 +46,13 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="@dimen/exercise_top_margin"
         android:layout_marginEnd="@dimen/exercise_side_margin"
-        android:background="#BBE94560"
+        android:background="@color/card_exercise_name_bg"
         android:ellipsize="end"
         android:gravity="center"
         android:maxLines="1"
         android:padding="@dimen/spacing_sm"
-        android:text="Упражнение"
-        android:textColor="#FFFFFF"
+        android:text="@string/exercise_default_title"
+        android:textColor="@color/white"
         android:textSize="@dimen/exercise_name_text"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
@@ -63,10 +63,10 @@
         android:id="@+id/tvPhase"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:background="#BB003322"
+        android:background="@color/video_phase_bg"
         android:padding="@dimen/spacing_sm"
-        android:text="● ГОТОВ"
-        android:textColor="#00FF88"
+        android:text="@string/phase_ready"
+        android:textColor="@color/accent"
         android:textSize="@dimen/phase_text_size"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@+id/tvRepCount"
@@ -79,7 +79,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/exercise_side_margin"
         android:layout_marginTop="@dimen/spacing_xs"
-        android:background="#BB000000"
+        android:background="@color/video_bg_black"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:padding="@dimen/spacing_sm"
@@ -98,8 +98,8 @@
             android:id="@+id/tvRecordingTimer"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="00:00"
-            android:textColor="#FFFFFF"
+            android:text="@string/timer_zero"
+            android:textColor="@color/white"
             android:textSize="@dimen/text_sm"
             android:textStyle="bold" />
 
@@ -111,14 +111,14 @@
         android:layout_height="48dp"
         android:layout_marginStart="@dimen/feedback_card_margin"
         android:layout_marginBottom="@dimen/spacing_sm"
-        android:backgroundTint="#88333333"
+        android:backgroundTint="@color/btn_disabled_bg"
         android:gravity="center"
         android:includeFontPadding="false"
         android:minWidth="0dp"
         android:minHeight="0dp"
         android:padding="0dp"
         android:text="🔊"
-        android:textColor="#FFFFFF"
+        android:textColor="@color/white"
         android:textSize="22sp"
         app:layout_constraintBottom_toTopOf="@id/layoutButtons"
         app:layout_constraintStart_toStartOf="parent" />
@@ -141,10 +141,10 @@
             android:layout_height="@dimen/btn_exercise_height"
             android:layout_marginEnd="4dp"
             android:layout_weight="1"
-            android:backgroundTint="#88E94560"
+            android:backgroundTint="@color/btn_reset_bg"
             android:maxLines="1"
-            android:text="↺ Сброс"
-            android:textColor="#FFFFFF"
+            android:text="@string/btn_reset"
+            android:textColor="@color/white"
             android:textSize="@dimen/btn_exercise_text" />
 
         <Button
@@ -153,10 +153,10 @@
             android:layout_height="@dimen/btn_exercise_height"
             android:layout_marginHorizontal="4dp"
             android:layout_weight="1"
-            android:backgroundTint="#88CC0000"
+            android:backgroundTint="@color/btn_record_bg"
             android:maxLines="1"
-            android:text="⏺ Запись"
-            android:textColor="#FFFFFF"
+            android:text="@string/btn_record"
+            android:textColor="@color/white"
             android:textSize="@dimen/btn_exercise_text" />
 
         <Button
@@ -165,10 +165,10 @@
             android:layout_height="@dimen/btn_exercise_height"
             android:layout_marginStart="4dp"
             android:layout_weight="1"
-            android:backgroundTint="#88333333"
+            android:backgroundTint="@color/btn_disabled_bg"
             android:maxLines="1"
-            android:text="← Назад"
-            android:textColor="#FFFFFF"
+            android:text="@string/btn_back"
+            android:textColor="@color/white"
             android:textSize="@dimen/btn_exercise_text" />
 
     </LinearLayout>
@@ -181,7 +181,7 @@
         android:layout_marginStart="@dimen/feedback_card_margin"
         android:layout_marginEnd="@dimen/feedback_card_margin"
         android:layout_marginBottom="@dimen/feedback_card_margin"
-        app:cardBackgroundColor="#EE1A1A2E"
+        app:cardBackgroundColor="@color/video_feedback_bg"
         app:cardCornerRadius="@dimen/card_radius"
         app:cardElevation="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -206,8 +206,8 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:maxLines="1"
-                    android:text="📊 Анализ техники"
-                    android:textColor="#E94560"
+                    android:text="@string/analysis_title"
+                    android:textColor="@color/primary"
                     android:textSize="@dimen/feedback_title_text"
                     android:textStyle="bold" />
 
@@ -215,8 +215,8 @@
                     android:id="@+id/tvQuality"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="●●●●●"
-                    android:textColor="#00FF88"
+                    android:text="@string/quality_full"
+                    android:textColor="@color/accent"
                     android:textSize="@dimen/feedback_title_text" />
 
             </LinearLayout>
@@ -225,7 +225,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginBottom="@dimen/spacing_sm"
-                android:background="#33FFFFFF" />
+                android:background="@color/divider_light" />
 
             <TextView
                 android:id="@+id/tvFeedback"
@@ -234,8 +234,8 @@
                 android:layout_marginBottom="@dimen/spacing_xs"
                 android:ellipsize="end"
                 android:maxLines="2"
-                android:text="Встаньте в кадр для начала анализа"
-                android:textColor="#FFFFFF"
+                android:text="@string/feedback_start_analysis"
+                android:textColor="@color/white"
                 android:textSize="@dimen/feedback_body_text"
                 android:textStyle="bold" />
 
@@ -250,14 +250,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginBottom="@dimen/spacing_xs"
-                    android:background="#33FF0000" />
+                    android:background="@color/error_divider" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="2dp"
-                    android:text="Также исправьте:"
-                    android:textColor="#AAAAAA"
+                    android:text="@string/also_fix"
+                    android:textColor="@color/text_secondary"
                     android:textSize="@dimen/text_xs" />
 
                 <TextView
@@ -267,7 +267,7 @@
                     android:ellipsize="end"
                     android:lineSpacingExtra="3dp"
                     android:maxLines="3"
-                    android:textColor="#FF6B6B"
+                    android:textColor="@color/error_light"
                     android:textSize="@dimen/feedback_error_text" />
 
             </LinearLayout>

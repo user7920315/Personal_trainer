@@ -6,7 +6,6 @@
     <color name="primary_dark">#1A1A2E</color>
     <color name="secondary">#0F3460</color>
     <color name="accent">#00FF88</color>
-
     <color name="background_card">#0F3460</color>
     <color name="background_dark">#1A1A2E</color>
     <color name="text_hint">#666666</color>
@@ -20,13 +19,11 @@
     <color name="exercise_glute_bridge">#FF4A1942</color>
     <color name="exercise_burpee">#FF7B2D00</color>
     <color name="exercise_pull_up">#FF1A3A5C</color>
-
     <color name="onboarding_bg_1">#FF1A1A2E</color>
     <color name="onboarding_bg_2">#FF0F3460</color>
     <color name="onboarding_bg_3">#FF16213E</color>
     <color name="onboarding_bg_4">#FF533483</color>
     <color name="onboarding_bg_5">#FF1B4332</color>
-
     <color name="pose_line_green">#FF00FF00</color>
     <color name="pose_line_left">#FF00BFFF</color>
     <color name="pose_line_right">#FFFFD700</color>
@@ -39,10 +36,8 @@
     <color name="pose_glow_1">#88FF0000</color>
     <color name="pose_glow_2">#44FF0000</color>
     <color name="pose_glow_3">#00FF0000</color>
-
     <color name="spotlight_dim">#CC000000</color>
     <color name="spotlight_border">#FFE94560</color>
-
     <color name="bmi_severe_deficit">#FFFF4444</color>
     <color name="bmi_underweight">#FFFF8800</color>
     <color name="bmi_normal">#FF00FF88</color>
@@ -50,13 +45,11 @@
     <color name="bmi_obesity_1">#FFFF8800</color>
     <color name="bmi_obesity_2">#FFFF4444</color>
     <color name="bmi_obesity_3">#FFCC0000</color>
-
     <color name="phase_down">#FF00FF88</color>
     <color name="phase_up">#FF00AAFF</color>
     <color name="phase_hold">#FFFFAA00</color>
     <color name="phase_ready">#FFFFFFFF</color>
     <color name="phase_search">#FFAAAAAA</color>
-
     <color name="quality_perfect">#FF00FF88</color>
     <color name="quality_good">#FF88FF00</color>
     <color name="quality_ok">#FFFFFF00</color>
@@ -71,7 +64,6 @@
     <color name="recorder_glow_1">#88FF0000</color>
     <color name="recorder_glow_2">#44FF0000</color>
     <color name="recorder_glow_3">#00FF0000</color>
-
     <color name="chart_line">#FFE94560</color>
     <color name="chart_circle">#FFE94560</color>
     <color name="chart_hole">#FF0F3460</color>
@@ -79,10 +71,8 @@
     <color name="chart_axis_text">#FFAAAAAA</color>
     <color name="chart_grid">#22FFFFFF</color>
     <color name="chart_axis_line">#33FFFFFF</color>
-
     <color name="gender_selected_text">#FFFFFFFF</color>
     <color name="gender_unselected_text">#FFAAAAAA</color>
-
     <color name="recording_red">#FFCC0000</color>
     <color name="recording_gray">#FF444444</color>
     <color name="btn_tts_enabled">#FFFFFFFF</color>
@@ -111,4 +101,20 @@
     <color name="video_bg_black">#BB000000</color>
     <color name="video_phase_bg">#BB003322</color>
     <color name="video_feedback_bg">#EE1A1A2E</color>
+    <color name="onboarding_desc">#CCCCCC</color>
+    <color name="onboarding_title">#FFFFFF</color>
+    <color name="onboarding_skip">#AAAAAA</color>
+    <color name="onboarding_dots">#E94560</color>
+    <color name="loading_text">#555555</color>
+    <color name="detail_description">#DDDDDD</color>
+    <color name="overlay_black">#88000000</color>
+    <color name="error_light">#FF6B6B</color>
+    <color name="stat_streak">#FFD700</color>
+    <color name="stat_week">#00AAFF</color>
+    <color name="onboarding_counter_bg">#22FFFFFF</color>
+    <color name="onboarding_counter_text">#888888</color>
+    <color name="btn_disabled_bg">#88333333</color>
+    <color name="btn_record_bg">#88CC0000</color>
+    <color name="btn_reset_bg">#88E94560</color>
+    <color name="error_divider">#33FF0000</color>
 </resources>

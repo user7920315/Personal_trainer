@@ -12,7 +12,6 @@
         android:paddingHorizontal="4dp"
         android:paddingVertical="10dp">
 
-
         <TextView
             android:id="@+id/tvWorkoutIcon"
             android:layout_width="40dp"
@@ -22,33 +21,29 @@
             android:gravity="center"
             android:textSize="20sp" />
 
-
         <LinearLayout
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:orientation="vertical">
 
-
             <TextView
                 android:id="@+id/tvWorkoutName"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/white"
                 android:textSize="14sp"
                 android:textStyle="bold" />
-
 
             <TextView
                 android:id="@+id/tvWorkoutDate"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
-                android:textColor="#AAAAAA"
+                android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 
         </LinearLayout>
-
 
         <LinearLayout
             android:layout_width="wrap_content"
@@ -56,30 +51,28 @@
             android:gravity="center"
             android:orientation="vertical">
 
-
             <TextView
                 android:id="@+id/tvWorkoutReps"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:textColor="#E94560"
+                android:textColor="@color/primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="повт."
-                android:textColor="#666666"
+                android:text="@string/reps_label"
+                android:textColor="@color/text_hint"
                 android:textSize="10sp" />
 
         </LinearLayout>
 
     </LinearLayout>
 
-
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:background="#1AFFFFFF" />
+        android:background="@color/divider" />
 
 </LinearLayout>
