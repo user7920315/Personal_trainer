@@ -4,7 +4,7 @@
     android:id="@+id/scrollViewDetail"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1A1A2E"
+    android:background="@color/background_dark"
     android:fillViewport="true">
 
     <LinearLayout
@@ -15,7 +15,7 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="230dp"
-            android:background="#000000">
+            android:background="@color/black">
 
             <VideoView
                 android:id="@+id/videoView"
@@ -27,8 +27,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:gravity="center"
-                android:text="🎬 Загрузка видео..."
-                android:textColor="#555555"
+                android:text="@string/detail_loading"
+                android:textColor="@color/loading_text"
                 android:textSize="16sp" />
 
             <TextView
@@ -37,10 +37,10 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="top|start"
                 android:layout_margin="12dp"
-                android:background="#88000000"
+                android:background="@color/overlay_black"
                 android:padding="8dp"
-                android:text="← Назад"
-                android:textColor="#FFFFFF"
+                android:text="@string/btn_back"
+                android:textColor="@color/white"
                 android:textSize="14sp" />
 
         </FrameLayout>
@@ -56,7 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="8dp"
-                android:textColor="#FFFFFF"
+                android:textColor="@color/white"
                 android:textSize="26sp"
                 android:textStyle="bold" />
 
@@ -65,21 +65,21 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                android:textColor="#E94560"
+                android:textColor="@color/primary"
                 android:textSize="13sp" />
 
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
                 android:layout_marginBottom="20dp"
-                android:background="#33FFFFFF" />
+                android:background="@color/divider_light" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:text="📋 Техника выполнения"
-                android:textColor="#E94560"
+                android:text="@string/detail_technique"
+                android:textColor="@color/primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
 
@@ -89,7 +89,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="32dp"
                 android:lineSpacingMultiplier="1.6"
-                android:textColor="#DDDDDD"
+                android:textColor="@color/detail_description"
                 android:textSize="14sp" />
 
             <Button
@@ -97,9 +97,9 @@
                 android:layout_width="match_parent"
                 android:layout_height="60dp"
                 android:layout_marginBottom="16dp"
-                android:backgroundTint="#E94560"
-                android:text="🚀 Начать тренировку"
-                android:textColor="#FFFFFF"
+                android:backgroundTint="@color/primary"
+                android:text="@string/start_workout"
+                android:textColor="@color/white"
                 android:textSize="18sp" />
 
         </LinearLayout>

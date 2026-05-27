@@ -4,7 +4,7 @@
     android:id="@+id/rootProfile"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#1A1A2E"
+    android:background="@color/background_dark"
     android:orientation="vertical">
 
     <LinearLayout
@@ -18,9 +18,9 @@
             android:id="@+id/btnBack"
             android:layout_width="wrap_content"
             android:layout_height="@dimen/btn_height_sm"
-            android:backgroundTint="#33FFFFFF"
-            android:text="← Назад"
-            android:textColor="#FFFFFF"
+            android:backgroundTint="@color/divider_light"
+            android:text="@string/btn_back"
+            android:textColor="@color/white"
             android:textSize="@dimen/text_sm" />
 
         <TextView
@@ -29,8 +29,8 @@
             android:layout_weight="1"
             android:gravity="center"
             android:maxLines="1"
-            android:text="Профиль"
-            android:textColor="#FFFFFF"
+            android:text="@string/profile_title"
+            android:textColor="@color/white"
             android:textSize="@dimen/text_xl"
             android:textStyle="bold" />
 
@@ -64,14 +64,14 @@
                 <androidx.cardview.widget.CardView
                     android:layout_width="@dimen/profile_avatar"
                     android:layout_height="@dimen/profile_avatar"
-                    app:cardBackgroundColor="#E94560"
+                    app:cardBackgroundColor="@color/primary"
                     app:cardCornerRadius="50dp">
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:text="👤"
+                        android:text="@string/profile_emoji"
                         android:textSize="36sp" />
 
                 </androidx.cardview.widget.CardView>
@@ -80,8 +80,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="@dimen/spacing_sm"
-                    android:text="Спортсмен"
-                    android:textColor="#FFFFFF"
+                    android:text="@string/profile_default_name"
+                    android:textColor="@color/white"
                     android:textSize="@dimen/profile_title_text"
                     android:textStyle="bold" />
 
@@ -90,8 +90,8 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
-                    android:text="Заполните данные ниже"
-                    android:textColor="#AAAAAA"
+                    android:text="@string/profile_fill_data"
+                    android:textColor="@color/text_secondary"
                     android:textSize="@dimen/text_sm" />
 
             </LinearLayout>
@@ -101,7 +101,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/card_margin"
                 android:layout_marginBottom="@dimen/spacing_md"
-                app:cardBackgroundColor="#0F3460"
+                app:cardBackgroundColor="@color/background_card"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="@dimen/card_elevation">
 
@@ -115,8 +115,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/spacing_md"
-                        android:text="⚖ Индекс массы тела"
-                        android:textColor="#FFFFFF"
+                        android:text="@string/bmi_title"
+                        android:textColor="@color/white"
                         android:textSize="@dimen/text_lg"
                         android:textStyle="bold" />
 
@@ -124,8 +124,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/spacing_sm"
-                        android:text="Пол"
-                        android:textColor="#AAAAAA"
+                        android:text="@string/gender"
+                        android:textColor="@color/text_secondary"
                         android:textSize="@dimen/text_xs" />
 
                     <LinearLayout
@@ -149,8 +149,8 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="♂ "
-                                android:textColor="#FFFFFF"
+                                android:text="@string/male_symbol"
+                                android:textColor="@color/white"
                                 android:textSize="@dimen/text_md" />
 
                             <TextView
@@ -158,8 +158,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:maxLines="1"
-                                android:text="Мужской"
-                                android:textColor="#FFFFFF"
+                                android:text="@string/gender_male"
+                                android:textColor="@color/white"
                                 android:textSize="@dimen/text_sm"
                                 android:textStyle="bold" />
 
@@ -180,8 +180,8 @@
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                android:text="♀ "
-                                android:textColor="#AAAAAA"
+                                android:text="@string/female_symbol"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="@dimen/text_md" />
 
                             <TextView
@@ -189,8 +189,8 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:maxLines="1"
-                                android:text="Женский"
-                                android:textColor="#AAAAAA"
+                                android:text="@string/gender_female"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="@dimen/text_sm" />
 
                         </LinearLayout>
@@ -219,10 +219,10 @@
                                     android:id="@+id/etHeight"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:hint="Рост (см)"
+                                    android:hint="@string/height_hint"
                                     android:inputType="numberDecimal"
-                                    android:textColor="#FFFFFF"
-                                    android:textColorHint="#666666"
+                                    android:textColor="@color/white"
+                                    android:textColorHint="@color/text_hint"
                                     android:textSize="@dimen/text_md" />
 
                             </com.google.android.material.textfield.TextInputLayout>
@@ -247,10 +247,10 @@
                                     android:id="@+id/etWeight"
                                     android:layout_width="match_parent"
                                     android:layout_height="wrap_content"
-                                    android:hint="Вес (кг)"
+                                    android:hint="@string/weight_hint"
                                     android:inputType="numberDecimal"
-                                    android:textColor="#FFFFFF"
-                                    android:textColorHint="#666666"
+                                    android:textColor="@color/white"
+                                    android:textColorHint="@color/text_hint"
                                     android:textSize="@dimen/text_md" />
 
                             </com.google.android.material.textfield.TextInputLayout>
@@ -271,10 +271,10 @@
                             android:id="@+id/etAge"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:hint="Возраст"
+                            android:hint="@string/age_hint"
                             android:inputType="number"
-                            android:textColor="#FFFFFF"
-                            android:textColorHint="#666666"
+                            android:textColor="@color/white"
+                            android:textColorHint="@color/text_hint"
                             android:textSize="@dimen/text_md" />
 
                     </com.google.android.material.textfield.TextInputLayout>
@@ -284,9 +284,9 @@
                         android:layout_width="match_parent"
                         android:layout_height="@dimen/btn_height_md"
                         android:layout_marginTop="@dimen/spacing_md"
-                        android:backgroundTint="#E94560"
-                        android:text="Рассчитать ИМТ"
-                        android:textColor="#FFFFFF"
+                        android:backgroundTint="@color/primary"
+                        android:text="@string/calculate_bmi"
+                        android:textColor="@color/white"
                         android:textSize="@dimen/text_md" />
 
                     <LinearLayout
@@ -315,16 +315,16 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="ИМТ"
-                                    android:textColor="#AAAAAA"
+                                    android:text="@string/bmi_label"
+                                    android:textColor="@color/text_secondary"
                                     android:textSize="@dimen/text_xs" />
 
                                 <TextView
                                     android:id="@+id/tvBmiValue"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="—"
-                                    android:textColor="#FFFFFF"
+                                    android:text="@string/bmi_dash"
+                                    android:textColor="@color/white"
                                     android:textSize="@dimen/bmi_value_text"
                                     android:textStyle="bold" />
 
@@ -333,7 +333,7 @@
                             <View
                                 android:layout_width="1dp"
                                 android:layout_height="44dp"
-                                android:background="#33FFFFFF" />
+                                android:background="@color/divider_light" />
 
                             <LinearLayout
                                 android:layout_width="0dp"
@@ -345,8 +345,8 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:text="Категория"
-                                    android:textColor="#AAAAAA"
+                                    android:text="@string/bmi_category"
+                                    android:textColor="@color/text_secondary"
                                     android:textSize="@dimen/text_xs" />
 
                                 <TextView
@@ -355,8 +355,8 @@
                                     android:layout_height="wrap_content"
                                     android:gravity="center"
                                     android:maxLines="2"
-                                    android:text="—"
-                                    android:textColor="#00FF88"
+                                    android:text="@string/bmi_dash"
+                                    android:textColor="@color/accent"
                                     android:textSize="@dimen/bmi_category_text"
                                     android:textStyle="bold" />
 
@@ -371,7 +371,7 @@
                             android:layout_marginTop="@dimen/spacing_sm"
                             android:gravity="center"
                             android:maxLines="2"
-                            android:textColor="#AAAAAA"
+                            android:textColor="@color/text_secondary"
                             android:textSize="@dimen/text_xs" />
 
                     </LinearLayout>
@@ -385,7 +385,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/card_margin"
                 android:layout_marginBottom="@dimen/spacing_md"
-                app:cardBackgroundColor="#0F3460"
+                app:cardBackgroundColor="@color/background_card"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="@dimen/card_elevation">
 
@@ -399,8 +399,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/spacing_sm"
-                        android:text="📈 Динамика веса"
-                        android:textColor="#FFFFFF"
+                        android:text="@string/weight_dynamics"
+                        android:textColor="@color/white"
                         android:textSize="@dimen/text_lg"
                         android:textStyle="bold" />
 
@@ -410,8 +410,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:padding="@dimen/spacing_lg"
-                        android:text="Сохраните вес несколько раз&#10;чтобы увидеть динамику"
-                        android:textColor="#666666"
+                        android:text="@string/no_weight_data"
+                        android:textColor="@color/text_hint"
                         android:textSize="@dimen/text_sm"
                         android:visibility="visible" />
 
@@ -430,7 +430,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/card_margin"
                 android:layout_marginBottom="@dimen/spacing_md"
-                app:cardBackgroundColor="#0F3460"
+                app:cardBackgroundColor="@color/background_card"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="@dimen/card_elevation">
 
@@ -444,8 +444,8 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="@dimen/spacing_md"
-                        android:text="🏆 Статистика"
-                        android:textColor="#FFFFFF"
+                        android:text="@string/stats_title"
+                        android:textColor="@color/white"
                         android:textSize="@dimen/text_lg"
                         android:textStyle="bold" />
 
@@ -472,7 +472,7 @@
                                 android:layout_height="wrap_content"
                                 android:maxLines="1"
                                 android:text="0"
-                                android:textColor="#E94560"
+                                android:textColor="@color/primary"
                                 android:textSize="@dimen/stat_value_text"
                                 android:textStyle="bold" />
 
@@ -481,8 +481,8 @@
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
                                 android:maxLines="1"
-                                android:text="Тренировок"
-                                android:textColor="#AAAAAA"
+                                android:text="@string/workouts_total"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="@dimen/stat_label_text" />
 
                         </LinearLayout>
@@ -504,7 +504,7 @@
                                 android:layout_height="wrap_content"
                                 android:maxLines="1"
                                 android:text="0"
-                                android:textColor="#FFD700"
+                                android:textColor="@color/stat_streak"
                                 android:textSize="@dimen/stat_value_text"
                                 android:textStyle="bold" />
 
@@ -513,8 +513,8 @@
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
                                 android:maxLines="1"
-                                android:text="Дней подряд"
-                                android:textColor="#AAAAAA"
+                                android:text="@string/streak_days"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="@dimen/stat_label_text" />
 
                         </LinearLayout>
@@ -536,7 +536,7 @@
                                 android:layout_height="wrap_content"
                                 android:maxLines="1"
                                 android:text="0"
-                                android:textColor="#00AAFF"
+                                android:textColor="@color/stat_week"
                                 android:textSize="@dimen/stat_value_text"
                                 android:textStyle="bold" />
 
@@ -545,8 +545,8 @@
                                 android:layout_height="wrap_content"
                                 android:gravity="center"
                                 android:maxLines="1"
-                                android:text="На неделе"
-                                android:textColor="#AAAAAA"
+                                android:text="@string/week_workouts"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="@dimen/stat_label_text" />
 
                         </LinearLayout>
@@ -562,7 +562,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginHorizontal="@dimen/card_margin"
                 android:layout_marginBottom="@dimen/spacing_md"
-                app:cardBackgroundColor="#0F3460"
+                app:cardBackgroundColor="@color/background_card"
                 app:cardCornerRadius="@dimen/card_radius"
                 app:cardElevation="@dimen/card_elevation">
 
@@ -585,8 +585,8 @@
                             android:layout_weight="1"
                             android:ellipsize="end"
                             android:maxLines="1"
-                            android:text="📋 История тренировок"
-                            android:textColor="#FFFFFF"
+                            android:text="@string/history_title"
+                            android:textColor="@color/white"
                             android:textSize="@dimen/text_lg"
                             android:textStyle="bold" />
 
@@ -594,10 +594,10 @@
                             android:id="@+id/btnClearHistory"
                             android:layout_width="wrap_content"
                             android:layout_height="@dimen/btn_height_sm"
-                            android:backgroundTint="#22FFFFFF"
+                            android:backgroundTint="@color/onboarding_counter_bg"
                             android:paddingHorizontal="@dimen/spacing_sm"
-                            android:text="Очистить"
-                            android:textColor="#AAAAAA"
+                            android:text="@string/clear_history"
+                            android:textColor="@color/text_secondary"
                             android:textSize="@dimen/text_xs" />
 
                     </LinearLayout>
@@ -608,8 +608,8 @@
                         android:layout_height="wrap_content"
                         android:gravity="center"
                         android:padding="@dimen/spacing_lg"
-                        android:text="История тренировок пуста&#10;Начните тренироваться!"
-                        android:textColor="#666666"
+                        android:text="@string/no_history"
+                        android:textColor="@color/text_hint"
                         android:textSize="@dimen/text_sm"
                         android:visibility="visible" />
 
