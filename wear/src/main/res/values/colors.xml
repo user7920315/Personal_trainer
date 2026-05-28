@@ -5,4 +5,5 @@
     <color name="error_red">#FF5555</color>
     <color name="success_green">#00FF88</color>
     <color name="phase_search_gray">#FFAAAAAA</color>
+    <color name="ic_fitness_background">#1C1C28</color>
 </resources>

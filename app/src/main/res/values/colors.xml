@@ -117,4 +117,5 @@
     <color name="btn_record_bg">#88CC0000</color>
     <color name="btn_reset_bg">#88E94560</color>
     <color name="error_divider">#33FF0000</color>
+    <color name="ic_fitness_background">#1C1C28</color>
 </resources>

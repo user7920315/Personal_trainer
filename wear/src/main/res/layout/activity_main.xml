@@ -16,8 +16,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginBottom="4dp"
-            android:text="○○○"
-            android:textColor="#FF5555"
+            android:text="@string/connection_disconnected"
+            android:textColor="@color/error_red"
             android:textSize="10sp" />
 
         <TextView
@@ -26,8 +26,8 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:maxLines="2"
-            android:text="ГОТОВ"
-            android:textColor="#FFFFFF"
+            android:text="@string/phase_ready"
+            android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
 
@@ -38,7 +38,7 @@
             android:layout_marginTop="4dp"
             android:gravity="center"
             android:text="0"
-            android:textColor="#AAAAAA"
+            android:textColor="@color/phase_search_gray"
             android:textSize="14sp" />
 
         <TextView
@@ -50,7 +50,7 @@
             android:gravity="center"
             android:maxLines="3"
             android:text=""
-            android:textColor="#FF5555"
+            android:textColor="@color/error_red"
             android:textSize="12sp"
             android:visibility="gone" />
 
