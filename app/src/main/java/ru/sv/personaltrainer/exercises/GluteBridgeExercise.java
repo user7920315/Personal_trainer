@@ -1,7 +1,5 @@
 package ru.sv.personaltrainer.exercises;
 
-import android.util.Log;
-
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
@@ -9,8 +7,6 @@ import java.util.List;
 import ru.sv.personaltrainer.R;
 
 public class GluteBridgeExercise extends BaseExercise {
-
-    private static final String TAG = "GluteBridgeExercise";
 
     private static final float PHASE_UP_ENTER = 0.07f;
     private static final float PHASE_DOWN_EXIT = 0.03f;
@@ -111,10 +107,6 @@ public class GluteBridgeExercise extends BaseExercise {
 
         float hipRise = baseHipY - currentHipY;
 
-        Log.d(TAG, String.format(
-                "baseHipY=%.3f curHipY=%.3f hipRise=%.3f",
-                baseHipY, currentHipY, hipRise));
-
         updatePhase(result, hipRise);
 
         if (result.phase.equals("UP")) {
@@ -153,9 +145,6 @@ public class GluteBridgeExercise extends BaseExercise {
             r.phase = isDown ? "UP" : "DOWN";
         }
 
-        Log.d(TAG, String.format(
-                "Phase: hipRise=%.3f → %s reps=%d",
-                hipRise, r.phase, repCount));
     }
 
 
@@ -174,10 +163,6 @@ public class GluteBridgeExercise extends BaseExercise {
 
         float deviation = (hipY - expectedHipY) / span;
 
-        Log.d(TAG, String.format(
-                "HipAlign: shY=%.3f knY=%.3f "
-                        + "exp=%.3f real=%.3f dev=%.3f",
-                shoulderY, kneeY, expectedHipY, hipY, deviation));
 
         if (deviation > HIP_POS_SAG_ERROR) {
             result.addError(
@@ -220,9 +205,6 @@ public class GluteBridgeExercise extends BaseExercise {
 
         float lift = baseShoulderY - currentShY;
 
-        Log.d(TAG, String.format(
-                "Shoulder: base=%.3f cur=%.3f lift=%.3f",
-                baseShoulderY, currentShY, lift));
 
         if (lift > SHOULDER_LIFT_ERROR) {
             result.addError(
@@ -241,7 +223,6 @@ public class GluteBridgeExercise extends BaseExercise {
 
         if (emaLHeelY > 0) {
             float lift = baseHeelY - emaLHeelY;
-            Log.d(TAG, String.format("LHeel lift=%.3f", lift));
             if (lift > HEEL_LIFT_ERROR) {
                 result.addError(
                         getString(R.string.error_glute_heel_lift_left_strong),
@@ -255,7 +236,6 @@ public class GluteBridgeExercise extends BaseExercise {
 
         if (emaRHeelY > 0) {
             float lift = baseHeelY - emaRHeelY;
-            Log.d(TAG, String.format("RHeel lift=%.3f", lift));
             if (lift > HEEL_LIFT_ERROR) {
                 result.addError(
                         getString(R.string.error_glute_heel_lift_right_strong),
@@ -276,10 +256,6 @@ public class GluteBridgeExercise extends BaseExercise {
             float elbowY = lm.get(LEFT_ELBOW).y();
             float lift = elbowY - wristY;
 
-            Log.d(TAG, String.format(
-                    "LWrist: wristY=%.3f elbowY=%.3f lift=%.3f",
-                    wristY, elbowY, lift));
-
             if (lift > WRIST_LIFT_ERROR) {
                 result.addError(
                         getString(R.string.error_glute_wrist_lift_left_strong),
@@ -298,9 +274,6 @@ public class GluteBridgeExercise extends BaseExercise {
             float elbowY = lm.get(RIGHT_ELBOW).y();
             float lift = elbowY - wristY;
 
-            Log.d(TAG, String.format(
-                    "RWrist: wristY=%.3f elbowY=%.3f lift=%.3f",
-                    wristY, elbowY, lift));
 
             if (lift > WRIST_LIFT_ERROR) {
                 result.addError(
@@ -325,9 +298,6 @@ public class GluteBridgeExercise extends BaseExercise {
             float shoulderY = lm.get(LEFT_SHOULDER).y();
             float lift = shoulderY - elbowY;
 
-            Log.d(TAG, String.format(
-                    "LArmFloor: elbowY=%.3f shY=%.3f lift=%.3f",
-                    elbowY, shoulderY, lift));
 
             if (lift > ARM_LIFT_ERROR) {
                 result.addError(
@@ -348,9 +318,6 @@ public class GluteBridgeExercise extends BaseExercise {
             float shoulderY = lm.get(RIGHT_SHOULDER).y();
             float lift = shoulderY - elbowY;
 
-            Log.d(TAG, String.format(
-                    "RArmFloor: elbowY=%.3f shY=%.3f lift=%.3f",
-                    elbowY, shoulderY, lift));
 
             if (lift > ARM_LIFT_ERROR) {
                 result.addError(
@@ -379,7 +346,6 @@ public class GluteBridgeExercise extends BaseExercise {
 
 
         if (baseHipY > 0 && (baseHipY - hipY) > PHASE_UP_ENTER) {
-            Log.d(TAG, "Baseline: таз поднят, пропускаем кадр");
             return;
         }
 
@@ -394,14 +360,9 @@ public class GluteBridgeExercise extends BaseExercise {
         }
         baseFrameCount++;
 
-        Log.d(TAG, String.format(
-                "Baseline[%d/%d]: hipY=%.3f heelY=%.3f shY=%.3f",
-                baseFrameCount, BASE_FRAMES,
-                baseHipY, baseHeelY, baseShoulderY));
 
         if (baseFrameCount >= BASE_FRAMES) {
             baselineCaptured = true;
-            Log.d(TAG, "Baseline DONE");
         }
     }
 
@@ -522,7 +483,6 @@ public class GluteBridgeExercise extends BaseExercise {
         }
         if (candidateCount >= STABLE_FRAMES
                 && currentView != candidateView) {
-            Log.d(TAG, "View: " + currentView + " → " + candidateView);
             currentView = candidateView;
         }
     }

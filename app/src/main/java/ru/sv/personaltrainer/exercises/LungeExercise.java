@@ -1,6 +1,5 @@
 package ru.sv.personaltrainer.exercises;
 
-import android.util.Log;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
@@ -9,8 +8,6 @@ import java.util.List;
 import ru.sv.personaltrainer.R;
 
 public class LungeExercise extends BaseExercise {
-
-    private static final String TAG = "LungeExercise";
 
     private static final float SIDE_FRONT_KNEE_TOO_DEEP = 75f;
     private static final float SIDE_FRONT_KNEE_IDEAL_MAX = 100f;
@@ -132,9 +129,6 @@ public class LungeExercise extends BaseExercise {
 
         updatePhase(result, frontKneeAngle);
 
-        Log.d(TAG, "SIDE forward=" + (leftIsForward ? "L" : "R")
-                + " frontKnee=" + String.format("%.1f°", frontKneeAngle)
-                + " phase=" + result.phase);
 
         if (result.phase.equals("DOWN")) {
 
@@ -216,9 +210,6 @@ public class LungeExercise extends BaseExercise {
         double angle = Math.toDegrees(
                 Math.atan2(Math.abs(dx), Math.abs(dy)));
 
-        Log.d(TAG, String.format(
-                "TrunkLeanSide: dx=%.3f dy=%.3f angle=%.1f°",
-                dx, dy, angle));
 
         int shIdx = leftForward ? LEFT_SHOULDER : RIGHT_SHOULDER;
         int hiIdx = leftForward ? LEFT_HIP : RIGHT_HIP;
@@ -250,9 +241,6 @@ public class LungeExercise extends BaseExercise {
 
         float overToe = (kneeX - toeX) / footLen;
 
-        Log.d(TAG, String.format(
-                "KneeOverToe: kneeX=%.3f toeX=%.3f overToe=%.3f",
-                kneeX, toeX, overToe));
 
         if (Math.abs(overToe) > KNEE_OVER_TOE_THRESHOLD) {
             result.addError(
@@ -275,9 +263,6 @@ public class LungeExercise extends BaseExercise {
 
         float liftRatio = (heelY - footY) / ankleHeelDist;
 
-        Log.d(TAG, String.format(
-                "HeelLift: heelY=%.3f footY=%.3f liftRatio=%.3f",
-                heelY, footY, liftRatio));
 
         if (liftRatio > HEEL_LIFT_ERROR) {
             result.addError(
@@ -311,10 +296,6 @@ public class LungeExercise extends BaseExercise {
         updatePhase(result, workingAngle);
 
 
-        Log.d(TAG, "FRONT lKnee=" + String.format("%.1f°", lAngle)
-                + " rKnee=" + String.format("%.1f°", rAngle)
-                + " working=" + String.format("%.1f°", workingAngle)
-                + " phase=" + result.phase);
 
         if (result.phase.equals("DOWN")) {
 
@@ -360,9 +341,6 @@ public class LungeExercise extends BaseExercise {
                                      float rAngle) {
         float diff = Math.abs(lAngle - rAngle);
 
-        Log.d(TAG, String.format(
-                "FrontAsymmetry: L=%.1f° R=%.1f° diff=%.1f°",
-                lAngle, rAngle, diff));
 
         if (diff > FRONT_ASYMMETRY_ERROR) {
             String msg = lAngle > rAngle
@@ -391,9 +369,6 @@ public class LungeExercise extends BaseExercise {
 
         float ratio = kneeW / ankleW;
 
-        Log.d(TAG, String.format(
-                "FrontKneeCave: kneeW=%.3f ankleW=%.3f ratio=%.2f",
-                kneeW, ankleW, ratio));
 
         if (ratio < FRONT_KNEE_CAVE_ERROR) {
             result.addError(
@@ -420,9 +395,6 @@ public class LungeExercise extends BaseExercise {
         double angle = Math.toDegrees(
                 Math.atan2(Math.abs(dx), Math.abs(dy)));
 
-        Log.d(TAG, String.format(
-                "TrunkLeanFront: dx=%.3f dy=%.3f angle=%.1f°",
-                dx, dy, angle));
 
         if (angle > TRUNK_LEAN_ERROR) {
             result.addError(
@@ -445,9 +417,6 @@ public class LungeExercise extends BaseExercise {
         float scale = emaShoulderWidth > 0 ? emaShoulderWidth : 0.15f;
         float tilt = diff / scale;
 
-        Log.d(TAG, String.format(
-                "HipTiltFront: LhipY=%.3f RhipY=%.3f tilt=%.3f",
-                emaLHipY, emaRHipY, tilt));
 
         if (tilt > 0.30f) {
             String msg = emaLHipY > emaRHipY
@@ -546,7 +515,6 @@ public class LungeExercise extends BaseExercise {
         }
         if (candidateCount >= STABLE_FRAMES
                 && currentView != candidateView) {
-            Log.d(TAG, "View: " + currentView + " → " + candidateView);
             currentView = candidateView;
         }
         return currentView != ViewMode.UNKNOWN ? currentView : raw;

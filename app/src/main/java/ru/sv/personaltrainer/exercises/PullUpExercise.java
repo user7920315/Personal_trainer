@@ -1,6 +1,5 @@
 package ru.sv.personaltrainer.exercises;
 
-import android.util.Log;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
@@ -9,8 +8,6 @@ import java.util.List;
 import ru.sv.personaltrainer.R;
 
 public class PullUpExercise extends BaseExercise {
-
-    private static final String TAG = "PullUpExercise";
 
     private static final float CHIN_ABOVE_WRIST_MIN = 0.02f;
 
@@ -100,9 +97,6 @@ public class PullUpExercise extends BaseExercise {
 
         updatePhase(result, lm, avgElbowAngle);
 
-        Log.d(TAG, "View=" + view
-                + " elbow=" + String.format("%.1f°", avgElbowAngle)
-                + " phase=" + result.phase);
 
         checkFullExtension(result, avgElbowAngle);
         checkChinAboveBar(result, lm);
@@ -208,7 +202,6 @@ public class PullUpExercise extends BaseExercise {
     private void checkSwing(AnalysisResult result) {
         if (emaSwingX < 0) return;
 
-        Log.d(TAG, String.format("Swing: emaSwingX=%.4f", emaSwingX));
 
         if (emaSwingX > SWING_ERROR) {
             result.addError(
@@ -270,8 +263,6 @@ public class PullUpExercise extends BaseExercise {
 
         barY = barFrameCount == 0 ? wY : (barY + wY) / 2f;
         barFrameCount++;
-        Log.d(TAG, "Bar Y captured: " + barY
-                + " frame=" + barFrameCount);
     }
 
 
@@ -396,7 +387,6 @@ public class PullUpExercise extends BaseExercise {
         }
         if (candidateCount >= STABLE_FRAMES
                 && currentView != candidateView) {
-            Log.d(TAG, "View: " + currentView + " → " + candidateView);
             currentView = candidateView;
         }
         return currentView != ViewMode.UNKNOWN ? currentView : raw;

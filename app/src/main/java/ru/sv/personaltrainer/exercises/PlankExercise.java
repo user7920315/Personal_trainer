@@ -1,7 +1,5 @@
 package ru.sv.personaltrainer.exercises;
 
-import android.util.Log;
-
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
@@ -9,8 +7,6 @@ import java.util.List;
 import ru.sv.personaltrainer.R;
 
 public class PlankExercise extends BaseExercise {
-
-    private static final String TAG = "PlankExercise";
 
     private static final float HIP_SAG_WARN = 0.15f;
     private static final float HIP_SAG_ERROR = 0.25f;
@@ -95,7 +91,6 @@ public class PlankExercise extends BaseExercise {
             return result;
         }
 
-        Log.d(TAG, "View=" + view);
 
         if (view == ViewMode.SIDE) {
             analyzeSide(lm, result);
@@ -122,7 +117,6 @@ public class PlankExercise extends BaseExercise {
         if (hasErrors) {
             if (errorStartMs < 0) {
                 errorStartMs = nowMs;
-                Log.d(TAG, "Timer: ошибка началась");
             }
             long errorDuration = nowMs - errorStartMs;
 
@@ -135,7 +129,6 @@ public class PlankExercise extends BaseExercise {
                     bestHoldSeconds = sessionSeconds;
                 }
 
-                Log.d(TAG, "Timer: серия прервана длительной ошибкой на " + sessionSeconds + "с");
                 cleanStreakStartMs = -1L;
             }
         } else {
@@ -143,7 +136,6 @@ public class PlankExercise extends BaseExercise {
                 long errorDuration = nowMs - errorStartMs;
 
                 if (errorDuration <= ERROR_TOLERANCE_MS) {
-                    Log.d(TAG, "Timer: короткая ошибка " + errorDuration + "мс, продолжаем");
                 } else {
                     if (cleanStreakStartMs >= 0) {
                         long sessionDuration = errorStartMs - cleanStreakStartMs;
@@ -153,7 +145,6 @@ public class PlankExercise extends BaseExercise {
                         if (sessionSeconds > bestHoldSeconds) {
                             bestHoldSeconds = sessionSeconds;
                         }
-                        Log.d(TAG, "Timer: новая серия, предыдущая " + sessionSeconds + "с");
                     }
                     cleanStreakStartMs = nowMs;
                 }
@@ -162,7 +153,6 @@ public class PlankExercise extends BaseExercise {
 
             if (cleanStreakStartMs < 0) {
                 cleanStreakStartMs = nowMs;
-                Log.d(TAG, "Timer: новая серия началась");
             }
 
             long currentSessionDuration = nowMs - cleanStreakStartMs;
@@ -175,11 +165,6 @@ public class PlankExercise extends BaseExercise {
             }
         }
 
-        Log.d(TAG, String.format(
-                "Timer: total=%ds best=%ds acc=%dms curSession=%dms err=%dms",
-                currentSeconds, bestHoldSeconds, accumulatedTimeMs,
-                (cleanStreakStartMs >= 0 ? nowMs - cleanStreakStartMs : 0),
-                (errorStartMs >= 0 ? nowMs - errorStartMs : 0)));
     }
 
     private void stopCleanStreak() {
@@ -198,7 +183,6 @@ public class PlankExercise extends BaseExercise {
             if (sessionSeconds > bestHoldSeconds) {
                 bestHoldSeconds = sessionSeconds;
             }
-            Log.d(TAG, "Timer: серия прервана на " + sessionSeconds + "с");
         }
         cleanStreakStartMs = -1L;
         errorStartMs = -1L;
@@ -217,7 +201,6 @@ public class PlankExercise extends BaseExercise {
         if (emaHipY > 0 && emaShoulderY > 0) {
             checkBodyLineSide(result);
         } else {
-            Log.d(TAG, "Side: таз не виден");
         }
 
         boolean hasWrist = emaWristX > 0 && emaWristY > 0;
@@ -253,9 +236,6 @@ public class PlankExercise extends BaseExercise {
 
         float deviation = diff / scale;
 
-        Log.d(TAG, String.format(
-                "BodyLine: shY=%.3f hipY=%.3f dev=%.3f",
-                emaShoulderY, emaHipY, deviation));
 
         if (deviation > HIP_SAG_ERROR) {
             result.addError(getString(R.string.error_plank_hips_sag_strong), LEFT_HIP, RIGHT_HIP);
@@ -446,7 +426,6 @@ public class PlankExercise extends BaseExercise {
             candidateCount = 1;
         }
         if (candidateCount >= STABLE_FRAMES && currentView != candidateView) {
-            Log.d(TAG, "View: " + currentView + " → " + candidateView);
             resetEMA();
             currentView = candidateView;
         }
@@ -476,7 +455,6 @@ public class PlankExercise extends BaseExercise {
         emaNoseY = -1f;
         emaWristX = emaWristY = -1f;
         hasLKnee = hasRKnee = false;
-        Log.d(TAG, "EMA reset");
     }
 
     @Override

@@ -10,6 +10,7 @@
         android:id="@+id/previewView"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        app:implementationMode="compatible"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -39,6 +40,20 @@
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
+
+    <ImageView
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:layout_marginStart="@dimen/exercise_side_margin"
+        android:layout_marginTop="@dimen/spacing_xs"
+        android:padding="12dp"
+        android:src="@drawable/arrow_back"
+        android:background="@drawable/bg_square_outline"
+        android:clickable="true"
+        android:focusable="true"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvRepCount" />
 
     <TextView
         android:id="@+id/tvExerciseName"
@@ -85,7 +100,7 @@
         android:padding="@dimen/spacing_sm"
         android:visibility="gone"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tvPhase">
+        app:layout_constraintTop_toBottomOf="@id/btnBack">
 
         <View
             android:id="@+id/viewRecordingDot"
@@ -105,74 +120,52 @@
 
     </LinearLayout>
 
-    <Button
-        android:id="@+id/btnToggleTts"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        android:layout_marginStart="@dimen/feedback_card_margin"
-        android:layout_marginBottom="@dimen/spacing_sm"
-        android:backgroundTint="@color/btn_disabled_bg"
-        android:gravity="center"
-        android:includeFontPadding="false"
-        android:minWidth="0dp"
-        android:minHeight="0dp"
-        android:padding="0dp"
-        android:text="🔊"
-        android:textColor="@color/white"
-        android:textSize="22sp"
-        app:layout_constraintBottom_toTopOf="@id/layoutButtons"
-        app:layout_constraintStart_toStartOf="parent" />
-
     <LinearLayout
         android:id="@+id/layoutButtons"
-        android:layout_width="0dp"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/feedback_card_margin"
-        android:layout_marginEnd="@dimen/feedback_card_margin"
         android:layout_marginBottom="@dimen/spacing_sm"
         android:orientation="horizontal"
+        android:gravity="center_vertical"
         app:layout_constraintBottom_toTopOf="@id/cardFeedback"
-        app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
-        <Button
-            android:id="@+id/btnReset"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/btn_exercise_height"
-            android:layout_marginEnd="4dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/btn_reset_bg"
-            android:maxLines="1"
-            android:text="@string/btn_reset"
-            android:textColor="@color/white"
-            android:textSize="@dimen/btn_exercise_text" />
+        <ImageView
+            android:id="@+id/btnToggleTts"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:padding="12dp"
+            android:src="@drawable/volume_up"
+            android:background="@drawable/bg_square_outline"
+            android:clickable="true"
+            android:focusable="true"/>
 
-        <Button
+        <ImageView
             android:id="@+id/btnRecord"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/btn_exercise_height"
-            android:layout_marginHorizontal="4dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/btn_record_bg"
-            android:maxLines="1"
-            android:text="@string/btn_record"
-            android:textColor="@color/white"
-            android:textSize="@dimen/btn_exercise_text" />
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_marginEnd="8dp"
+            android:padding="12dp"
+            android:src="@drawable/record"
+            android:background="@drawable/bg_square_outline"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/btn_record" />
 
-        <Button
-            android:id="@+id/btnBack"
-            android:layout_width="0dp"
-            android:layout_height="@dimen/btn_exercise_height"
-            android:layout_marginStart="4dp"
-            android:layout_weight="1"
-            android:backgroundTint="@color/btn_disabled_bg"
-            android:maxLines="1"
-            android:text="@string/btn_back"
-            android:textColor="@color/white"
-            android:textSize="@dimen/btn_exercise_text" />
+        <ImageView
+            android:id="@+id/btnReset"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:padding="12dp"
+            android:src="@drawable/record"
+            android:background="@drawable/bg_square_outline"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/btn_reset" />
 
     </LinearLayout>
-
 
     <androidx.cardview.widget.CardView
         android:id="@+id/cardFeedback"

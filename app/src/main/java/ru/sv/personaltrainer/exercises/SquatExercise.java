@@ -1,6 +1,5 @@
 package ru.sv.personaltrainer.exercises;
 
-import android.util.Log;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
@@ -9,8 +8,6 @@ import java.util.List;
 import ru.sv.personaltrainer.R;
 
 public class SquatExercise extends BaseExercise {
-
-    private static final String TAG = "SquatExercise";
 
     private static final float DEPTH_TOO_SHALLOW_ERR = -0.20f;
     private static final float DEPTH_TOO_SHALLOW_WARN = -0.10f;
@@ -94,9 +91,6 @@ public class SquatExercise extends BaseExercise {
 
         updatePhase(result, side.kneeAngle);
 
-        Log.d(TAG, "View=" + view
-                + " knee=" + String.format("%.1f°", side.kneeAngle)
-                + " phase=" + result.phase);
 
         if (view == ViewMode.SIDE) {
             analyzeSide(lm, result, side);
@@ -200,16 +194,11 @@ public class SquatExercise extends BaseExercise {
 
         float hipKneeDist = Math.abs(kneeY - hipY);
         if (hipKneeDist < 0.05f) {
-            Log.w(TAG, "Depth: hipKneeDist too small=" + hipKneeDist);
             return;
         }
 
         float ratio = (hipY - kneeY) / hipKneeDist;
 
-        Log.d(TAG, String.format(
-                "Depth[%s]: hipY=%.3f kneeY=%.3f dist=%.3f ratio=%.3f",
-                s.isLeft ? "L" : "R",
-                hipY, kneeY, hipKneeDist, ratio));
 
         if (ratio < DEPTH_TOO_SHALLOW_ERR) {
             result.addError(
@@ -257,10 +246,6 @@ public class SquatExercise extends BaseExercise {
         double diff = Math.abs(backAngle - shinAngle);
         if (diff > 180.0) diff = 360.0 - diff;
 
-        Log.d(TAG, String.format(
-                "Back[%s]: back=%.1f° shin=%.1f° diff=%.1f°",
-                s.isLeft ? "L" : "R",
-                backAngle, shinAngle, diff));
 
         if (diff > BACK_DIFF_ERROR) {
             result.addError(
@@ -292,11 +277,6 @@ public class SquatExercise extends BaseExercise {
 
         String name = isLeft ? "Левая" : "Правая";
 
-        Log.d(TAG, String.format(
-                "Heel[%s]: heelY=%.3f footIdxY=%.3f ankleY=%.3f "
-                        + "dist=%.3f liftRatio=%.3f deviation=%.3f",
-                name, heelY, footIndexY, ankleY,
-                ankleHeelDist, liftRatio, deviation));
 
         if (deviation > HEEL_ERROR) {
             result.addError(
@@ -338,7 +318,6 @@ public class SquatExercise extends BaseExercise {
         if (kW < 0 || aW <= 0) return;
 
         float ratio = kW / aW;
-        Log.d(TAG, "KneeCave=" + String.format("%.2f", ratio));
 
         if (ratio < KNEE_CAVE_ERROR) {
             result.addError(
@@ -384,8 +363,6 @@ public class SquatExercise extends BaseExercise {
 
         if (candidateCount >= STABLE_FRAMES
                 && currentView != candidateView) {
-            Log.d(TAG, "View: "
-                    + currentView + " → " + candidateView);
             resetEMA();
             currentView = candidateView;
         }
@@ -569,7 +546,6 @@ public class SquatExercise extends BaseExercise {
         emaLKneeY = emaRKneeY = -1f;
         emaShX = emaShY = emaHiX = emaHiY = -1f;
         emaKnX = emaKnY = emaAnX = emaAnY = -1f;
-        Log.d(TAG, "EMA reset");
     }
 
     @Override
