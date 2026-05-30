@@ -1,27 +1,31 @@
 package ru.sv.personaltrainer;
 
-import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.Canvas;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.Paint;
-import android.graphics.RadialGradient;
-import android.graphics.RectF;
-import android.graphics.Shader;
-import android.graphics.Typeface;
+import android.media.AudioFormat;
+import android.media.AudioRecord;
+import android.media.Image;
+import android.media.ImageReader;
 import android.media.MediaCodec;
 import android.media.MediaCodecInfo;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
+import android.media.MediaRecorder;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.HandlerThread;
 import android.provider.MediaStore;
+import android.view.LayoutInflater;
+import android.view.Surface;
+import android.view.View;
+import android.widget.TextView;
 
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
@@ -32,150 +36,218 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.ByteBuffer;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
-
-import androidx.core.content.ContextCompat;
+import java.util.concurrent.atomic.AtomicLong;
 
 public class VideoRecorder {
 
-    private static final String MIME_TYPE = "video/avc";
-    private static final int BIT_RATE = 8_000_000;
-    private static final int FRAME_RATE = 30;
-    private static final int I_FRAME_INTERVAL = 1;
-    private static final int VIDEO_WIDTH = 720;
-    private static final int VIDEO_HEIGHT = 1280;
+    private static final String TAG = "VideoRecorder";
 
-    private static final int COLOR_LEFT_LIMB = 0xFF00BFFF;
-    private static final int COLOR_RIGHT_LIMB = 0xFFFFD700;
-    private static final int COLOR_CENTER = 0xFF00FF00;
-    private static final int COLOR_ERROR_LINE = 0xFFFF0000;
+    private static final String VIDEO_MIME    = "video/avc";
+    private static final String AUDIO_MIME    = "audio/mp4a-latm";
+    private static final int    VIDEO_BITRATE = 6_000_000;
+    private static final int    VIDEO_FPS     = 30;
+    private static final int    VIDEO_IFRAME  = 1;
+
+    private static final int AUDIO_SAMPLE_RATE = 44100;
+    private static final int AUDIO_CHANNELS    = 2;
+    private static final int AUDIO_BITRATE     = 128_000;
+    private static final int AUDIO_BUFFER_SIZE = 4096;
+
+    private int insetTop = 0;
+    private int insetBottom = 0;
 
     private static final int[][] POSE_CONNECTIONS = {
-            {0, 1}, {1, 2}, {2, 3}, {3, 7},
-            {0, 4}, {4, 5}, {5, 6}, {6, 8},
-            {9, 10},
-            {11, 12}, {11, 23}, {12, 24}, {23, 24},
-            {11, 13}, {13, 15}, {15, 17}, {15, 19}, {15, 21}, {17, 19},
-            {12, 14}, {14, 16}, {16, 18}, {16, 20}, {16, 22}, {18, 20},
-            {23, 25}, {25, 27}, {27, 29}, {27, 31}, {29, 31},
-            {24, 26}, {26, 28}, {28, 30}, {28, 32}, {30, 32}
+            {0,1},{1,2},{2,3},{3,7},
+            {0,4},{4,5},{5,6},{6,8},
+            {9,10},
+            {11,12},{11,23},{12,24},{23,24},
+            {11,13},{13,15},{15,17},{15,19},{15,21},{17,19},
+            {12,14},{14,16},{16,18},{16,20},{16,22},{18,20},
+            {23,25},{25,27},{27,29},{27,31},{29,31},
+            {24,26},{26,28},{28,30},{28,32},{30,32}
     };
 
-    private static final int[] LEFT_LANDMARKS = {
-            11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31
-    };
-    private static final int[] RIGHT_LANDMARKS = {
-            12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32
-    };
+    private static final int[] LEFT_LANDMARKS  = {11,13,15,17,19,21,23,25,27,29,31};
+    private static final int[] RIGHT_LANDMARKS = {12,14,16,18,20,22,24,26,28,30,32};
 
-    private volatile boolean isRecording = false;
-    private volatile boolean acceptingFrames = false;
-    private volatile long startTimeUs = -1;
+    private volatile boolean   recording       = false;
+    private volatile boolean   acceptingFrames = false;
+    private final    AtomicLong startTimeUs    = new AtomicLong(-1L);
 
-    private boolean muxerStarted = false;
-    private int videoTrackIndex = -1;
+    private MediaCodec  videoEncoder;
+    private Surface     encoderInputSurface;
+    private ImageReader imageReader;
+    private MediaCodec  audioEncoder;
+    private AudioRecord audioRecord;
+    private MediaMuxer  muxer;
+    private String      outputPath;
 
-    private MediaCodec encoder;
-    private android.view.Surface encoderSurface;
-    private MediaMuxer muxer;
-    private String outputFilePath;
+    private boolean muxerStarted    = false;
+    private int     videoTrackIndex = -1;
+    private int     audioTrackIndex = -1;
 
     private HandlerThread encoderThread;
-    private Handler encoderHandler;
+    private Handler       encoderHandler;
+    private Thread        audioThread;
+    private HandlerThread imageReaderThread;
+    private Handler       imageReaderHandler;
 
-    private final Paint paintBg;
-    private final Paint paintText;
-    private final Paint paintRec;
-    private final Paint paintLine;
-    private final Paint paintPoint;
-    private final Paint paintErrorPoint;
-    private final Paint paintErrorStroke;
-    private final Paint paintGlow;
-    private final Paint paintDivider;
+    private final Paint paintLine        = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint paintPoint       = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint paintErrorPoint  = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint paintErrorStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final Context context;
+    private final int     videoW;
+    private final int     videoH;
 
-    private volatile String exerciseNameForRecord = null;
-    private volatile String qualityForRecord = null;
-    private volatile int qualityColorForRecord = 0;
+    private View     uiOverlay;
+    private TextView uiRepCount, uiPhase, uiExerciseName, uiFeedback;
+    private TextView uiQuality, uiErrors, uiRecordingTimer;
+    private View     uiRecordingDot, uiRecordingLayout;
+    private volatile boolean uiReady = false;
+
+    private Bitmap               pendingCameraFrame;
+    private PoseLandmarkerResult pendingPoseResult;
+    private List<Integer>        pendingErrorLandmarks;
 
     public interface RecordingCallback {
         void onRecordingStarted();
-
         void onRecordingSaved(String filePath);
-
         void onRecordingError(String error);
     }
-
     private RecordingCallback callback;
 
-    public VideoRecorder(Context context) {
+    public VideoRecorder(Context context, int screenWidth, int screenHeight) {
         this.context = context;
+        this.videoW  = screenWidth;
+        this.videoH  = screenHeight;
 
-        paintBg = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintBg.setStyle(Paint.Style.FILL);
-
-        paintText = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintText.setColor(Color.WHITE);
-        paintText.setTypeface(Typeface.DEFAULT_BOLD);
-        paintText.setShadowLayer(4f, 1f, 1f, Color.BLACK);
-
-        paintRec = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintRec.setColor(Color.RED);
-        paintRec.setStyle(Paint.Style.FILL);
-
-        paintLine = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintLine.setStyle(Paint.Style.STROKE);
-        paintLine.setStrokeWidth(5f);
         paintLine.setStrokeCap(Paint.Cap.ROUND);
-
-        paintPoint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintPoint.setStyle(Paint.Style.FILL);
-
-        paintErrorPoint = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintErrorPoint.setStyle(Paint.Style.FILL);
-
-        paintErrorStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
         paintErrorStroke.setColor(Color.WHITE);
         paintErrorStroke.setStyle(Paint.Style.STROKE);
-        paintErrorStroke.setStrokeWidth(2.5f);
-
-        paintGlow = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintGlow.setStyle(Paint.Style.FILL);
-
-        paintDivider = new Paint(Paint.ANTI_ALIAS_FLAG);
-        paintDivider.setStyle(Paint.Style.STROKE);
-        paintDivider.setStrokeWidth(1f);
     }
 
-    public void setCallback(RecordingCallback callback) {
-        this.callback = callback;
+    public void setCallback(RecordingCallback cb) { this.callback = cb; }
+
+    public void prepareUIOverlay() {
+        if (uiReady) return;
+        LayoutInflater inflater = LayoutInflater.from(context);
+        uiOverlay = inflater.inflate(R.layout.activity_exercise, null);
+        measureAndLayout();
+
+        uiRepCount        = uiOverlay.findViewById(R.id.tvRepCount);
+        uiPhase           = uiOverlay.findViewById(R.id.tvPhase);
+        uiExerciseName    = uiOverlay.findViewById(R.id.tvExerciseName);
+        uiFeedback        = uiOverlay.findViewById(R.id.tvFeedback);
+        uiQuality         = uiOverlay.findViewById(R.id.tvQuality);
+        uiErrors          = uiOverlay.findViewById(R.id.tvErrors);
+        uiRecordingTimer  = uiOverlay.findViewById(R.id.tvRecordingTimer);
+        uiRecordingDot    = uiOverlay.findViewById(R.id.viewRecordingDot);
+        uiRecordingLayout = uiOverlay.findViewById(R.id.layoutRecordingIndicator);
+
+        uiReady = true;
     }
 
+    private void measureAndLayout() {
+        if (uiOverlay instanceof android.view.ViewGroup) {
+            android.view.ViewGroup root = (android.view.ViewGroup) uiOverlay;
+            for (int i = 0; i < root.getChildCount(); i++) {
+                View child = root.getChildAt(i);
+                android.view.ViewGroup.MarginLayoutParams params =
+                        (android.view.ViewGroup.MarginLayoutParams) child.getLayoutParams();
+                params.setMargins(0, 0, 0, 0);
+                child.setLayoutParams(params);
+            }
+        }
+
+        uiOverlay.measure(
+                View.MeasureSpec.makeMeasureSpec(videoW, View.MeasureSpec.EXACTLY),
+                View.MeasureSpec.makeMeasureSpec(videoH, View.MeasureSpec.EXACTLY));
+        uiOverlay.layout(0, 0, videoW, videoH);
+    }
+    public void setInsets(int top, int bottom) {
+        this.insetTop = top;
+        this.insetBottom = bottom;
+        if (uiOverlay != null) {
+            measureAndLayout();
+        }
+    }
+
+    public void updateUIState(String repText, String phaseText, String feedbackText,
+                              int phaseColor, String exerciseName, String quality,
+                              int qualityColor, long elapsedSeconds, boolean isRec,
+                              List<String> errors) {
+        if (!uiReady) return;
+
+        uiRepCount.setText(repText     != null ? repText     : "0");
+        uiPhase.setText(phaseText      != null ? phaseText   : "");
+        uiPhase.setTextColor(phaseColor);
+        uiExerciseName.setText(exerciseName != null ? exerciseName : "");
+        uiFeedback.setText(feedbackText != null ? feedbackText : "");
+        uiQuality.setText(quality != null ? quality
+                : context.getString(R.string.vm_quality_full));
+        uiQuality.setTextColor(qualityColor);
+
+        if (errors != null && !errors.isEmpty()) {
+            uiErrors.setVisibility(View.VISIBLE);
+            StringBuilder sb = new StringBuilder();
+            for (int i = 0; i < errors.size() && i < 3; i++) {
+                sb.append(errors.get(i));
+                if (i < errors.size() - 1 && i < 2) sb.append("\n");
+            }
+            uiErrors.setText(sb.toString());
+        } else {
+            uiErrors.setVisibility(View.GONE);
+        }
+
+        if (isRec) {
+            uiRecordingLayout.setVisibility(View.VISIBLE);
+            uiRecordingTimer.setText(String.format(Locale.US, "%02d:%02d",
+                    elapsedSeconds / 60, elapsedSeconds % 60));
+            uiRecordingDot.setVisibility(
+                    elapsedSeconds % 2 == 0 ? View.VISIBLE : View.INVISIBLE);
+        } else {
+            uiRecordingLayout.setVisibility(View.GONE);
+        }
+
+        measureAndLayout();
+    }
+
+    public boolean isRecording() { return recording;}
     public void startRecording() {
-        if (isRecording) return;
+        if (recording) return;
+
+        release();
 
         try {
-            outputFilePath = createOutputFile();
-            if (outputFilePath == null) {
-                notifyError(context.getString(R.string.recorder_error_create_file));
-                return;
-            }
+            outputPath = createOutputFile();
+            if (outputPath == null) { notifyError("Cannot create output file"); return; }
 
-            setupEncoder();
+            prepareUIOverlay();
+
+            setupVideoEncoder();
+            setupAudioEncoder();
+            muxer = new MediaMuxer(outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
 
             encoderThread = new HandlerThread("EncoderThread");
             encoderThread.start();
             encoderHandler = new Handler(encoderThread.getLooper());
 
-            isRecording = true;
+            recording       = true;
             acceptingFrames = true;
-            startTimeUs = -1;
+            startTimeUs.set(-1L);
 
+            startAudioRecording();
             if (callback != null) callback.onRecordingStarted();
 
         } catch (Exception e) {
@@ -184,655 +256,9 @@ public class VideoRecorder {
         }
     }
 
-    private void setupEncoder() throws Exception {
-        MediaFormat format = MediaFormat.createVideoFormat(
-                MIME_TYPE, VIDEO_WIDTH, VIDEO_HEIGHT);
-
-        format.setInteger(
-                MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        format.setInteger(MediaFormat.KEY_BIT_RATE, BIT_RATE);
-        format.setInteger(MediaFormat.KEY_FRAME_RATE, FRAME_RATE);
-        format.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, I_FRAME_INTERVAL);
-
-        encoder = MediaCodec.createEncoderByType(MIME_TYPE);
-        encoder.configure(format, null, null,
-                MediaCodec.CONFIGURE_FLAG_ENCODE);
-
-        encoderSurface = encoder.createInputSurface();
-        encoder.start();
-
-        muxer = new MediaMuxer(outputFilePath,
-                MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
-    }
-
-    public void submitFrame(
-            Bitmap cameraFrame,
-            PoseLandmarkerResult poseResult,
-            List<Integer> errorLandmarks,
-            String repText,
-            String phaseText,
-            String feedbackText,
-            int phaseColor,
-            String exerciseName,
-            String quality,
-            int qualityColor,
-            long timestampNs) {
-
-        if (!isRecording || !acceptingFrames) return;
-        if (encoder == null) return;
-        if (cameraFrame == null || cameraFrame.isRecycled()) return;
-        if (encoderHandler == null) return;
-
-        this.exerciseNameForRecord = exerciseName;
-        this.qualityForRecord = quality;
-        this.qualityColorForRecord = qualityColor;
-
-        final long tsUs = timestampNs / 1000L;
-
-        final Bitmap copy;
-        try {
-            copy = cameraFrame.copy(Bitmap.Config.ARGB_8888, false);
-        } catch (Exception e) {
-            return;
-        }
-
-        final PoseLandmarkerResult resultCopy = poseResult;
-        final List<Integer> errorsCopy = errorLandmarks != null
-                ? new java.util.ArrayList<>(errorLandmarks)
-                : null;
-
-        final String repSnap = repText;
-        final String phaseSnap = phaseText;
-        final String feedbackSnap = feedbackText;
-        final int colorSnap = phaseColor;
-        final String qualitySnap = quality;
-        final int qualColorSnap = qualityColor;
-        final String nameSnap = exerciseName;
-
-        encoderHandler.post(() -> {
-            if (!acceptingFrames) {
-                if (!copy.isRecycled()) copy.recycle();
-                return;
-            }
-            try {
-                writeFrameToSurface(
-                        copy, resultCopy, errorsCopy,
-                        repSnap, phaseSnap, feedbackSnap,
-                        colorSnap, nameSnap,
-                        qualitySnap, qualColorSnap, tsUs);
-            } catch (Exception e) {
-            } finally {
-                if (!copy.isRecycled()) copy.recycle();
-            }
-        });
-    }
-
-    private void writeFrameToSurface(
-            Bitmap cameraFrame,
-            PoseLandmarkerResult poseResult,
-            List<Integer> errorLandmarks,
-            String repText, String phaseText,
-            String feedbackText, int phaseColor,
-            String exerciseName,
-            String quality, int qualityColor,
-            long tsUs) {
-
-        if (encoderSurface == null || !acceptingFrames) return;
-
-        Canvas canvas = null;
-        try {
-            canvas = encoderSurface.lockCanvas(null);
-            if (canvas == null) return;
-
-            canvas.drawColor(Color.BLACK);
-
-            drawCameraFrame(canvas, cameraFrame);
-
-            if (poseResult != null
-                    && !poseResult.landmarks().isEmpty()) {
-                drawSkeleton(canvas, poseResult, errorLandmarks);
-            }
-
-            if (startTimeUs < 0) startTimeUs = tsUs;
-            drawUI(canvas, repText, phaseText,
-                    feedbackText, phaseColor,
-                    exerciseName, quality, qualityColor, tsUs);
-
-        } catch (Exception e) {
-            return;
-        } finally {
-            if (canvas != null && encoderSurface != null) {
-                try {
-                    encoderSurface.unlockCanvasAndPost(canvas);
-                } catch (Exception e) {
-                }
-            }
-        }
-
-        drainEncoder(false);
-    }
-
-    private void drawCameraFrame(Canvas canvas, Bitmap frame) {
-        if (frame == null || frame.isRecycled()) return;
-
-        int cW = canvas.getWidth();
-        int cH = canvas.getHeight();
-        int fW = frame.getWidth();
-        int fH = frame.getHeight();
-
-        float scale = Math.max((float) cW / fW, (float) cH / fH);
-        float sw = fW * scale;
-        float sh = fH * scale;
-        float dx = (cW - sw) / 2f;
-        float dy = (cH - sh) / 2f;
-
-        canvas.drawBitmap(frame, null,
-                new RectF(dx, dy, dx + sw, dy + sh), null);
-    }
-
-    private void drawSkeleton(Canvas canvas,
-                              PoseLandmarkerResult poseResult,
-                              List<Integer> errorLandmarks) {
-
-        List<NormalizedLandmark> landmarks =
-                poseResult.landmarks().get(0);
-
-        float w = VIDEO_WIDTH;
-        float h = VIDEO_HEIGHT;
-
-        for (int[] conn : POSE_CONNECTIONS) {
-            int si = conn[0];
-            int ei = conn[1];
-
-            if (si >= landmarks.size()
-                    || ei >= landmarks.size()) continue;
-
-            NormalizedLandmark start = landmarks.get(si);
-            NormalizedLandmark end = landmarks.get(ei);
-
-            if (!isLandmarkVisible(start)
-                    || !isLandmarkVisible(end)) continue;
-
-            float x1 = start.x() * w;
-            float y1 = start.y() * h;
-            float x2 = end.x() * w;
-            float y2 = end.y() * h;
-
-            boolean startErr = isError(errorLandmarks, si);
-            boolean endErr = isError(errorLandmarks, ei);
-
-            if (startErr || endErr) {
-                paintLine.setColor(COLOR_ERROR_LINE);
-                paintLine.setStrokeWidth(6f);
-            } else {
-                paintLine.setColor(
-                        getConnectionColor(si, ei));
-                paintLine.setStrokeWidth(5f);
-            }
-            canvas.drawLine(x1, y1, x2, y2, paintLine);
-        }
-
-        for (int i = 0; i < landmarks.size(); i++) {
-            NormalizedLandmark lm = landmarks.get(i);
-            if (!isLandmarkVisible(lm)) continue;
-
-            float x = lm.x() * w;
-            float y = lm.y() * h;
-
-            if (isError(errorLandmarks, i)) {
-                drawErrorPoint(canvas, x, y);
-            } else {
-                drawNormalPoint(canvas, x, y, i);
-            }
-        }
-    }
-
-    private void drawNormalPoint(Canvas canvas,
-                                 float x, float y, int index) {
-        float radius = isKeyLandmark(index) ? 10f : 7f;
-
-        paintPoint.setColor(ContextCompat.getColor(context, R.color.video_shadow));
-        canvas.drawCircle(x + 1f, y + 1f, radius, paintPoint);
-
-        paintPoint.setColor(Color.WHITE);
-        canvas.drawCircle(x, y, radius, paintPoint);
-
-        paintPoint.setColor(ContextCompat.getColor(context, R.color.video_highlight));
-        canvas.drawCircle(
-                x - radius * 0.3f,
-                y - radius * 0.3f,
-                radius * 0.3f,
-                paintPoint);
-    }
-
-    private void drawErrorPoint(Canvas canvas, float x, float y) {
-        float radius = 14f;
-
-        try {
-            RadialGradient gradient = new RadialGradient(
-                    x, y, radius * 2f,
-                    new int[]{ContextCompat.getColor(context, R.color.video_glow_1), ContextCompat.getColor(context, R.color.video_glow_2), ContextCompat.getColor(context, R.color.video_glow_3)},
-                    new float[]{0f, 0.5f, 1f},
-                    Shader.TileMode.CLAMP);
-            paintGlow.setShader(gradient);
-            canvas.drawCircle(x, y, radius * 2f, paintGlow);
-            paintGlow.setShader(null);
-        } catch (Exception e) {
-        }
-
-        paintErrorPoint.setColor(ContextCompat.getColor(context, R.color.video_error_bright));
-        canvas.drawCircle(x, y, radius, paintErrorPoint);
-
-        canvas.drawCircle(x, y, radius, paintErrorStroke);
-
-        float size = 7f;
-        Paint cross = new Paint(Paint.ANTI_ALIAS_FLAG);
-        cross.setColor(Color.WHITE);
-        cross.setStrokeWidth(2.5f);
-        cross.setStrokeCap(Paint.Cap.ROUND);
-        canvas.drawLine(x - size, y - size,
-                x + size, y + size, cross);
-        canvas.drawLine(x + size, y - size,
-                x - size, y + size, cross);
-    }
-
-    private boolean isLandmarkVisible(NormalizedLandmark lm) {
-        if (lm.visibility().isPresent()) {
-            return lm.visibility().get() >= 0.5f;
-        }
-        return true;
-    }
-
-    private boolean isError(List<Integer> errors, int index) {
-        return errors != null && errors.contains(index);
-    }
-
-    private boolean isKeyLandmark(int index) {
-        return index == 11 || index == 12
-                || index == 23 || index == 24
-                || index == 25 || index == 26
-                || index == 13 || index == 14;
-    }
-
-    private int getConnectionColor(int si, int ei) {
-        if (isLeftLandmark(si) || isLeftLandmark(ei))
-            return COLOR_LEFT_LIMB;
-        if (isRightLandmark(si) || isRightLandmark(ei))
-            return COLOR_RIGHT_LIMB;
-        return COLOR_CENTER;
-    }
-
-    private boolean isLeftLandmark(int idx) {
-        for (int i : LEFT_LANDMARKS)
-            if (i == idx) return true;
-        return false;
-    }
-
-    private boolean isRightLandmark(int idx) {
-        for (int i : RIGHT_LANDMARKS)
-            if (i == idx) return true;
-        return false;
-    }
-
-    private void drawUI(Canvas canvas,
-                        String repText,
-                        String phaseText,
-                        String feedbackText,
-                        int phaseColor,
-                        String exerciseName,
-                        String quality,
-                        int qualityColor,
-                        long tsUs) {
-
-        final float density = VIDEO_WIDTH / 360f;
-
-        final int W = VIDEO_WIDTH;
-        final int H = VIDEO_HEIGHT;
-
-        drawRepCounter(canvas, repText, density, W);
-
-        drawExerciseName(canvas, exerciseName, density, W);
-
-        drawPhase(canvas, phaseText, phaseColor, density, W);
-
-        drawRecordingIndicator(canvas, tsUs, density);
-
-        drawFeedbackCard(canvas, feedbackText,
-                quality, qualityColor, density, W, H);
-    }
-
-    private void drawRepCounter(Canvas canvas, String text,
-                                float density, int W) {
-
-        float textSize = sp(20, density);
-        float padding = dp(10, density);
-        float marginT = dp(16, density);
-        float marginS = dp(16, density);
-
-        paintText.setTextSize(textSize);
-        paintText.setColor(Color.WHITE);
-        paintText.setTypeface(Typeface.DEFAULT_BOLD);
-
-        float textW = paintText.measureText(text);
-        float left = marginS;
-        float top = marginT;
-        float right = left + textW + padding * 2;
-        float bot = top + textSize + padding * 2;
-
-        paintBg.setColor(ContextCompat.getColor(context, R.color.video_bg_black));
-        canvas.drawRoundRect(left, top, right, bot,
-                dp(8, density), dp(8, density), paintBg);
-
-        canvas.drawText(text,
-                left + padding,
-                top + padding + textSize * 0.85f,
-                paintText);
-    }
-
-    private void drawExerciseName(Canvas canvas, String name,
-                                  float density, int W) {
-        if (name == null || name.isEmpty()) return;
-
-        float textSize = sp(16, density);
-        float padding = dp(10, density);
-        float marginT = dp(16, density);
-        float marginEnd = dp(16, density);
-
-        paintText.setTextSize(textSize);
-        paintText.setColor(Color.WHITE);
-        paintText.setTypeface(Typeface.DEFAULT_BOLD);
-
-        float textW = paintText.measureText(name);
-        float right = W - marginEnd;
-        float left = right - textW - padding * 2;
-        float top = marginT;
-        float bot = top + textSize + padding * 2;
-
-        paintBg.setColor(ContextCompat.getColor(context, R.color.primary));
-        canvas.drawRoundRect(left, top, right, bot,
-                dp(8, density), dp(8, density), paintBg);
-
-        canvas.drawText(name,
-                left + padding,
-                top + padding + textSize * 0.85f,
-                paintText);
-    }
-
-    private void drawPhase(Canvas canvas, String text,
-                           int color, float density, int W) {
-        if (text == null || text.isEmpty()) return;
-
-        float textSize = sp(14, density);
-        float padding = dp(8, density);
-        float marginT = dp(16, density);
-
-        paintText.setTextSize(textSize);
-        paintText.setColor(color);
-        paintText.setTypeface(Typeface.DEFAULT_BOLD);
-
-        float textW = paintText.measureText(text);
-        float left = (W - textW) / 2f - padding;
-        float top = marginT;
-        float right = left + textW + padding * 2;
-        float bot = top + textSize + padding * 2;
-
-        paintBg.setColor(ContextCompat.getColor(context, R.color.video_phase_bg));
-        canvas.drawRoundRect(left, top, right, bot,
-                dp(8, density), dp(8, density), paintBg);
-
-        canvas.drawText(text,
-                left + padding,
-                top + padding + textSize * 0.85f,
-                paintText);
-    }
-
-    private void drawRecordingIndicator(Canvas canvas,
-                                        long tsUs,
-                                        float density) {
-        long elapsed = (startTimeUs > 0)
-                ? (tsUs - startTimeUs) / 1_000_000L : 0L;
-
-        if (elapsed % 2 != 0) return;
-
-        float marginT = dp(64, density);
-        float marginS = dp(16, density);
-        float padding = dp(8, density);
-        float dotSize = dp(10, density);
-        float dotMarginEnd = dp(6, density);
-        float textSize = sp(13, density);
-
-        int mm = (int) (elapsed / 60);
-        int ss = (int) (elapsed % 60);
-        String ts = String.format(Locale.US, "%02d:%02d", mm, ss);
-
-        paintText.setTextSize(textSize);
-        paintText.setColor(Color.WHITE);
-        paintText.setTypeface(Typeface.DEFAULT_BOLD);
-
-        float timeW = paintText.measureText(ts);
-        float blockW = padding + dotSize + dotMarginEnd
-                + timeW + padding;
-        float blockH = Math.max(dotSize, textSize) + padding * 2;
-
-        float left = marginS;
-        float top = marginT;
-
-        paintBg.setColor(ContextCompat.getColor(context, R.color.video_bg_black));
-        canvas.drawRoundRect(left, top,
-                left + blockW, top + blockH,
-                dp(6, density), dp(6, density), paintBg);
-
-        paintRec.setColor(Color.RED);
-        float dotCX = left + padding + dotSize / 2f;
-        float dotCY = top + blockH / 2f;
-        canvas.drawCircle(dotCX, dotCY, dotSize / 2f, paintRec);
-
-        canvas.drawText(ts,
-                left + padding + dotSize + dotMarginEnd,
-                top + blockH / 2f + textSize * 0.35f,
-                paintText);
-    }
-
-    private void drawFeedbackCard(Canvas canvas,
-                                  String feedbackText,
-                                  String quality,
-                                  int qualityColor,
-                                  float density,
-                                  int W, int H) {
-
-        float marginB = dp(16, density);
-        float marginH = dp(12, density);
-        float padding = dp(16, density);
-        float radius = dp(16, density);
-
-        float titleSize = sp(15, density);
-        float feedbackSize = sp(15, density);
-        float separatorH = dp(20, density);
-
-        float cardW = W - marginH * 2 - padding * 2;
-        int lineCount = countLines(feedbackText,
-                feedbackSize, cardW);
-
-        float cardH = padding
-                + titleSize + dp(10, density)
-                + separatorH
-                + feedbackSize * lineCount
-                + dp(4, density) * (lineCount - 1)
-                + padding;
-
-        float cardL = marginH;
-        float cardR = W - marginH;
-        float cardB = H - marginB;
-        float cardT = cardB - cardH;
-
-        paintBg.setColor(ContextCompat.getColor(context, R.color.background_dark));
-        canvas.drawRoundRect(cardL, cardT, cardR, cardB,
-                radius, radius, paintBg);
-
-        float curY = cardT + padding;
-
-        {
-            paintText.setTextSize(titleSize);
-            paintText.setColor(ContextCompat.getColor(context, R.color.primary));
-            paintText.setTypeface(Typeface.DEFAULT_BOLD);
-            canvas.drawText(context.getString(R.string.video_analysis_title),
-                    cardL + padding,
-                    curY + titleSize * 0.85f,
-                    paintText);
-
-            String q = (quality != null) ? quality : context.getString(R.string.vm_quality_full);
-            int qc = (qualityColor != 0) ? qualityColor : ContextCompat.getColor(context, R.color.accent);
-            paintText.setColor(qc);
-            float qW = paintText.measureText(q);
-            canvas.drawText(q,
-                    cardR - padding - qW,
-                    curY + titleSize * 0.85f,
-                    paintText);
-
-            curY += titleSize + dp(10, density);
-        }
-
-        {
-            paintDivider.setColor(ContextCompat.getColor(context, R.color.divider_light));
-            canvas.drawLine(
-                    cardL + padding, curY,
-                    cardR - padding, curY,
-                    paintDivider);
-            curY += separatorH;
-        }
-
-        if (feedbackText != null && !feedbackText.isEmpty()) {
-            paintText.setTextSize(feedbackSize);
-            paintText.setColor(Color.WHITE);
-            paintText.setTypeface(Typeface.DEFAULT_BOLD);
-
-            drawWrappedText(canvas, feedbackText,
-                    cardL + padding, curY,
-                    cardR - padding,
-                    feedbackSize, dp(4, density));
-        }
-    }
-
-    private void drawWrappedText(Canvas canvas, String text,
-                                 float x, float y,
-                                 float maxX,
-                                 float lineHeight,
-                                 float lineSpacing) {
-        String[] words = text.split(" ");
-        StringBuilder line = new StringBuilder();
-        float curY = y + lineHeight * 0.85f;
-
-        for (String word : words) {
-            String test = line.length() > 0
-                    ? line + " " + word : word;
-
-            if (paintText.measureText(test) <= (maxX - x)) {
-                line = new StringBuilder(test);
-            } else {
-                if (line.length() > 0) {
-                    canvas.drawText(line.toString(), x, curY, paintText);
-                    curY += lineHeight + lineSpacing;
-                }
-                line = new StringBuilder(word);
-            }
-        }
-        if (line.length() > 0) {
-            canvas.drawText(line.toString(), x, curY, paintText);
-        }
-    }
-
-    private int countLines(String text, float textSize, float maxW) {
-        if (text == null || text.isEmpty()) return 1;
-
-        Paint p = new Paint();
-        p.setTextSize(textSize);
-
-        String[] words = text.split(" ");
-        StringBuilder line = new StringBuilder();
-        int lines = 1;
-
-        for (String word : words) {
-            String test = line.length() > 0
-                    ? line + " " + word : word;
-            if (p.measureText(test) <= maxW) {
-                line = new StringBuilder(test);
-            } else {
-                lines++;
-                line = new StringBuilder(word);
-            }
-        }
-        return lines;
-    }
-
-    private float dp(float dp, float density) {
-        return dp * density;
-    }
-
-    private float sp(float sp, float density) {
-        return sp * density;
-    }
-
-    private void drainEncoder(boolean endOfStream) {
-        if (encoder == null) return;
-
-        if (endOfStream) {
-            try {
-                encoder.signalEndOfInputStream();
-            } catch (Exception e) {
-            }
-        }
-
-        MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
-        int maxLoop = 100;
-
-        while (maxLoop-- > 0) {
-            int idx = encoder.dequeueOutputBuffer(info, 10_000);
-
-            if (idx == MediaCodec.INFO_TRY_AGAIN_LATER) {
-                if (!endOfStream) break;
-                try {
-                    Thread.sleep(5);
-                } catch (InterruptedException ignored) {
-                }
-
-            } else if (idx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
-                if (!muxerStarted) {
-                    videoTrackIndex =
-                            muxer.addTrack(encoder.getOutputFormat());
-                    muxer.start();
-                    muxerStarted = true;
-                }
-
-            } else if (idx >= 0) {
-                ByteBuffer buf = encoder.getOutputBuffer(idx);
-
-                if (buf != null) {
-                    boolean isConfig = (info.flags
-                            & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
-
-                    if (!isConfig && info.size > 0 && muxerStarted) {
-                        buf.position(info.offset);
-                        buf.limit(info.offset + info.size);
-                        muxer.writeSampleData(
-                                videoTrackIndex, buf, info);
-                    }
-                }
-
-                encoder.releaseOutputBuffer(idx, false);
-
-                if ((info.flags
-                        & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) {
-                    break;
-                }
-            }
-        }
-    }
-
     public void stopRecording() {
-        if (!isRecording) return;
-
-        isRecording = false;
+        if (!recording) return;
+        recording       = false;
         acceptingFrames = false;
 
         new Thread(() -> {
@@ -840,144 +266,580 @@ public class VideoRecorder {
                 try {
                     CountDownLatch latch = new CountDownLatch(1);
                     encoderHandler.post(latch::countDown);
-                    boolean done = latch.await(3, TimeUnit.SECONDS);
-                } catch (InterruptedException e) {
+                    latch.await(3, TimeUnit.SECONDS);
+                } catch (InterruptedException ignored) {
                     Thread.currentThread().interrupt();
                 }
             }
-
             if (encoderThread != null) {
                 encoderThread.quitSafely();
-                try {
-                    encoderThread.join(2000);
-                } catch (InterruptedException e) {
-                    Thread.currentThread().interrupt();
-                }
-                encoderThread = null;
+                try { encoderThread.join(2000); } catch (InterruptedException ignored) {}
+                encoderThread  = null;
                 encoderHandler = null;
             }
 
-            try {
-                drainEncoder(true);
-            } catch (Exception e) {
+            if (audioRecord != null) {
+                try { audioRecord.stop(); } catch (Exception ignored) {}
             }
+            if (audioThread != null) {
+                try { audioThread.join(1500); } catch (InterruptedException ignored) {}
+                audioThread = null;
+            }
+            if (audioRecord != null) {
+                try { audioRecord.release(); } catch (Exception ignored) {}
+                audioRecord = null;
+            }
+
+            try { drainVideoEncoder(true);  } catch (Exception ignored) {}
+            try { drainAudioEndOfStream();  } catch (Exception ignored) {}
 
             release();
             addToMediaStore();
-
         }, "StopThread").start();
     }
 
-    private void release() {
-        if (encoder != null) {
-            try {
-                encoder.stop();
-                encoder.release();
-            } catch (Exception e) {
-            }
-            encoder = null;
+    public void submitFrame(Bitmap cameraFrame,
+                            PoseLandmarkerResult poseResult,
+                            List<Integer> errorLandmarks,
+                            String repText, String phaseText, String feedbackText,
+                            int phaseColor, String exerciseName,
+                            String quality, int qualityColor,
+                            List<String> errors) {
+
+        if (!recording || !acceptingFrames) return;
+        if (videoEncoder == null || encoderHandler == null) return;
+
+        final long nowUs      = System.nanoTime() / 1000L;
+        final long startUs    = startTimeUs.get();
+        final long elapsedSec = (startUs > 0) ? (nowUs - startUs) / 1_000_000L : 0L;
+
+        final Bitmap scaled = scaleBitmapToScreen(cameraFrame);
+
+        synchronized (this) {
+            if (pendingCameraFrame != null) pendingCameraFrame.recycle();
+            pendingCameraFrame    = scaled;
+            pendingPoseResult     = poseResult;
+            pendingErrorLandmarks = errorLandmarks != null
+                    ? new ArrayList<>(errorLandmarks) : null;
         }
-        if (encoderSurface != null) {
+
+        final String      repSnap      = repText;
+        final String      phaseSnap    = phaseText;
+        final String      feedbackSnap = feedbackText;
+        final int         colorSnap    = phaseColor;
+        final String      qualitySnap  = quality;
+        final int         qualClr      = qualityColor;
+        final String      nameSnap     = exerciseName;
+        final long        elSnap       = elapsedSec;
+        final List<String> errSnap     = errors;
+        final long        tsUs         = nowUs;
+
+        encoderHandler.post(() -> {
+            if (!acceptingFrames) return;
+            startTimeUs.compareAndSet(-1L, tsUs);
+            updateUIState(repSnap, phaseSnap, feedbackSnap, colorSnap,
+                    nameSnap, qualitySnap, qualClr, elSnap, true, errSnap);
             try {
-                encoderSurface.release();
+                writeFrame(tsUs);
             } catch (Exception e) {
             }
-            encoderSurface = null;
+        });
+    }
+
+    private Bitmap scaleBitmapToScreen(Bitmap src) {
+        if (src == null) return null;
+        float scale  = Math.max((float) videoW / src.getWidth(),
+                (float) videoH / src.getHeight());
+        float transX = (videoW - src.getWidth()  * scale) / 2f;
+        float transY = (videoH - src.getHeight() * scale) / 2f;
+
+        Matrix m = new Matrix();
+        m.postScale(scale, scale);
+        m.postTranslate(transX, transY);
+
+        Bitmap result = Bitmap.createBitmap(videoW, videoH, Bitmap.Config.ARGB_8888);
+        new Canvas(result).drawBitmap(src, m, null);
+        return result;
+    }
+
+    private void setupVideoEncoder() throws Exception {
+        MediaFormat fmt = MediaFormat.createVideoFormat(VIDEO_MIME, videoW, videoH);
+        fmt.setInteger(MediaFormat.KEY_COLOR_FORMAT,
+                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+        fmt.setInteger(MediaFormat.KEY_BIT_RATE,          VIDEO_BITRATE);
+        fmt.setInteger(MediaFormat.KEY_FRAME_RATE,        VIDEO_FPS);
+        fmt.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL,  VIDEO_IFRAME);
+
+        videoEncoder = MediaCodec.createEncoderByType(VIDEO_MIME);
+        videoEncoder.configure(fmt, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        encoderInputSurface = videoEncoder.createInputSurface();
+        videoEncoder.start();
+
+        imageReader = ImageReader.newInstance(videoW, videoH,
+                android.graphics.PixelFormat.RGBA_8888, 3);
+
+        imageReaderThread = new HandlerThread("ImageReaderThread");
+        imageReaderThread.start();
+        imageReaderHandler = new Handler(imageReaderThread.getLooper());
+
+        imageReader.setOnImageAvailableListener(reader -> {
+            Image image = null;
+            try {
+                image = reader.acquireLatestImage();
+                if (image == null) return;
+
+                Image.Plane plane  = image.getPlanes()[0];
+                ByteBuffer  buffer = plane.getBuffer();
+                int rowStride      = plane.getRowStride();
+                int pixelStride    = plane.getPixelStride();
+                int width          = image.getWidth();
+                int height         = image.getHeight();
+
+                Canvas c = encoderInputSurface.lockCanvas(null);
+                if (c != null) {
+                    try {
+                        Bitmap bmp = Bitmap.createBitmap(width, height,
+                                Bitmap.Config.ARGB_8888);
+                        if (rowStride == width * pixelStride) {
+                            buffer.rewind();
+                            bmp.copyPixelsFromBuffer(buffer);
+                        } else {
+                            byte[] row  = new byte[rowStride];
+                            byte[] data = new byte[width * height * 4];
+                            int    off  = 0;
+                            for (int y = 0; y < height; y++) {
+                                buffer.position(y * rowStride);
+                                buffer.get(row, 0,
+                                        Math.min(rowStride, buffer.remaining()));
+                                System.arraycopy(row, 0, data, off, width * pixelStride);
+                                off += width * pixelStride;
+                            }
+                            bmp.copyPixelsFromBuffer(ByteBuffer.wrap(data));
+                        }
+                        c.drawBitmap(bmp, 0f, 0f, null);
+                        bmp.recycle();
+                    } finally {
+                        encoderInputSurface.unlockCanvasAndPost(c);
+                    }
+                }
+            } catch (Exception e) {
+            } finally {
+                if (image != null) image.close();
+            }
+            drainVideoEncoder(false);
+        }, imageReaderHandler);
+    }
+
+    private void setupAudioEncoder() throws Exception {
+        MediaFormat fmt = MediaFormat.createAudioFormat(
+                AUDIO_MIME, AUDIO_SAMPLE_RATE, AUDIO_CHANNELS);
+        fmt.setInteger(MediaFormat.KEY_BIT_RATE,    AUDIO_BITRATE);
+        fmt.setInteger(MediaFormat.KEY_AAC_PROFILE,
+                MediaCodecInfo.CodecProfileLevel.AACObjectLC);
+
+        audioEncoder = MediaCodec.createEncoderByType(AUDIO_MIME);
+        audioEncoder.configure(fmt, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
+        audioEncoder.start();
+    }
+
+    private void startAudioRecording() {
+        int minBuf = AudioRecord.getMinBufferSize(
+                AUDIO_SAMPLE_RATE,
+                AudioFormat.CHANNEL_IN_STEREO,
+                AudioFormat.ENCODING_PCM_16BIT);
+        try {
+            audioRecord = new AudioRecord(
+                    MediaRecorder.AudioSource.MIC,
+                    AUDIO_SAMPLE_RATE,
+                    AudioFormat.CHANNEL_IN_STEREO,
+                    AudioFormat.ENCODING_PCM_16BIT,
+                    Math.max(minBuf, AUDIO_BUFFER_SIZE * 4));
+
+            if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
+                notifyError("Microphone not available");
+                return;
+            }
+            audioRecord.startRecording();
+            audioThread = new Thread(this::audioLoop, "AudioThread");
+            audioThread.start();
+        } catch (SecurityException e) {
+            notifyError("Microphone permission denied");
+        }
+    }
+
+    private void audioLoop() {
+        byte[] buf = new byte[AUDIO_BUFFER_SIZE];
+        while (recording) {
+            int read = audioRecord.read(buf, 0, buf.length);
+            if (read > 0) feedAudioEncoder(buf, read);
+        }
+    }
+
+    private void feedAudioEncoder(byte[] data, int length) {
+        if (audioEncoder == null) return;
+        try {
+            int idx = audioEncoder.dequeueInputBuffer(0);
+            if (idx >= 0) {
+                ByteBuffer buf = audioEncoder.getInputBuffer(idx);
+                if (buf != null) {
+                    buf.clear();
+                    buf.put(data, 0, length);
+                    audioEncoder.queueInputBuffer(idx, 0, length,
+                            System.nanoTime() / 1000L, 0);
+                }
+            }
+            drainAudioEncoder();
+        } catch (Exception ignored) {}
+    }
+
+    private synchronized void drainAudioEncoder() {
+        if (audioEncoder == null) return;
+        MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+        while (true) {
+            int idx = audioEncoder.dequeueOutputBuffer(info, 0);
+            if (idx == MediaCodec.INFO_TRY_AGAIN_LATER) break;
+            if (idx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                if (!muxerStarted && muxer != null) {
+                    audioTrackIndex = muxer.addTrack(audioEncoder.getOutputFormat());
+                    tryStartMuxer();
+                }
+            } else if (idx >= 0) {
+                ByteBuffer buf = audioEncoder.getOutputBuffer(idx);
+                boolean isConfig =
+                        (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
+                if (!isConfig && buf != null && muxerStarted && info.size > 0) {
+                    buf.position(info.offset);
+                    buf.limit(info.offset + info.size);
+                    muxer.writeSampleData(audioTrackIndex, buf, info);
+                }
+                audioEncoder.releaseOutputBuffer(idx, false);
+                if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) break;
+            }
+        }
+    }
+
+    private void drainAudioEndOfStream() {
+        if (audioEncoder == null) return;
+        try {
+            int idx = audioEncoder.dequeueInputBuffer(0);
+            if (idx >= 0) {
+                audioEncoder.queueInputBuffer(idx, 0, 0, 0,
+                        MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+            }
+            MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+            while (true) {
+                int out = audioEncoder.dequeueOutputBuffer(info, 100_000);
+                if (out == MediaCodec.INFO_TRY_AGAIN_LATER) break;
+                if (out == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) continue;
+                if (out >= 0) {
+                    ByteBuffer buf = audioEncoder.getOutputBuffer(out);
+                    boolean isConfig =
+                            (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
+                    if (!isConfig && buf != null && muxerStarted && info.size > 0) {
+                        buf.position(info.offset);
+                        buf.limit(info.offset + info.size);
+                        muxer.writeSampleData(audioTrackIndex, buf, info);
+                    }
+                    audioEncoder.releaseOutputBuffer(out, false);
+                    if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) break;
+                }
+            }
+        } catch (Exception ignored) {}
+        try { audioEncoder.stop();    } catch (Exception ignored) {}
+        try { audioEncoder.release(); } catch (Exception ignored) {}
+        audioEncoder = null;
+    }
+
+    private synchronized void drainVideoEncoder(boolean endOfStream) {
+        if (videoEncoder == null) return;
+        if (endOfStream) {
+            try { videoEncoder.signalEndOfInputStream(); }
+            catch (Exception ignored) {}
+        }
+
+        MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
+        int safety = 300;
+        while (safety-- > 0) {
+            int idx = videoEncoder.dequeueOutputBuffer(info, 10_000);
+            if (idx == MediaCodec.INFO_TRY_AGAIN_LATER) {
+                if (!endOfStream) break;
+                try { Thread.sleep(5); } catch (InterruptedException ignored) {}
+            } else if (idx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
+                if (!muxerStarted && muxer != null) {
+                    videoTrackIndex = muxer.addTrack(videoEncoder.getOutputFormat());
+                    tryStartMuxer();
+                }
+            } else if (idx >= 0) {
+                ByteBuffer buf     = videoEncoder.getOutputBuffer(idx);
+                boolean    isConfig =
+                        (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
+                if (!isConfig && buf != null && muxerStarted && info.size > 0) {
+                    buf.position(info.offset);
+                    buf.limit(info.offset + info.size);
+                    muxer.writeSampleData(videoTrackIndex, buf, info);
+                }
+                videoEncoder.releaseOutputBuffer(idx, false);
+                if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) break;
+            }
+        }
+    }
+
+    private synchronized void tryStartMuxer() {
+        if (muxer != null && videoTrackIndex >= 0
+                && audioTrackIndex >= 0 && !muxerStarted) {
+            muxer.start();
+            muxerStarted = true;
+        }
+    }
+
+    private void writeFrame(long tsUs) {
+        if (imageReader == null || !acceptingFrames) return;
+
+        Bitmap frame;
+        PoseLandmarkerResult pose;
+        List<Integer> errLm;
+        synchronized (this) {
+            frame              = pendingCameraFrame;
+            pendingCameraFrame = null;
+            pose               = pendingPoseResult;
+            errLm              = pendingErrorLandmarks;
+        }
+
+        Bitmap output = Bitmap.createBitmap(videoW, videoH, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(output);
+
+        if (frame != null && !frame.isRecycled()) {
+            canvas.drawBitmap(frame, 0f, 0f, null);
+        }
+
+        if (pose != null && !pose.landmarks().isEmpty()) {
+            drawPoseOnCanvas(canvas, pose, videoW, videoH, errLm);
+        }
+
+        drawUIWidgets(canvas);
+
+        Surface readerSurface = imageReader.getSurface();
+        Canvas sc = null;
+        try {
+            sc = readerSurface.lockCanvas(null);
+            if (sc != null) {
+                sc.drawBitmap(output, 0f, 0f, null);
+            }
+        } catch (Exception e) {
+        } finally {
+            if (sc != null) {
+                try { readerSurface.unlockCanvasAndPost(sc); }
+                catch (Exception ignored) {}
+            }
+            output.recycle();
+            if (frame != null) frame.recycle();
+        }
+    }
+
+    private void drawUIWidgets(Canvas canvas) {
+        if (!uiReady) return;
+
+        if (uiRepCount != null && uiRepCount.getVisibility() == View.VISIBLE) {
+            canvas.save();
+            canvas.translate(uiRepCount.getLeft(), uiRepCount.getTop());
+            uiRepCount.draw(canvas);
+            canvas.restore();
+        }
+
+        if (uiExerciseName != null && uiExerciseName.getVisibility() == View.VISIBLE) {
+            canvas.save();
+            canvas.translate(uiExerciseName.getLeft(), uiExerciseName.getTop());
+            uiExerciseName.draw(canvas);
+            canvas.restore();
+        }
+
+        if (uiPhase != null && uiPhase.getVisibility() == View.VISIBLE) {
+            canvas.save();
+            canvas.translate(uiPhase.getLeft(), uiPhase.getTop());
+            uiPhase.draw(canvas);
+            canvas.restore();
+        }
+
+        if (uiRecordingLayout != null && uiRecordingLayout.getVisibility() == View.VISIBLE) {
+            canvas.save();
+            canvas.translate(uiRecordingLayout.getLeft(), uiRecordingLayout.getTop());
+            uiRecordingLayout.draw(canvas);
+            canvas.restore();
+        }
+
+        View cardFeedback = uiOverlay.findViewById(R.id.cardFeedback);
+        if (cardFeedback != null && cardFeedback.getVisibility() == View.VISIBLE) {
+            canvas.save();
+            canvas.translate(cardFeedback.getLeft(), cardFeedback.getTop());
+            cardFeedback.draw(canvas);
+            canvas.restore();
+        }
+    }
+
+    private void drawPoseOnCanvas(Canvas canvas, PoseLandmarkerResult result,
+                                  int fw, int fh, List<Integer> errorLandmarks) {
+        List<NormalizedLandmark> lms = result.landmarks().get(0);
+
+        for (int[] conn : POSE_CONNECTIONS) {
+            int si = conn[0], ei = conn[1];
+            if (si >= lms.size() || ei >= lms.size()) continue;
+
+            NormalizedLandmark s = lms.get(si), e = lms.get(ei);
+            if (!isVisible(s) || !isVisible(e)) continue;
+
+            boolean isErr = errorLandmarks != null
+                    && (errorLandmarks.contains(si) || errorLandmarks.contains(ei));
+
+            paintLine.setStrokeWidth(isErr ? 6f : 4f);
+            paintLine.setColor(isErr ? Color.RED : getConnectionColor(si, ei));
+            canvas.drawLine(s.x() * fw, s.y() * fh, e.x() * fw, e.y() * fh, paintLine);
+        }
+
+        for (int i = 0; i < lms.size(); i++) {
+            NormalizedLandmark lm = lms.get(i);
+            if (!isVisible(lm)) continue;
+
+            float x = lm.x() * fw, y = lm.y() * fh;
+
+            if (errorLandmarks != null && errorLandmarks.contains(i)) {
+                paintErrorPoint.setColor(Color.RED);
+                canvas.drawCircle(x, y, 12f, paintErrorPoint);
+                paintErrorStroke.setStrokeWidth(2f);
+                canvas.drawCircle(x, y, 12f, paintErrorStroke);
+            } else {
+                paintPoint.setColor(Color.WHITE);
+                canvas.drawCircle(x, y, 8f, paintPoint);
+                paintPoint.setColor(getConnectionColor(i, i));
+                canvas.drawCircle(x, y, 5f, paintPoint);
+            }
+        }
+    }
+
+    private boolean isVisible(NormalizedLandmark lm) {
+        return lm.visibility().isPresent() ? lm.visibility().get() >= 0.5f : true;
+    }
+
+    private int getConnectionColor(int si, int ei) {
+        if (isLeftLandmark(si)  || isLeftLandmark(ei))  return 0xFF00BFFF;
+        if (isRightLandmark(si) || isRightLandmark(ei)) return 0xFFFFD700;
+        return 0xFF00FF00;
+    }
+
+    private boolean isLeftLandmark(int idx) {
+        for (int i : LEFT_LANDMARKS)  if (i == idx) return true;
+        return false;
+    }
+    private boolean isRightLandmark(int idx) {
+        for (int i : RIGHT_LANDMARKS) if (i == idx) return true;
+        return false;
+    }
+
+    private void release() {
+        if (videoEncoder != null) {
+            try { videoEncoder.stop();    } catch (Exception ignored) {}
+            try { videoEncoder.release(); } catch (Exception ignored) {}
+            videoEncoder = null;
+        }
+        if (encoderInputSurface != null) {
+            try { encoderInputSurface.release(); } catch (Exception ignored) {}
+            encoderInputSurface = null;
+        }
+        if (imageReader != null) {
+            try { imageReader.close(); } catch (Exception ignored) {}
+            imageReader = null;
+        }
+        if (imageReaderThread != null) {
+            imageReaderThread.quitSafely();
+            try { imageReaderThread.join(1000); } catch (Exception ignored) {}
+            imageReaderThread = null;
+            imageReaderHandler = null;
         }
         if (muxer != null) {
-            try {
-                if (muxerStarted) muxer.stop();
-                muxer.release();
-            } catch (Exception e) {
-            }
+            try { if (muxerStarted) muxer.stop(); } catch (Exception ignored) {}
+            try { muxer.release(); }                catch (Exception ignored) {}
             muxer = null;
         }
         if (encoderThread != null) {
             encoderThread.quitSafely();
-            encoderThread = null;
+            try { encoderThread.join(1000); } catch (Exception ignored) {}
+            encoderThread  = null;
             encoderHandler = null;
         }
-        muxerStarted = false;
+        muxerStarted    = false;
         videoTrackIndex = -1;
-        startTimeUs = -1;
+        audioTrackIndex = -1;
+        startTimeUs.set(-1L);
+        uiReady   = false;
+        uiOverlay = null;
+
+        synchronized (this) {
+            if (pendingCameraFrame != null) {
+                pendingCameraFrame.recycle();
+                pendingCameraFrame = null;
+            }
+            pendingPoseResult     = null;
+            pendingErrorLandmarks = null;
+        }
     }
 
     private String createOutputFile() {
-        String ts = new SimpleDateFormat(
-                "yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        File dir = context.getExternalFilesDir(
-                Environment.DIRECTORY_MOVIES);
+        String ts  = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        File   dir = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         if (dir == null) dir = context.getFilesDir();
         if (!dir.exists()) dir.mkdirs();
-        return new File(dir, "workout_" + ts + ".mp4")
-                .getAbsolutePath();
+        return new File(dir, "workout_" + ts + ".mp4").getAbsolutePath();
     }
 
     private void addToMediaStore() {
-        if (outputFilePath == null) return;
-
-        File src = new File(outputFilePath);
+        if (outputPath == null) return;
+        File src = new File(outputPath);
         if (!src.exists() || src.length() == 0) {
-            notifyError(context.getString(R.string.recorder_error_empty_file));
+            notifyError("Empty recording file");
             return;
         }
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-            ContentValues v = new ContentValues();
-            v.put(MediaStore.Video.Media.DISPLAY_NAME, src.getName());
-            v.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
-            v.put(MediaStore.Video.Media.RELATIVE_PATH,
-                    "Movies/ПерсональныйТренер");
-            v.put(MediaStore.Video.Media.IS_PENDING, 1);
+            ContentValues cv = new ContentValues();
+            cv.put(MediaStore.Video.Media.DISPLAY_NAME,  src.getName());
+            cv.put(MediaStore.Video.Media.MIME_TYPE,     "video/mp4");
+            cv.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/PersonalTrainer");
+            cv.put(MediaStore.Video.Media.IS_PENDING,    1);
 
-            Uri uri = context.getContentResolver().insert(
-                    MediaStore.Video.Media.EXTERNAL_CONTENT_URI, v);
-
+            Uri uri = context.getContentResolver()
+                    .insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, cv);
             if (uri != null) {
-                try (InputStream in = new FileInputStream(src);
-                     OutputStream out = context.getContentResolver()
-                             .openOutputStream(uri)) {
-
+                try (InputStream  in  = new FileInputStream(src);
+                     OutputStream out = context.getContentResolver().openOutputStream(uri)) {
                     if (out != null) {
                         byte[] buf = new byte[65536];
-                        int len;
-                        while ((len = in.read(buf)) > 0)
-                            out.write(buf, 0, len);
+                        int    len;
+                        while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
                     }
-                    v.clear();
-                    v.put(MediaStore.Video.Media.IS_PENDING, 0);
-                    context.getContentResolver()
-                            .update(uri, v, null, null);
+                    cv.clear();
+                    cv.put(MediaStore.Video.Media.IS_PENDING, 0);
+                    context.getContentResolver().update(uri, cv, null, null);
                     src.delete();
-                    notifySaved(outputFilePath);
-
+                    notifySaved(outputPath);
                 } catch (Exception e) {
                     notifyError(e.getMessage());
                 }
-            } else {
-                notifyError(context.getString(R.string.recorder_error_gallery));
             }
         } else {
-            context.sendBroadcast(new Intent(
-                    Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
+            context.sendBroadcast(new android.content.Intent(
+                    android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
                     Uri.fromFile(src)));
-            notifySaved(outputFilePath);
+            notifySaved(outputPath);
         }
     }
 
     private void notifyError(String error) {
         if (callback == null) return;
-        ((Activity) context).runOnUiThread(
+        ((android.app.Activity) context).runOnUiThread(
                 () -> callback.onRecordingError(error));
     }
 
     private void notifySaved(String path) {
         if (callback == null) return;
-        ((Activity) context).runOnUiThread(
+        ((android.app.Activity) context).runOnUiThread(
                 () -> callback.onRecordingSaved(path));
-    }
-
-    public boolean isRecording() {
-        return isRecording;
     }
 }

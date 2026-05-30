@@ -187,11 +187,11 @@
     <string name="onboarding_desc_5">Выберите упражнение из списка,\nвстаньте перед камерой\nи начните тренироваться!\n\nТренер всегда рядом 💪</string>
     <string name="onboarding_btn_next">Далее →</string>
     <string name="onboarding_btn_start">Начать!</string>
-    <string name="profile_onboarding_title_1">⚖ Индекс массы тела</string>
-    <string name="profile_onboarding_title_2">🧮 Рассчитать ИМТ</string>
-    <string name="profile_onboarding_title_3">📈 Динамика веса</string>
-    <string name="profile_onboarding_title_4">🏆 Статистика</string>
-    <string name="profile_onboarding_title_5">📋 История тренировок</string>
+    <string name="profile_onboarding_title_1">Индекс массы тела</string>
+    <string name="profile_onboarding_title_2">Рассчитать ИМТ</string>
+    <string name="profile_onboarding_title_3">Динамика веса</string>
+    <string name="profile_onboarding_title_4">Статистика</string>
+    <string name="profile_onboarding_title_5">История тренировок</string>
     <string name="profile_onboarding_text_1">Введите ваш пол, рост, вес и возраст.\n\nЭти данные используются для расчёта\nиндекса массы тела (ИМТ) и отслеживания\nдинамики вашего веса.</string>
     <string name="profile_onboarding_text_2">Нажмите эту кнопку после ввода данных.\n\nПриложение рассчитает ваш ИМТ и покажет,\nсоответствует ли он норме с учётом\nвашего пола и возраста.</string>
     <string name="profile_onboarding_text_3">Здесь отображается график изменения\nвашего веса со временем.\n\nКаждый раз при нажатии «Рассчитать ИМТ»\nвес автоматически записывается в историю.</string>
@@ -236,8 +236,6 @@
     <string name="icon_pullup">🏅</string>
     <string name="icon_plank">🧘</string>
     <string name="icon_default">💪</string>
-    <string name="btn_stop">⏹ Стоп</string>
-    <string name="btn_record">⏺ Запись</string>
     <string name="toast_recording_started">Запись началась</string>
     <string name="toast_video_saved">✅ Видео сохранено в Галерею</string>
     <string name="toast_no_camera">Без камеры тренировка невозможна</string>
@@ -280,14 +278,10 @@
     <string name="recorder_log_resources_released">Ресурсы освобождены</string>
     <string name="recorder_log_saving">Сохраняем: %d байт</string>
     <string name="recorder_log_file_empty">Файл пуст: %d байт</string>
-    <string name="wear_api_available">✅ Wear API доступен</string>
-    <string name="wear_api_unavailable">⚠️ Wear API недоступен (код: %d). Ожидание сопряжения или реального устройства...</string>
-    <string name="wear_no_nodes">⌚ Нет подключенных узлов</string>
+    <string name="wear_no_nodes">Нет подключенных узлов</string>
     <string name="btn_back">← Назад</string>
     <string name="btn_reset">↺ Сброс</string>
     <string name="video_analysis_title">Анализ техники</string>
-    <string name="tts_enabled_emoji">🔊</string>
-    <string name="tts_disabled_emoji">🔇</string>
     <string name="error_prefix_warning">⚠ </string>
     <string name="error_prefix_ok">✅ </string>
     <string name="error_format">Ошибка: %s</string>
@@ -303,7 +297,7 @@
     <string name="rep_count_zero">Повторений: 0</string>
     <string name="also_fix">Также исправьте:</string>
     <string name="quality_full">●●●●●</string>
-    <string name="analysis_title">📊 Анализ техники</string>
+    <string name="analysis_title">Анализ техники</string>
     <string name="profile_title">Профиль</string>
     <string name="profile_default_name">Спортсмен</string>
     <string name="profile_fill_data">Заполните данные ниже</string>
@@ -318,14 +312,14 @@
     <string name="bmi_label">ИМТ</string>
     <string name="bmi_category">Категория</string>
     <string name="bmi_dash">—</string>
-    <string name="weight_dynamics">📈 Динамика веса</string>
+    <string name="weight_dynamics">Динамика веса</string>
     <string name="no_weight_data">Сохраните вес несколько раз
 чтобы увидеть динамику</string>
     <string name="stats_title">🏆 Статистика</string>
     <string name="workouts_total">Тренировок</string>
     <string name="streak_days">Дней подряд</string>
     <string name="week_workouts">На неделе</string>
-    <string name="history_title">📋 История тренировок</string>
+    <string name="history_title">История тренировок</string>
     <string name="clear_history">Очистить</string>
     <string name="no_history">История тренировок пуста
 Начните тренироваться!</string>
@@ -333,9 +327,9 @@
     <string name="onboarding_skip">Пропустить</string>
     <string name="onboarding_next">Далее →</string>
     <string name="onboarding_dots">● ○ ○ ○ ○</string>
-    <string name="detail_loading">🎬 Загрузка видео...</string>
-    <string name="detail_technique">📋 Техника выполнения</string>
-    <string name="start_workout">🚀 Начать тренировку</string>
+    <string name="detail_loading">Загрузка видео...</string>
+    <string name="detail_technique">Техника выполнения</string>
+    <string name="start_workout">Начать тренировку</string>
     <string name="male_symbol">♂ </string>
     <string name="female_symbol">♀ </string>
 </resources>

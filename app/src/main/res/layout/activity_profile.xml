@@ -14,14 +14,16 @@
         android:orientation="horizontal"
         android:padding="@dimen/spacing_md">
 
-        <Button
+        <ImageView
             android:id="@+id/btnBack"
-            android:layout_width="wrap_content"
-            android:layout_height="@dimen/btn_height_sm"
-            android:backgroundTint="@color/divider_light"
-            android:text="@string/btn_back"
-            android:textColor="@color/white"
-            android:textSize="@dimen/text_sm" />
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:padding="8dp"
+            android:src="@drawable/arrow_back"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:focusable="true"
+            android:contentDescription="@string/btn_back" />
 
         <TextView
             android:layout_width="0dp"
@@ -35,7 +37,7 @@
             android:textStyle="bold" />
 
         <View
-            android:layout_width="80dp"
+            android:layout_width="40dp"
             android:layout_height="@dimen/btn_height_sm" />
 
     </LinearLayout>

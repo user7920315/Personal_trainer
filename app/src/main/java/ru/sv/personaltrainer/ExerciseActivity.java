@@ -12,6 +12,7 @@ import android.os.IBinder;
 import android.os.Looper;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.UtteranceProgressListener;
+import android.util.DisplayMetrics;
 import android.view.animation.AlphaAnimation;
 import android.view.animation.Animation;
 import android.widget.Toast;
@@ -36,6 +37,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.google.common.util.concurrent.ListenableFuture;
 
+import java.util.List;
 import java.util.Locale;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -73,6 +75,8 @@ public class ExerciseActivity extends AppCompatActivity {
     private boolean serviceBound = false;
     private final Handler timerHandler = new Handler(Looper.getMainLooper());
     private int recordSeconds = 0;
+
+    private boolean ttsReady = false;
     private final Runnable timerRunnable = new Runnable() {
         @Override
         public void run() {
@@ -208,15 +212,41 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void setupExerciseObservers() {
         viewModel.getWorkoutResult().observe(this, this::onWorkoutResult);
+        viewModel.getVideoFrame().observe(this, this::onVideoFrame);
         viewModel.getIsRecording().observe(this, this::updateRecordingUI);
         viewModel.getTtsEnabled().observe(this, this::updateTtsButton);
         viewModel.getTtsEvent().observe(this, event -> {
             String error = event.getContentIfNotHandled();
-            if (error != null && ttsInitialized && viewModel.isTtsEnabled()) {
+            if (error != null && ttsInitialized && ttsReady && viewModel.isTtsEnabled()) {
                 speakError(error);
             }
         });
         viewModel.getWearData().observe(this, this::sendDataToWear);
+    }
+
+    private void onVideoFrame(ExerciseViewModel.VideoFrame frame) {
+        if (frame == null) return;
+
+        Boolean recording = viewModel.getIsRecording().getValue();
+        if (recording == null || !recording) return;
+        if (videoRecorder == null) return;
+
+        WorkoutResult result = viewModel.getWorkoutResult().getValue();
+        List<String> errors = result != null ? result.errors : null;
+
+        videoRecorder.submitFrame(
+                frame.bitmap,
+                frame.poseResult,
+                frame.errorLandmarks,
+                frame.repText,
+                frame.phaseText,
+                frame.feedbackText,
+                frame.phaseColor,
+                frame.exerciseName,
+                frame.qualityText,
+                frame.qualityColor,
+                errors
+        );
     }
 
     private void onWorkoutResult(WorkoutResult result) {
@@ -235,12 +265,12 @@ public class ExerciseActivity extends AppCompatActivity {
             binding.poseOverlay.updateResults(null, 0, 0, null);
         }
 
-        if (result.errors != null && result.errors.size() > 1) {
+        if (result.errors != null && result.errors.size() > 0) {
             binding.layoutErrors.setVisibility(android.view.View.VISIBLE);
             StringBuilder sb = new StringBuilder();
-            for (int i = 1; i < result.errors.size(); i++) {
+            for (int i = 0; i < result.errors.size() && i < 3; i++) {
                 sb.append(result.errors.get(i));
-                if (i < result.errors.size() - 1) sb.append("\n");
+                if (i < result.errors.size() - 1 && i < 2) sb.append("\n");
             }
             binding.tvErrors.setText(sb.toString());
         } else {
@@ -255,6 +285,7 @@ public class ExerciseActivity extends AppCompatActivity {
                 if (result == TextToSpeech.LANG_MISSING_DATA || result == TextToSpeech.LANG_NOT_SUPPORTED) {
                 } else {
                     ttsInitialized = true;
+                    ttsReady = true;
                     textToSpeech.setSpeechRate(0.9f);
                     textToSpeech.setPitch(1.0f);
                     textToSpeech.setOnUtteranceProgressListener(new UtteranceProgressListener() {
@@ -280,8 +311,14 @@ public class ExerciseActivity extends AppCompatActivity {
         if (!error.equals(lastSpokenError)) {
             lastErrorStartTime = now;
             lastSpokenError = error;
-        } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS && !textToSpeech.isSpeaking() && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
-            String cleanMessage = error.replace(getString(R.string.error_prefix_warning), "").replace(getString(R.string.error_prefix_ok), "");
+        } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS
+                && !textToSpeech.isSpeaking()
+                && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
+
+            String cleanMessage = error
+                    .replace(getString(R.string.error_prefix_warning), "")
+                    .replace(getString(R.string.error_prefix_ok), "");
+
             android.os.Bundle params = new android.os.Bundle();
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "error_feedback");
             textToSpeech.speak(cleanMessage, TextToSpeech.QUEUE_FLUSH, params, "error_feedback");
@@ -330,7 +367,7 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void updateTtsButton(boolean enabled) {
         if (binding.btnToggleTts == null) return;
-        binding.btnToggleTts.setText(enabled ? getString(R.string.tts_enabled_emoji) : getString(R.string.tts_disabled_emoji));
+        binding.btnToggleTts.setImageResource(enabled ? R.drawable.volume_up : R.drawable.volume_off);
         binding.btnToggleTts.setAlpha(enabled ? 1.0f : 0.5f);
         if (!enabled && ttsInitialized && textToSpeech != null && textToSpeech.isSpeaking()) {
             textToSpeech.stop();
@@ -339,30 +376,44 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void applyInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.previewView, (view, windowInsets) -> {
-            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
 
             int topOffset = insets.top + getResources().getDimensionPixelSize(R.dimen.exercise_top_margin);
             int bottomOffset = insets.bottom + getResources().getDimensionPixelSize(R.dimen.feedback_card_margin);
 
-            android.view.ViewGroup.MarginLayoutParams repParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams repParams =
+                    (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
             repParams.topMargin = topOffset;
             binding.tvRepCount.setLayoutParams(repParams);
 
-            android.view.ViewGroup.MarginLayoutParams nameParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvExerciseName.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams nameParams =
+                    (android.view.ViewGroup.MarginLayoutParams) binding.tvExerciseName.getLayoutParams();
             nameParams.topMargin = topOffset;
             binding.tvExerciseName.setLayoutParams(nameParams);
 
             android.view.View card = binding.cardFeedback;
-            android.view.ViewGroup.MarginLayoutParams cardParams = (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams cardParams =
+                    (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
             cardParams.bottomMargin = bottomOffset;
             card.setLayoutParams(cardParams);
+
+            if (videoRecorder != null) {
+                videoRecorder.setInsets(insets.top, insets.bottom);
+            }
 
             return WindowInsetsCompat.CONSUMED;
         });
     }
 
     private void initVideoRecorder() {
-        videoRecorder = new VideoRecorder(this);
+        DisplayMetrics metrics = getResources().getDisplayMetrics();
+        int screenW = metrics.widthPixels;
+        int screenH = metrics.heightPixels;
+
+        videoRecorder = new VideoRecorder(this, screenW, screenH);
+        videoRecorder.prepareUIOverlay();
+
         videoRecorder.setCallback(new VideoRecorder.RecordingCallback() {
             @Override
             public void onRecordingStarted() {
@@ -443,14 +494,14 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void updateRecordingUI(boolean rec) {
         if (rec) {
-            binding.btnRecord.setText(getString(R.string.btn_stop));
-            binding.btnRecord.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.holo_red_dark));
+            binding.btnRecord.setImageResource(R.drawable.stop);
+            binding.btnRecord.setColorFilter(ContextCompat.getColor(this, android.R.color.holo_red_dark));
             binding.layoutRecordingIndicator.setVisibility(android.view.View.VISIBLE);
             binding.viewRecordingDot.startAnimation(blinkAnimation);
             binding.tvRecordingTimer.setText("00:00");
         } else {
-            binding.btnRecord.setText(getString(R.string.btn_record));
-            binding.btnRecord.setBackgroundTintList(ContextCompat.getColorStateList(this, android.R.color.darker_gray));
+            binding.btnRecord.setImageResource(R.drawable.play);
+            binding.btnRecord.setColorFilter(ContextCompat.getColor(this, android.R.color.darker_gray));
             binding.layoutRecordingIndicator.setVisibility(android.view.View.GONE);
             binding.viewRecordingDot.clearAnimation();
         }
@@ -471,7 +522,10 @@ public class ExerciseActivity extends AppCompatActivity {
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(binding.previewView.getSurfaceProvider());
 
-                ImageAnalysis analysis = new ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888).build();
+                ImageAnalysis analysis = new ImageAnalysis.Builder()
+                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                        .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
+                        .build();
                 analysis.setAnalyzer(cameraExecutor, this::analyzeFrame);
 
                 provider.unbindAll();

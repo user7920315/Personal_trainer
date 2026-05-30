@@ -29,11 +29,6 @@ public class OnBoardingActivity extends AppCompatActivity {
     private ViewPager2 viewPager;
     private OnBoardingViewModel viewModel;
 
-    private static final int[] ICONS = {
-            R.drawable.ic_fitness, R.drawable.ic_fitness,
-            R.drawable.ic_fitness, R.drawable.ic_fitness, R.drawable.ic_fitness
-    };
-
     private static final int[] TITLE_RES = {
             R.string.onboarding_title_1, R.string.onboarding_title_2,
             R.string.onboarding_title_3, R.string.onboarding_title_4,
@@ -134,7 +129,7 @@ public class OnBoardingActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull VH holder, int pos) {
-            holder.b.onboardingImage.setImageResource(ICONS[pos]);
+            holder.b.onboardingImage.setImageResource(R.drawable.ic_fitness);
             holder.b.onboardingTitle.setText(TITLE_RES[pos]);
             holder.b.onboardingDescription.setText(DESC_RES[pos]);
             holder.b.getRoot().setBackgroundColor(getColor(BACKGROUNDS[pos]));

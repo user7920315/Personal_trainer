@@ -1,6 +1,7 @@
 package ru.sv.personaltrainer.viewmodel;
 
 import android.app.Application;
+import android.graphics.Bitmap;
 
 import androidx.annotation.NonNull;
 import androidx.lifecycle.AndroidViewModel;
@@ -12,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import ru.sv.personaltrainer.R;
 import ru.sv.personaltrainer.exercises.BaseExercise;
@@ -23,11 +25,12 @@ import ru.sv.personaltrainer.repository.WorkoutRepository;
 
 public class ExerciseViewModel extends AndroidViewModel {
 
-    private PoseRepository poseRepository;
+    private final PoseRepository poseRepository;
     private final WorkoutRepository workoutRepository;
     private final BaseExercise currentExercise;
 
     private final MutableLiveData<WorkoutResult> workoutResult = new MutableLiveData<>();
+    private final MutableLiveData<VideoFrame> videoFrame = new MutableLiveData<>();
     private final MutableLiveData<Boolean> isRecording = new MutableLiveData<>(false);
     private final MutableLiveData<Boolean> ttsEnabled = new MutableLiveData<>(true);
     private final MutableLiveData<Event<String>> ttsEvent = new MutableLiveData<>();
@@ -36,6 +39,7 @@ public class ExerciseViewModel extends AndroidViewModel {
     private String lastRepText;
 
     public LiveData<WorkoutResult> getWorkoutResult() { return workoutResult; }
+    public LiveData<VideoFrame> getVideoFrame() { return videoFrame; }
     public LiveData<Boolean> getIsRecording() { return isRecording; }
     public LiveData<Boolean> getTtsEnabled() { return ttsEnabled; }
     public LiveData<Event<String>> getTtsEvent() { return ttsEvent; }
@@ -46,25 +50,47 @@ public class ExerciseViewModel extends AndroidViewModel {
         this.currentExercise = exercise;
         this.lastRepText = getString(R.string.vm_reps_format, 0);
         this.workoutRepository = new WorkoutRepository(application);
+
         try {
             this.poseRepository = new PoseRepository(application, exercise);
-            this.poseRepository.setCallback((analysis, poseResult) -> {
-                WorkoutResult result = mapToWorkoutResult(analysis, poseResult);
-                workoutResult.postValue(result);
-
-                if (result != null && result.errors != null && !result.errors.isEmpty()) {
-                    ttsEvent.postValue(new Event<>(result.errors.get(0)));
-                }
-                if (result != null) {
-                    String err = (result.errors != null && !result.errors.isEmpty())
-                            ? result.errors.get(0) : "";
-                    wearData.postValue(new WearData(
-                            result.phaseText, result.phaseColor, result.repText, err));
-                }
-            });
+            this.poseRepository.setCallback(this::onPoseResult);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw new RuntimeException("Failed to create PoseRepository", e);
         }
+    }
+
+    private void onPoseResult(BaseExercise.AnalysisResult analysis,
+                              PoseLandmarkerResult poseResult,
+                              Bitmap frameBitmap) {
+        WorkoutResult result = mapToWorkoutResult(analysis, poseResult);
+        workoutResult.postValue(result);
+
+        if (result.errors != null && !result.errors.isEmpty()) {
+            ttsEvent.postValue(new Event<>(result.errors.get(0)));
+        }
+
+        if (frameBitmap != null) {
+            videoFrame.postValue(new VideoFrame(
+                    frameBitmap,
+                    result.poseResult,
+                    result.errorLandmarks,
+                    result.repText,
+                    result.phaseText,
+                    result.mainFeedback,
+                    result.phaseColor,
+                    currentExercise.getName(),
+                    result.qualityText,
+                    result.qualityColor,
+                    System.nanoTime()
+            ));
+        }
+        else{
+        }
+
+        String error = (result.errors != null && !result.errors.isEmpty())
+                ? result.errors.get(0) : "";
+        wearData.postValue(new WearData(
+                result.phaseText, result.phaseColor, result.repText, error));
     }
 
     public void analyzeFrame(androidx.camera.core.ImageProxy imageProxy) {
@@ -72,13 +98,13 @@ public class ExerciseViewModel extends AndroidViewModel {
     }
 
     public void toggleTts() {
-        Boolean cur = ttsEnabled.getValue();
-        ttsEnabled.setValue(cur == null || !cur);
+        Boolean current = ttsEnabled.getValue();
+        ttsEnabled.setValue(current == null || !current);
     }
 
     public boolean isTtsEnabled() {
-        Boolean cur = ttsEnabled.getValue();
-        return cur == null || cur;
+        Boolean current = ttsEnabled.getValue();
+        return current == null || current;
     }
 
     public void setRecording(boolean recording) {
@@ -99,16 +125,10 @@ public class ExerciseViewModel extends AndroidViewModel {
         currentExercise.reset();
     }
 
-    private String getIconForExercise(String id) {
-        switch (id) {
-            case "SQUAT": return getString(R.string.icon_squat);
-            case "LUNGE": return getString(R.string.icon_lunge);
-            case "GLUTE_BRIDGE": return getString(R.string.icon_glute);
-            case "BURPEE": return getString(R.string.icon_burpee);
-            case "PULL_UP": return getString(R.string.icon_pullup);
-            case "PLANK": return getString(R.string.icon_plank);
-            default: return getString(R.string.icon_default);
-        }
+    @Override
+    protected void onCleared() {
+        super.onCleared();
+        if (poseRepository != null) poseRepository.shutdown();
     }
 
     private WorkoutResult mapToWorkoutResult(BaseExercise.AnalysisResult raw,
@@ -156,7 +176,9 @@ public class ExerciseViewModel extends AndroidViewModel {
     }
 
     private String formatHoldTime(int seconds) {
-        return seconds == 0 ? getString(R.string.vm_hold_time_zero) : getString(R.string.vm_hold_time_format, seconds);
+        return seconds == 0
+                ? getString(R.string.vm_hold_time_zero)
+                : getString(R.string.vm_hold_time_format, seconds);
     }
 
     private String buildPositiveFeedback(String phase) {
@@ -202,10 +224,61 @@ public class ExerciseViewModel extends AndroidViewModel {
         return getColor(R.color.quality_poor);
     }
 
-    @Override
-    protected void onCleared() {
-        super.onCleared();
-        if (poseRepository != null) poseRepository.shutdown();
+    private String getIconForExercise(String id) {
+        switch (id) {
+            case "SQUAT": return getString(R.string.icon_squat);
+            case "LUNGE": return getString(R.string.icon_lunge);
+            case "GLUTE_BRIDGE": return getString(R.string.icon_glute);
+            case "BURPEE": return getString(R.string.icon_burpee);
+            case "PULL_UP": return getString(R.string.icon_pullup);
+            case "PLANK": return getString(R.string.icon_plank);
+            default: return getString(R.string.icon_default);
+        }
+    }
+
+    private String getString(int resId) {
+        return getApplication().getString(resId);
+    }
+
+    private String getString(int resId, Object... formatArgs) {
+        return getApplication().getString(resId, formatArgs);
+    }
+
+    private int getColor(int resId) {
+        return getApplication().getResources().getColor(resId, null);
+    }
+
+    public static class VideoFrame {
+        public final Bitmap bitmap;
+        public final PoseLandmarkerResult poseResult;
+        public final List<Integer> errorLandmarks;
+        public final String repText;
+        public final String phaseText;
+        public final String feedbackText;
+        public final int phaseColor;
+        public final String exerciseName;
+        public final String qualityText;
+        public final int qualityColor;
+        public final long timestampNs;
+
+        public VideoFrame(Bitmap bitmap, PoseLandmarkerResult poseResult,
+                          List<Integer> errorLandmarks, String repText,
+                          String phaseText, String feedbackText,
+                          int phaseColor, String exerciseName,
+                          String qualityText, int qualityColor,
+                          long timestampNs) {
+            this.bitmap = bitmap;
+            this.poseResult = poseResult;
+            this.errorLandmarks = errorLandmarks;
+            this.repText = repText;
+            this.phaseText = phaseText;
+            this.feedbackText = feedbackText;
+            this.phaseColor = phaseColor;
+            this.exerciseName = exerciseName;
+            this.qualityText = qualityText;
+            this.qualityColor = qualityColor;
+            this.timestampNs = timestampNs;
+        }
     }
 
     public static class Factory implements ViewModelProvider.Factory {
@@ -225,17 +298,5 @@ public class ExerciseViewModel extends AndroidViewModel {
             }
             throw new IllegalArgumentException("Unknown ViewModel class");
         }
-    }
-
-    private String getString(int resId) {
-        return getApplication().getString(resId);
-    }
-
-    private String getString(int resId, Object... formatArgs) {
-        return getApplication().getString(resId, formatArgs);
-    }
-
-    private int getColor(int resId) {
-        return getApplication().getResources().getColor(resId, null);
     }
 }

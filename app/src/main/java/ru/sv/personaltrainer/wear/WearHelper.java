@@ -1,7 +1,6 @@
 package ru.sv.personaltrainer.wear;
 
 import android.content.Context;
-import android.util.Log;
 
 import com.google.android.gms.common.ConnectionResult;
 import com.google.android.gms.common.GoogleApiAvailability;
@@ -13,7 +12,6 @@ import ru.sv.personaltrainer.R;
 
 public class WearHelper {
 
-    private static final String TAG = "WearHelper";
     public static final String PATH_ERROR = "/exercise/error";
     public static final String PATH_PHASE = "/exercise/phase";
     public static final String PATH_RESET = "/exercise/reset";
@@ -34,10 +32,8 @@ public class WearHelper {
         int status = api.isGooglePlayServicesAvailable(context);
         if (status == ConnectionResult.SUCCESS) {
             apiReady = true;
-            Log.d(TAG, context.getString(R.string.wear_api_available));
         } else {
             apiReady = false;
-            Log.w(TAG, String.format(context.getString(R.string.wear_api_unavailable), status));
         }
     }
 
@@ -70,7 +66,6 @@ public class WearHelper {
         Wearable.getNodeClient(context).getConnectedNodes()
                 .addOnSuccessListener(nodes -> {
                     if (nodes.isEmpty()) {
-                        Log.w(TAG, context.getString(R.string.wear_no_nodes));
                         return;
                     }
                     for (Node node : nodes) {
