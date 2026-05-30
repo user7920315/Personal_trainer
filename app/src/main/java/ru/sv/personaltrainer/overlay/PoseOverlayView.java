@@ -35,26 +35,11 @@ public class PoseOverlayView extends View {
     private static final float PULSE_MAX = 22f;
     private static final float PULSE_STEP = 0.5f;
 
-    private static final int[][] POSE_CONNECTIONS = {
-            {0, 1}, {1, 2}, {2, 3}, {3, 7},
-            {0, 4}, {4, 5}, {5, 6}, {6, 8},
-            {9, 10},
-            {11, 12}, {11, 23}, {12, 24}, {23, 24},
-            {11, 13}, {13, 15}, {15, 17},
-            {15, 19}, {15, 21}, {17, 19},
-            {12, 14}, {14, 16}, {16, 18},
-            {16, 20}, {16, 22}, {18, 20},
-            {23, 25}, {25, 27}, {27, 29}, {27, 31}, {29, 31},
-            {24, 26}, {26, 28}, {28, 30}, {28, 32}, {30, 32}
-    };
+    private static final int[][] POSE_CONNECTIONS = {{0, 1}, {1, 2}, {2, 3}, {3, 7}, {0, 4}, {4, 5}, {5, 6}, {6, 8}, {9, 10}, {11, 12}, {11, 23}, {12, 24}, {23, 24}, {11, 13}, {13, 15}, {15, 17}, {15, 19}, {15, 21}, {17, 19}, {12, 14}, {14, 16}, {16, 18}, {16, 20}, {16, 22}, {18, 20}, {23, 25}, {25, 27}, {27, 29}, {27, 31}, {29, 31}, {24, 26}, {26, 28}, {28, 30}, {28, 32}, {30, 32}};
 
-    private static final int[] LEFT_LANDMARKS = {
-            11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31
-    };
+    private static final int[] LEFT_LANDMARKS = {11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31};
 
-    private static final int[] RIGHT_LANDMARKS = {
-            12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32
-    };
+    private static final int[] RIGHT_LANDMARKS = {12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32};
 
 
     public PoseOverlayView(Context context) {
@@ -67,8 +52,7 @@ public class PoseOverlayView extends View {
         initPaints();
     }
 
-    public PoseOverlayView(Context context, AttributeSet attrs,
-                           int defStyleAttr) {
+    public PoseOverlayView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
         initPaints();
     }
@@ -106,20 +90,13 @@ public class PoseOverlayView extends View {
         pulseRadius = PULSE_MIN;
     }
 
-    public void updateResults(PoseLandmarkerResult result,
-                              int imageWidth,
-                              int imageHeight,
-                              List<Integer> errorLandmarks) {
+    public void updateResults(PoseLandmarkerResult result, int imageWidth, int imageHeight, List<Integer> errorLandmarks) {
         this.poseResult = result;
         this.errorLandmarks = errorLandmarks;
         invalidate();
     }
 
-    public void drawOnCanvas(Canvas canvas,
-                             PoseLandmarkerResult result,
-                             int frameWidth,
-                             int frameHeight,
-                             List<Integer> errors) {
+    public void drawOnCanvas(Canvas canvas, PoseLandmarkerResult result, int frameWidth, int frameHeight, List<Integer> errors) {
 
         if (result == null || result.landmarks().isEmpty()) return;
 
@@ -139,11 +116,9 @@ public class PoseOverlayView extends View {
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);
 
-        if (poseResult == null
-                || poseResult.landmarks().isEmpty()) return;
+        if (poseResult == null || poseResult.landmarks().isEmpty()) return;
 
-        List<NormalizedLandmark> landmarks =
-                poseResult.landmarks().get(0);
+        List<NormalizedLandmark> landmarks = poseResult.landmarks().get(0);
 
         float viewW = getWidth();
         float viewH = getHeight();
@@ -158,15 +133,12 @@ public class PoseOverlayView extends View {
     }
 
 
-    private void drawConnections(Canvas canvas,
-                                 List<NormalizedLandmark> landmarks,
-                                 float viewW, float viewH) {
+    private void drawConnections(Canvas canvas, List<NormalizedLandmark> landmarks, float viewW, float viewH) {
         for (int[] connection : POSE_CONNECTIONS) {
             int startIdx = connection[0];
             int endIdx = connection[1];
 
-            if (startIdx >= landmarks.size()
-                    || endIdx >= landmarks.size()) continue;
+            if (startIdx >= landmarks.size() || endIdx >= landmarks.size()) continue;
 
             NormalizedLandmark start = landmarks.get(startIdx);
             NormalizedLandmark end = landmarks.get(endIdx);
@@ -182,21 +154,16 @@ public class PoseOverlayView extends View {
             boolean endIsError = isErrorLandmark(endIdx);
 
             if (startIsError || endIsError) {
-                canvas.drawLine(startX, startY,
-                        endX, endY, errorLinePaint);
+                canvas.drawLine(startX, startY, endX, endY, errorLinePaint);
             } else {
-                linePaint.setColor(
-                        getConnectionColor(startIdx, endIdx));
-                canvas.drawLine(startX, startY,
-                        endX, endY, linePaint);
+                linePaint.setColor(getConnectionColor(startIdx, endIdx));
+                canvas.drawLine(startX, startY, endX, endY, linePaint);
             }
         }
     }
 
 
-    private void drawLandmarks(Canvas canvas,
-                               List<NormalizedLandmark> landmarks,
-                               float viewW, float viewH) {
+    private void drawLandmarks(Canvas canvas, List<NormalizedLandmark> landmarks, float viewW, float viewH) {
         for (int i = 0; i < landmarks.size(); i++) {
             NormalizedLandmark lm = landmarks.get(i);
             if (!isVisible(lm)) continue;
@@ -212,8 +179,7 @@ public class PoseOverlayView extends View {
         }
     }
 
-    private void drawNormalPoint(Canvas canvas,
-                                 float x, float y, int index) {
+    private void drawNormalPoint(Canvas canvas, float x, float y, int index) {
         float radius = isKeyLandmark(index) ? 10f : 7f;
 
         pointPaint.setColor(getResources().getColor(R.color.pose_point_shadow, null));
@@ -223,25 +189,12 @@ public class PoseOverlayView extends View {
         canvas.drawCircle(x, y, radius, pointPaint);
 
         pointPaint.setColor(getResources().getColor(R.color.pose_point_highlight, null));
-        canvas.drawCircle(
-                x - radius * 0.3f,
-                y - radius * 0.3f,
-                radius * 0.3f,
-                pointPaint);
+        canvas.drawCircle(x - radius * 0.3f, y - radius * 0.3f, radius * 0.3f, pointPaint);
     }
 
 
     private void drawErrorPoint(Canvas canvas, float x, float y) {
-        RadialGradient gradient = new RadialGradient(
-                x, y,
-                pulseRadius * 1.5f,
-                new int[]{
-                        getResources().getColor(R.color.pose_glow_1, null),
-                        getResources().getColor(R.color.pose_glow_2, null),
-                        getResources().getColor(R.color.pose_glow_3, null)
-                },
-                new float[]{0f, 0.5f, 1f},
-                Shader.TileMode.CLAMP);
+        RadialGradient gradient = new RadialGradient(x, y, pulseRadius * 1.5f, new int[]{getResources().getColor(R.color.pose_glow_1, null), getResources().getColor(R.color.pose_glow_2, null), getResources().getColor(R.color.pose_glow_3, null)}, new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP);
         glowPaint.setShader(gradient);
         canvas.drawCircle(x, y, pulseRadius * 1.5f, glowPaint);
 
@@ -257,18 +210,15 @@ public class PoseOverlayView extends View {
     }
 
 
-    private void drawCross(Canvas canvas,
-                           float x, float y, float size) {
+    private void drawCross(Canvas canvas, float x, float y, float size) {
         Paint crossPaint = new Paint();
         crossPaint.setColor(Color.WHITE);
         crossPaint.setStrokeWidth(2.5f);
         crossPaint.setAntiAlias(true);
         crossPaint.setStrokeCap(Paint.Cap.ROUND);
 
-        canvas.drawLine(x - size, y - size,
-                x + size, y + size, crossPaint);
-        canvas.drawLine(x + size, y - size,
-                x - size, y + size, crossPaint);
+        canvas.drawLine(x - size, y - size, x + size, y + size, crossPaint);
+        canvas.drawLine(x + size, y - size, x - size, y + size, crossPaint);
     }
 
 
@@ -291,15 +241,11 @@ public class PoseOverlayView extends View {
     }
 
     private boolean isErrorLandmark(int index) {
-        return errorLandmarks != null
-                && errorLandmarks.contains(index);
+        return errorLandmarks != null && errorLandmarks.contains(index);
     }
 
     private boolean isKeyLandmark(int index) {
-        return index == 11 || index == 12
-                || index == 23 || index == 24
-                || index == 25 || index == 26
-                || index == 13 || index == 14;
+        return index == 11 || index == 12 || index == 23 || index == 24 || index == 25 || index == 26 || index == 13 || index == 14;
     }
 
     private int getConnectionColor(int startIdx, int endIdx) {

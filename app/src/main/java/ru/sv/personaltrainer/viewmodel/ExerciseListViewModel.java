@@ -38,8 +38,7 @@ public class ExerciseListViewModel extends AndroidViewModel {
         String lower = query.toLowerCase();
         List<ExerciseInfo> result = new ArrayList<>();
         for (ExerciseInfo ex : allExercises) {
-            if (ex.getTitle().toLowerCase().contains(lower)
-                    || ex.getMuscleGroup().toLowerCase().contains(lower)) {
+            if (ex.getTitle().toLowerCase().contains(lower) || ex.getMuscleGroup().toLowerCase().contains(lower)) {
                 result.add(ex);
             }
         }

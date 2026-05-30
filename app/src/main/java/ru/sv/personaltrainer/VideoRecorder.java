@@ -48,86 +48,80 @@ public class VideoRecorder {
 
     private static final String TAG = "VideoRecorder";
 
-    private static final String VIDEO_MIME    = "video/avc";
-    private static final String AUDIO_MIME    = "audio/mp4a-latm";
-    private static final int    VIDEO_BITRATE = 6_000_000;
-    private static final int    VIDEO_FPS     = 30;
-    private static final int    VIDEO_IFRAME  = 1;
+    private static final String VIDEO_MIME = "video/avc";
+    private static final String AUDIO_MIME = "audio/mp4a-latm";
+    private static final int VIDEO_BITRATE = 6_000_000;
+    private static final int VIDEO_FPS = 30;
+    private static final int VIDEO_IFRAME = 1;
 
     private static final int AUDIO_SAMPLE_RATE = 44100;
-    private static final int AUDIO_CHANNELS    = 2;
-    private static final int AUDIO_BITRATE     = 128_000;
+    private static final int AUDIO_CHANNELS = 2;
+    private static final int AUDIO_BITRATE = 128_000;
     private static final int AUDIO_BUFFER_SIZE = 4096;
 
     private int insetTop = 0;
     private int insetBottom = 0;
 
-    private static final int[][] POSE_CONNECTIONS = {
-            {0,1},{1,2},{2,3},{3,7},
-            {0,4},{4,5},{5,6},{6,8},
-            {9,10},
-            {11,12},{11,23},{12,24},{23,24},
-            {11,13},{13,15},{15,17},{15,19},{15,21},{17,19},
-            {12,14},{14,16},{16,18},{16,20},{16,22},{18,20},
-            {23,25},{25,27},{27,29},{27,31},{29,31},
-            {24,26},{26,28},{28,30},{28,32},{30,32}
-    };
+    private static final int[][] POSE_CONNECTIONS = {{0, 1}, {1, 2}, {2, 3}, {3, 7}, {0, 4}, {4, 5}, {5, 6}, {6, 8}, {9, 10}, {11, 12}, {11, 23}, {12, 24}, {23, 24}, {11, 13}, {13, 15}, {15, 17}, {15, 19}, {15, 21}, {17, 19}, {12, 14}, {14, 16}, {16, 18}, {16, 20}, {16, 22}, {18, 20}, {23, 25}, {25, 27}, {27, 29}, {27, 31}, {29, 31}, {24, 26}, {26, 28}, {28, 30}, {28, 32}, {30, 32}};
 
-    private static final int[] LEFT_LANDMARKS  = {11,13,15,17,19,21,23,25,27,29,31};
-    private static final int[] RIGHT_LANDMARKS = {12,14,16,18,20,22,24,26,28,30,32};
+    private static final int[] LEFT_LANDMARKS = {11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31};
+    private static final int[] RIGHT_LANDMARKS = {12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32};
 
-    private volatile boolean   recording       = false;
-    private volatile boolean   acceptingFrames = false;
-    private final    AtomicLong startTimeUs    = new AtomicLong(-1L);
+    private volatile boolean recording = false;
+    private volatile boolean acceptingFrames = false;
+    private final AtomicLong startTimeUs = new AtomicLong(-1L);
 
-    private MediaCodec  videoEncoder;
-    private Surface     encoderInputSurface;
+    private MediaCodec videoEncoder;
+    private Surface encoderInputSurface;
     private ImageReader imageReader;
-    private MediaCodec  audioEncoder;
+    private MediaCodec audioEncoder;
     private AudioRecord audioRecord;
-    private MediaMuxer  muxer;
-    private String      outputPath;
+    private MediaMuxer muxer;
+    private String outputPath;
 
-    private boolean muxerStarted    = false;
-    private int     videoTrackIndex = -1;
-    private int     audioTrackIndex = -1;
+    private boolean muxerStarted = false;
+    private int videoTrackIndex = -1;
+    private int audioTrackIndex = -1;
 
     private HandlerThread encoderThread;
-    private Handler       encoderHandler;
-    private Thread        audioThread;
+    private Handler encoderHandler;
+    private Thread audioThread;
     private HandlerThread imageReaderThread;
-    private Handler       imageReaderHandler;
+    private Handler imageReaderHandler;
 
-    private final Paint paintLine        = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint paintPoint       = new Paint(Paint.ANTI_ALIAS_FLAG);
-    private final Paint paintErrorPoint  = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint paintLine = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint paintPoint = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint paintErrorPoint = new Paint(Paint.ANTI_ALIAS_FLAG);
     private final Paint paintErrorStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     private final Context context;
-    private final int     videoW;
-    private final int     videoH;
+    private final int videoW;
+    private final int videoH;
 
-    private View     uiOverlay;
+    private View uiOverlay;
     private TextView uiRepCount, uiPhase, uiExerciseName, uiFeedback;
     private TextView uiQuality, uiErrors, uiRecordingTimer;
-    private View     uiRecordingDot, uiRecordingLayout;
+    private View uiRecordingDot, uiRecordingLayout;
     private volatile boolean uiReady = false;
 
-    private Bitmap               pendingCameraFrame;
+    private Bitmap pendingCameraFrame;
     private PoseLandmarkerResult pendingPoseResult;
-    private List<Integer>        pendingErrorLandmarks;
+    private List<Integer> pendingErrorLandmarks;
 
     public interface RecordingCallback {
         void onRecordingStarted();
+
         void onRecordingSaved(String filePath);
+
         void onRecordingError(String error);
     }
+
     private RecordingCallback callback;
 
     public VideoRecorder(Context context, int screenWidth, int screenHeight) {
         this.context = context;
-        this.videoW  = screenWidth;
-        this.videoH  = screenHeight;
+        this.videoW = screenWidth;
+        this.videoH = screenHeight;
 
         paintLine.setStyle(Paint.Style.STROKE);
         paintLine.setStrokeCap(Paint.Cap.ROUND);
@@ -137,7 +131,9 @@ public class VideoRecorder {
         paintErrorStroke.setStyle(Paint.Style.STROKE);
     }
 
-    public void setCallback(RecordingCallback cb) { this.callback = cb; }
+    public void setCallback(RecordingCallback cb) {
+        this.callback = cb;
+    }
 
     public void prepareUIOverlay() {
         if (uiReady) return;
@@ -145,14 +141,14 @@ public class VideoRecorder {
         uiOverlay = inflater.inflate(R.layout.activity_exercise, null);
         measureAndLayout();
 
-        uiRepCount        = uiOverlay.findViewById(R.id.tvRepCount);
-        uiPhase           = uiOverlay.findViewById(R.id.tvPhase);
-        uiExerciseName    = uiOverlay.findViewById(R.id.tvExerciseName);
-        uiFeedback        = uiOverlay.findViewById(R.id.tvFeedback);
-        uiQuality         = uiOverlay.findViewById(R.id.tvQuality);
-        uiErrors          = uiOverlay.findViewById(R.id.tvErrors);
-        uiRecordingTimer  = uiOverlay.findViewById(R.id.tvRecordingTimer);
-        uiRecordingDot    = uiOverlay.findViewById(R.id.viewRecordingDot);
+        uiRepCount = uiOverlay.findViewById(R.id.tvRepCount);
+        uiPhase = uiOverlay.findViewById(R.id.tvPhase);
+        uiExerciseName = uiOverlay.findViewById(R.id.tvExerciseName);
+        uiFeedback = uiOverlay.findViewById(R.id.tvFeedback);
+        uiQuality = uiOverlay.findViewById(R.id.tvQuality);
+        uiErrors = uiOverlay.findViewById(R.id.tvErrors);
+        uiRecordingTimer = uiOverlay.findViewById(R.id.tvRecordingTimer);
+        uiRecordingDot = uiOverlay.findViewById(R.id.viewRecordingDot);
         uiRecordingLayout = uiOverlay.findViewById(R.id.layoutRecordingIndicator);
 
         uiReady = true;
@@ -163,18 +159,16 @@ public class VideoRecorder {
             android.view.ViewGroup root = (android.view.ViewGroup) uiOverlay;
             for (int i = 0; i < root.getChildCount(); i++) {
                 View child = root.getChildAt(i);
-                android.view.ViewGroup.MarginLayoutParams params =
-                        (android.view.ViewGroup.MarginLayoutParams) child.getLayoutParams();
+                android.view.ViewGroup.MarginLayoutParams params = (android.view.ViewGroup.MarginLayoutParams) child.getLayoutParams();
                 params.setMargins(0, 0, 0, 0);
                 child.setLayoutParams(params);
             }
         }
 
-        uiOverlay.measure(
-                View.MeasureSpec.makeMeasureSpec(videoW, View.MeasureSpec.EXACTLY),
-                View.MeasureSpec.makeMeasureSpec(videoH, View.MeasureSpec.EXACTLY));
+        uiOverlay.measure(View.MeasureSpec.makeMeasureSpec(videoW, View.MeasureSpec.EXACTLY), View.MeasureSpec.makeMeasureSpec(videoH, View.MeasureSpec.EXACTLY));
         uiOverlay.layout(0, 0, videoW, videoH);
     }
+
     public void setInsets(int top, int bottom) {
         this.insetTop = top;
         this.insetBottom = bottom;
@@ -183,19 +177,15 @@ public class VideoRecorder {
         }
     }
 
-    public void updateUIState(String repText, String phaseText, String feedbackText,
-                              int phaseColor, String exerciseName, String quality,
-                              int qualityColor, long elapsedSeconds, boolean isRec,
-                              List<String> errors) {
+    public void updateUIState(String repText, String phaseText, String feedbackText, int phaseColor, String exerciseName, String quality, int qualityColor, long elapsedSeconds, boolean isRec, List<String> errors) {
         if (!uiReady) return;
 
-        uiRepCount.setText(repText     != null ? repText     : "0");
-        uiPhase.setText(phaseText      != null ? phaseText   : "");
+        uiRepCount.setText(repText != null ? repText : "0");
+        uiPhase.setText(phaseText != null ? phaseText : "");
         uiPhase.setTextColor(phaseColor);
         uiExerciseName.setText(exerciseName != null ? exerciseName : "");
         uiFeedback.setText(feedbackText != null ? feedbackText : "");
-        uiQuality.setText(quality != null ? quality
-                : context.getString(R.string.vm_quality_full));
+        uiQuality.setText(quality != null ? quality : context.getString(R.string.vm_quality_full));
         uiQuality.setTextColor(qualityColor);
 
         if (errors != null && !errors.isEmpty()) {
@@ -212,10 +202,8 @@ public class VideoRecorder {
 
         if (isRec) {
             uiRecordingLayout.setVisibility(View.VISIBLE);
-            uiRecordingTimer.setText(String.format(Locale.US, "%02d:%02d",
-                    elapsedSeconds / 60, elapsedSeconds % 60));
-            uiRecordingDot.setVisibility(
-                    elapsedSeconds % 2 == 0 ? View.VISIBLE : View.INVISIBLE);
+            uiRecordingTimer.setText(String.format(Locale.US, "%02d:%02d", elapsedSeconds / 60, elapsedSeconds % 60));
+            uiRecordingDot.setVisibility(elapsedSeconds % 2 == 0 ? View.VISIBLE : View.INVISIBLE);
         } else {
             uiRecordingLayout.setVisibility(View.GONE);
         }
@@ -223,7 +211,10 @@ public class VideoRecorder {
         measureAndLayout();
     }
 
-    public boolean isRecording() { return recording;}
+    public boolean isRecording() {
+        return recording;
+    }
+
     public void startRecording() {
         if (recording) return;
 
@@ -231,7 +222,10 @@ public class VideoRecorder {
 
         try {
             outputPath = createOutputFile();
-            if (outputPath == null) { notifyError("Cannot create output file"); return; }
+            if (outputPath == null) {
+                notifyError("Cannot create output file");
+                return;
+            }
 
             prepareUIOverlay();
 
@@ -243,7 +237,7 @@ public class VideoRecorder {
             encoderThread.start();
             encoderHandler = new Handler(encoderThread.getLooper());
 
-            recording       = true;
+            recording = true;
             acceptingFrames = true;
             startTimeUs.set(-1L);
 
@@ -258,7 +252,7 @@ public class VideoRecorder {
 
     public void stopRecording() {
         if (!recording) return;
-        recording       = false;
+        recording = false;
         acceptingFrames = false;
 
         new Thread(() -> {
@@ -273,72 +267,82 @@ public class VideoRecorder {
             }
             if (encoderThread != null) {
                 encoderThread.quitSafely();
-                try { encoderThread.join(2000); } catch (InterruptedException ignored) {}
-                encoderThread  = null;
+                try {
+                    encoderThread.join(2000);
+                } catch (InterruptedException ignored) {
+                }
+                encoderThread = null;
                 encoderHandler = null;
             }
 
             if (audioRecord != null) {
-                try { audioRecord.stop(); } catch (Exception ignored) {}
+                try {
+                    audioRecord.stop();
+                } catch (Exception ignored) {
+                }
             }
             if (audioThread != null) {
-                try { audioThread.join(1500); } catch (InterruptedException ignored) {}
+                try {
+                    audioThread.join(1500);
+                } catch (InterruptedException ignored) {
+                }
                 audioThread = null;
             }
             if (audioRecord != null) {
-                try { audioRecord.release(); } catch (Exception ignored) {}
+                try {
+                    audioRecord.release();
+                } catch (Exception ignored) {
+                }
                 audioRecord = null;
             }
 
-            try { drainVideoEncoder(true);  } catch (Exception ignored) {}
-            try { drainAudioEndOfStream();  } catch (Exception ignored) {}
+            try {
+                drainVideoEncoder(true);
+            } catch (Exception ignored) {
+            }
+            try {
+                drainAudioEndOfStream();
+            } catch (Exception ignored) {
+            }
 
             release();
             addToMediaStore();
         }, "StopThread").start();
     }
 
-    public void submitFrame(Bitmap cameraFrame,
-                            PoseLandmarkerResult poseResult,
-                            List<Integer> errorLandmarks,
-                            String repText, String phaseText, String feedbackText,
-                            int phaseColor, String exerciseName,
-                            String quality, int qualityColor,
-                            List<String> errors) {
+    public void submitFrame(Bitmap cameraFrame, PoseLandmarkerResult poseResult, List<Integer> errorLandmarks, String repText, String phaseText, String feedbackText, int phaseColor, String exerciseName, String quality, int qualityColor, List<String> errors) {
 
         if (!recording || !acceptingFrames) return;
         if (videoEncoder == null || encoderHandler == null) return;
 
-        final long nowUs      = System.nanoTime() / 1000L;
-        final long startUs    = startTimeUs.get();
+        final long nowUs = System.nanoTime() / 1000L;
+        final long startUs = startTimeUs.get();
         final long elapsedSec = (startUs > 0) ? (nowUs - startUs) / 1_000_000L : 0L;
 
         final Bitmap scaled = scaleBitmapToScreen(cameraFrame);
 
         synchronized (this) {
             if (pendingCameraFrame != null) pendingCameraFrame.recycle();
-            pendingCameraFrame    = scaled;
-            pendingPoseResult     = poseResult;
-            pendingErrorLandmarks = errorLandmarks != null
-                    ? new ArrayList<>(errorLandmarks) : null;
+            pendingCameraFrame = scaled;
+            pendingPoseResult = poseResult;
+            pendingErrorLandmarks = errorLandmarks != null ? new ArrayList<>(errorLandmarks) : null;
         }
 
-        final String      repSnap      = repText;
-        final String      phaseSnap    = phaseText;
-        final String      feedbackSnap = feedbackText;
-        final int         colorSnap    = phaseColor;
-        final String      qualitySnap  = quality;
-        final int         qualClr      = qualityColor;
-        final String      nameSnap     = exerciseName;
-        final long        elSnap       = elapsedSec;
-        final List<String> errSnap     = errors;
-        final long        tsUs         = nowUs;
+        final String repSnap = repText;
+        final String phaseSnap = phaseText;
+        final String feedbackSnap = feedbackText;
+        final int colorSnap = phaseColor;
+        final String qualitySnap = quality;
+        final int qualClr = qualityColor;
+        final String nameSnap = exerciseName;
+        final long elSnap = elapsedSec;
+        final List<String> errSnap = errors;
+        final long tsUs = nowUs;
 
         encoderHandler.post(() -> {
             if (!acceptingFrames) return;
             startTimeUs.compareAndSet(-1L, tsUs);
-            updateUIState(repSnap, phaseSnap, feedbackSnap, colorSnap,
-                    nameSnap, qualitySnap, qualClr, elSnap, true, errSnap);
+            updateUIState(repSnap, phaseSnap, feedbackSnap, colorSnap, nameSnap, qualitySnap, qualClr, elSnap, true, errSnap);
             try {
                 writeFrame(tsUs);
             } catch (Exception e) {
@@ -348,9 +352,8 @@ public class VideoRecorder {
 
     private Bitmap scaleBitmapToScreen(Bitmap src) {
         if (src == null) return null;
-        float scale  = Math.max((float) videoW / src.getWidth(),
-                (float) videoH / src.getHeight());
-        float transX = (videoW - src.getWidth()  * scale) / 2f;
+        float scale = Math.max((float) videoW / src.getWidth(), (float) videoH / src.getHeight());
+        float transX = (videoW - src.getWidth() * scale) / 2f;
         float transY = (videoH - src.getHeight() * scale) / 2f;
 
         Matrix m = new Matrix();
@@ -364,19 +367,17 @@ public class VideoRecorder {
 
     private void setupVideoEncoder() throws Exception {
         MediaFormat fmt = MediaFormat.createVideoFormat(VIDEO_MIME, videoW, videoH);
-        fmt.setInteger(MediaFormat.KEY_COLOR_FORMAT,
-                MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
-        fmt.setInteger(MediaFormat.KEY_BIT_RATE,          VIDEO_BITRATE);
-        fmt.setInteger(MediaFormat.KEY_FRAME_RATE,        VIDEO_FPS);
-        fmt.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL,  VIDEO_IFRAME);
+        fmt.setInteger(MediaFormat.KEY_COLOR_FORMAT, MediaCodecInfo.CodecCapabilities.COLOR_FormatSurface);
+        fmt.setInteger(MediaFormat.KEY_BIT_RATE, VIDEO_BITRATE);
+        fmt.setInteger(MediaFormat.KEY_FRAME_RATE, VIDEO_FPS);
+        fmt.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, VIDEO_IFRAME);
 
         videoEncoder = MediaCodec.createEncoderByType(VIDEO_MIME);
         videoEncoder.configure(fmt, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         encoderInputSurface = videoEncoder.createInputSurface();
         videoEncoder.start();
 
-        imageReader = ImageReader.newInstance(videoW, videoH,
-                android.graphics.PixelFormat.RGBA_8888, 3);
+        imageReader = ImageReader.newInstance(videoW, videoH, android.graphics.PixelFormat.RGBA_8888, 3);
 
         imageReaderThread = new HandlerThread("ImageReaderThread");
         imageReaderThread.start();
@@ -388,29 +389,27 @@ public class VideoRecorder {
                 image = reader.acquireLatestImage();
                 if (image == null) return;
 
-                Image.Plane plane  = image.getPlanes()[0];
-                ByteBuffer  buffer = plane.getBuffer();
-                int rowStride      = plane.getRowStride();
-                int pixelStride    = plane.getPixelStride();
-                int width          = image.getWidth();
-                int height         = image.getHeight();
+                Image.Plane plane = image.getPlanes()[0];
+                ByteBuffer buffer = plane.getBuffer();
+                int rowStride = plane.getRowStride();
+                int pixelStride = plane.getPixelStride();
+                int width = image.getWidth();
+                int height = image.getHeight();
 
                 Canvas c = encoderInputSurface.lockCanvas(null);
                 if (c != null) {
                     try {
-                        Bitmap bmp = Bitmap.createBitmap(width, height,
-                                Bitmap.Config.ARGB_8888);
+                        Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
                         if (rowStride == width * pixelStride) {
                             buffer.rewind();
                             bmp.copyPixelsFromBuffer(buffer);
                         } else {
-                            byte[] row  = new byte[rowStride];
+                            byte[] row = new byte[rowStride];
                             byte[] data = new byte[width * height * 4];
-                            int    off  = 0;
+                            int off = 0;
                             for (int y = 0; y < height; y++) {
                                 buffer.position(y * rowStride);
-                                buffer.get(row, 0,
-                                        Math.min(rowStride, buffer.remaining()));
+                                buffer.get(row, 0, Math.min(rowStride, buffer.remaining()));
                                 System.arraycopy(row, 0, data, off, width * pixelStride);
                                 off += width * pixelStride;
                             }
@@ -431,11 +430,9 @@ public class VideoRecorder {
     }
 
     private void setupAudioEncoder() throws Exception {
-        MediaFormat fmt = MediaFormat.createAudioFormat(
-                AUDIO_MIME, AUDIO_SAMPLE_RATE, AUDIO_CHANNELS);
-        fmt.setInteger(MediaFormat.KEY_BIT_RATE,    AUDIO_BITRATE);
-        fmt.setInteger(MediaFormat.KEY_AAC_PROFILE,
-                MediaCodecInfo.CodecProfileLevel.AACObjectLC);
+        MediaFormat fmt = MediaFormat.createAudioFormat(AUDIO_MIME, AUDIO_SAMPLE_RATE, AUDIO_CHANNELS);
+        fmt.setInteger(MediaFormat.KEY_BIT_RATE, AUDIO_BITRATE);
+        fmt.setInteger(MediaFormat.KEY_AAC_PROFILE, MediaCodecInfo.CodecProfileLevel.AACObjectLC);
 
         audioEncoder = MediaCodec.createEncoderByType(AUDIO_MIME);
         audioEncoder.configure(fmt, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
@@ -443,17 +440,9 @@ public class VideoRecorder {
     }
 
     private void startAudioRecording() {
-        int minBuf = AudioRecord.getMinBufferSize(
-                AUDIO_SAMPLE_RATE,
-                AudioFormat.CHANNEL_IN_STEREO,
-                AudioFormat.ENCODING_PCM_16BIT);
+        int minBuf = AudioRecord.getMinBufferSize(AUDIO_SAMPLE_RATE, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT);
         try {
-            audioRecord = new AudioRecord(
-                    MediaRecorder.AudioSource.MIC,
-                    AUDIO_SAMPLE_RATE,
-                    AudioFormat.CHANNEL_IN_STEREO,
-                    AudioFormat.ENCODING_PCM_16BIT,
-                    Math.max(minBuf, AUDIO_BUFFER_SIZE * 4));
+            audioRecord = new AudioRecord(MediaRecorder.AudioSource.MIC, AUDIO_SAMPLE_RATE, AudioFormat.CHANNEL_IN_STEREO, AudioFormat.ENCODING_PCM_16BIT, Math.max(minBuf, AUDIO_BUFFER_SIZE * 4));
 
             if (audioRecord.getState() != AudioRecord.STATE_INITIALIZED) {
                 notifyError("Microphone not available");
@@ -484,12 +473,12 @@ public class VideoRecorder {
                 if (buf != null) {
                     buf.clear();
                     buf.put(data, 0, length);
-                    audioEncoder.queueInputBuffer(idx, 0, length,
-                            System.nanoTime() / 1000L, 0);
+                    audioEncoder.queueInputBuffer(idx, 0, length, System.nanoTime() / 1000L, 0);
                 }
             }
             drainAudioEncoder();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
     }
 
     private synchronized void drainAudioEncoder() {
@@ -505,8 +494,7 @@ public class VideoRecorder {
                 }
             } else if (idx >= 0) {
                 ByteBuffer buf = audioEncoder.getOutputBuffer(idx);
-                boolean isConfig =
-                        (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
+                boolean isConfig = (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
                 if (!isConfig && buf != null && muxerStarted && info.size > 0) {
                     buf.position(info.offset);
                     buf.limit(info.offset + info.size);
@@ -523,8 +511,7 @@ public class VideoRecorder {
         try {
             int idx = audioEncoder.dequeueInputBuffer(0);
             if (idx >= 0) {
-                audioEncoder.queueInputBuffer(idx, 0, 0, 0,
-                        MediaCodec.BUFFER_FLAG_END_OF_STREAM);
+                audioEncoder.queueInputBuffer(idx, 0, 0, 0, MediaCodec.BUFFER_FLAG_END_OF_STREAM);
             }
             MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
             while (true) {
@@ -533,8 +520,7 @@ public class VideoRecorder {
                 if (out == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) continue;
                 if (out >= 0) {
                     ByteBuffer buf = audioEncoder.getOutputBuffer(out);
-                    boolean isConfig =
-                            (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
+                    boolean isConfig = (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
                     if (!isConfig && buf != null && muxerStarted && info.size > 0) {
                         buf.position(info.offset);
                         buf.limit(info.offset + info.size);
@@ -544,17 +530,26 @@ public class VideoRecorder {
                     if ((info.flags & MediaCodec.BUFFER_FLAG_END_OF_STREAM) != 0) break;
                 }
             }
-        } catch (Exception ignored) {}
-        try { audioEncoder.stop();    } catch (Exception ignored) {}
-        try { audioEncoder.release(); } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
+        try {
+            audioEncoder.stop();
+        } catch (Exception ignored) {
+        }
+        try {
+            audioEncoder.release();
+        } catch (Exception ignored) {
+        }
         audioEncoder = null;
     }
 
     private synchronized void drainVideoEncoder(boolean endOfStream) {
         if (videoEncoder == null) return;
         if (endOfStream) {
-            try { videoEncoder.signalEndOfInputStream(); }
-            catch (Exception ignored) {}
+            try {
+                videoEncoder.signalEndOfInputStream();
+            } catch (Exception ignored) {
+            }
         }
 
         MediaCodec.BufferInfo info = new MediaCodec.BufferInfo();
@@ -563,16 +558,18 @@ public class VideoRecorder {
             int idx = videoEncoder.dequeueOutputBuffer(info, 10_000);
             if (idx == MediaCodec.INFO_TRY_AGAIN_LATER) {
                 if (!endOfStream) break;
-                try { Thread.sleep(5); } catch (InterruptedException ignored) {}
+                try {
+                    Thread.sleep(5);
+                } catch (InterruptedException ignored) {
+                }
             } else if (idx == MediaCodec.INFO_OUTPUT_FORMAT_CHANGED) {
                 if (!muxerStarted && muxer != null) {
                     videoTrackIndex = muxer.addTrack(videoEncoder.getOutputFormat());
                     tryStartMuxer();
                 }
             } else if (idx >= 0) {
-                ByteBuffer buf     = videoEncoder.getOutputBuffer(idx);
-                boolean    isConfig =
-                        (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
+                ByteBuffer buf = videoEncoder.getOutputBuffer(idx);
+                boolean isConfig = (info.flags & MediaCodec.BUFFER_FLAG_CODEC_CONFIG) != 0;
                 if (!isConfig && buf != null && muxerStarted && info.size > 0) {
                     buf.position(info.offset);
                     buf.limit(info.offset + info.size);
@@ -585,8 +582,7 @@ public class VideoRecorder {
     }
 
     private synchronized void tryStartMuxer() {
-        if (muxer != null && videoTrackIndex >= 0
-                && audioTrackIndex >= 0 && !muxerStarted) {
+        if (muxer != null && videoTrackIndex >= 0 && audioTrackIndex >= 0 && !muxerStarted) {
             muxer.start();
             muxerStarted = true;
         }
@@ -599,10 +595,10 @@ public class VideoRecorder {
         PoseLandmarkerResult pose;
         List<Integer> errLm;
         synchronized (this) {
-            frame              = pendingCameraFrame;
+            frame = pendingCameraFrame;
             pendingCameraFrame = null;
-            pose               = pendingPoseResult;
-            errLm              = pendingErrorLandmarks;
+            pose = pendingPoseResult;
+            errLm = pendingErrorLandmarks;
         }
 
         Bitmap output = Bitmap.createBitmap(videoW, videoH, Bitmap.Config.ARGB_8888);
@@ -628,8 +624,10 @@ public class VideoRecorder {
         } catch (Exception e) {
         } finally {
             if (sc != null) {
-                try { readerSurface.unlockCanvasAndPost(sc); }
-                catch (Exception ignored) {}
+                try {
+                    readerSurface.unlockCanvasAndPost(sc);
+                } catch (Exception ignored) {
+                }
             }
             output.recycle();
             if (frame != null) frame.recycle();
@@ -676,8 +674,7 @@ public class VideoRecorder {
         }
     }
 
-    private void drawPoseOnCanvas(Canvas canvas, PoseLandmarkerResult result,
-                                  int fw, int fh, List<Integer> errorLandmarks) {
+    private void drawPoseOnCanvas(Canvas canvas, PoseLandmarkerResult result, int fw, int fh, List<Integer> errorLandmarks) {
         List<NormalizedLandmark> lms = result.landmarks().get(0);
 
         for (int[] conn : POSE_CONNECTIONS) {
@@ -687,8 +684,7 @@ public class VideoRecorder {
             NormalizedLandmark s = lms.get(si), e = lms.get(ei);
             if (!isVisible(s) || !isVisible(e)) continue;
 
-            boolean isErr = errorLandmarks != null
-                    && (errorLandmarks.contains(si) || errorLandmarks.contains(ei));
+            boolean isErr = errorLandmarks != null && (errorLandmarks.contains(si) || errorLandmarks.contains(ei));
 
             paintLine.setStrokeWidth(isErr ? 6f : 4f);
             paintLine.setColor(isErr ? Color.RED : getConnectionColor(si, ei));
@@ -720,15 +716,16 @@ public class VideoRecorder {
     }
 
     private int getConnectionColor(int si, int ei) {
-        if (isLeftLandmark(si)  || isLeftLandmark(ei))  return 0xFF00BFFF;
+        if (isLeftLandmark(si) || isLeftLandmark(ei)) return 0xFF00BFFF;
         if (isRightLandmark(si) || isRightLandmark(ei)) return 0xFFFFD700;
         return 0xFF00FF00;
     }
 
     private boolean isLeftLandmark(int idx) {
-        for (int i : LEFT_LANDMARKS)  if (i == idx) return true;
+        for (int i : LEFT_LANDMARKS) if (i == idx) return true;
         return false;
     }
+
     private boolean isRightLandmark(int idx) {
         for (int i : RIGHT_LANDMARKS) if (i == idx) return true;
         return false;
@@ -736,40 +733,64 @@ public class VideoRecorder {
 
     private void release() {
         if (videoEncoder != null) {
-            try { videoEncoder.stop();    } catch (Exception ignored) {}
-            try { videoEncoder.release(); } catch (Exception ignored) {}
+            try {
+                videoEncoder.stop();
+            } catch (Exception ignored) {
+            }
+            try {
+                videoEncoder.release();
+            } catch (Exception ignored) {
+            }
             videoEncoder = null;
         }
         if (encoderInputSurface != null) {
-            try { encoderInputSurface.release(); } catch (Exception ignored) {}
+            try {
+                encoderInputSurface.release();
+            } catch (Exception ignored) {
+            }
             encoderInputSurface = null;
         }
         if (imageReader != null) {
-            try { imageReader.close(); } catch (Exception ignored) {}
+            try {
+                imageReader.close();
+            } catch (Exception ignored) {
+            }
             imageReader = null;
         }
         if (imageReaderThread != null) {
             imageReaderThread.quitSafely();
-            try { imageReaderThread.join(1000); } catch (Exception ignored) {}
+            try {
+                imageReaderThread.join(1000);
+            } catch (Exception ignored) {
+            }
             imageReaderThread = null;
             imageReaderHandler = null;
         }
         if (muxer != null) {
-            try { if (muxerStarted) muxer.stop(); } catch (Exception ignored) {}
-            try { muxer.release(); }                catch (Exception ignored) {}
+            try {
+                if (muxerStarted) muxer.stop();
+            } catch (Exception ignored) {
+            }
+            try {
+                muxer.release();
+            } catch (Exception ignored) {
+            }
             muxer = null;
         }
         if (encoderThread != null) {
             encoderThread.quitSafely();
-            try { encoderThread.join(1000); } catch (Exception ignored) {}
-            encoderThread  = null;
+            try {
+                encoderThread.join(1000);
+            } catch (Exception ignored) {
+            }
+            encoderThread = null;
             encoderHandler = null;
         }
-        muxerStarted    = false;
+        muxerStarted = false;
         videoTrackIndex = -1;
         audioTrackIndex = -1;
         startTimeUs.set(-1L);
-        uiReady   = false;
+        uiReady = false;
         uiOverlay = null;
 
         synchronized (this) {
@@ -777,14 +798,14 @@ public class VideoRecorder {
                 pendingCameraFrame.recycle();
                 pendingCameraFrame = null;
             }
-            pendingPoseResult     = null;
+            pendingPoseResult = null;
             pendingErrorLandmarks = null;
         }
     }
 
     private String createOutputFile() {
-        String ts  = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
-        File   dir = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
+        String ts = new SimpleDateFormat("yyyyMMdd_HHmmss", Locale.US).format(new Date());
+        File dir = context.getExternalFilesDir(Environment.DIRECTORY_MOVIES);
         if (dir == null) dir = context.getFilesDir();
         if (!dir.exists()) dir.mkdirs();
         return new File(dir, "workout_" + ts + ".mp4").getAbsolutePath();
@@ -799,19 +820,17 @@ public class VideoRecorder {
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
             ContentValues cv = new ContentValues();
-            cv.put(MediaStore.Video.Media.DISPLAY_NAME,  src.getName());
-            cv.put(MediaStore.Video.Media.MIME_TYPE,     "video/mp4");
+            cv.put(MediaStore.Video.Media.DISPLAY_NAME, src.getName());
+            cv.put(MediaStore.Video.Media.MIME_TYPE, "video/mp4");
             cv.put(MediaStore.Video.Media.RELATIVE_PATH, "Movies/PersonalTrainer");
-            cv.put(MediaStore.Video.Media.IS_PENDING,    1);
+            cv.put(MediaStore.Video.Media.IS_PENDING, 1);
 
-            Uri uri = context.getContentResolver()
-                    .insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, cv);
+            Uri uri = context.getContentResolver().insert(MediaStore.Video.Media.EXTERNAL_CONTENT_URI, cv);
             if (uri != null) {
-                try (InputStream  in  = new FileInputStream(src);
-                     OutputStream out = context.getContentResolver().openOutputStream(uri)) {
+                try (InputStream in = new FileInputStream(src); OutputStream out = context.getContentResolver().openOutputStream(uri)) {
                     if (out != null) {
                         byte[] buf = new byte[65536];
-                        int    len;
+                        int len;
                         while ((len = in.read(buf)) > 0) out.write(buf, 0, len);
                     }
                     cv.clear();
@@ -824,22 +843,18 @@ public class VideoRecorder {
                 }
             }
         } else {
-            context.sendBroadcast(new android.content.Intent(
-                    android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE,
-                    Uri.fromFile(src)));
+            context.sendBroadcast(new android.content.Intent(android.content.Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, Uri.fromFile(src)));
             notifySaved(outputPath);
         }
     }
 
     private void notifyError(String error) {
         if (callback == null) return;
-        ((android.app.Activity) context).runOnUiThread(
-                () -> callback.onRecordingError(error));
+        ((android.app.Activity) context).runOnUiThread(() -> callback.onRecordingError(error));
     }
 
     private void notifySaved(String path) {
         if (callback == null) return;
-        ((android.app.Activity) context).runOnUiThread(
-                () -> callback.onRecordingSaved(path));
+        ((android.app.Activity) context).runOnUiThread(() -> callback.onRecordingSaved(path));
     }
 }

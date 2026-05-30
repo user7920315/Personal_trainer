@@ -12,12 +12,7 @@ import ru.sv.personaltrainer.repository.PermissionRepository;
 public class PermissionViewModel extends AndroidViewModel {
 
     public enum PermissionState {
-        CHECKING,
-        GRANTED,
-        REQUEST_DIALOG,
-        SHOW_RATIONALE,
-        GO_TO_SETTINGS,
-        WAITING_RESULT
+        CHECKING, GRANTED, REQUEST_DIALOG, SHOW_RATIONALE, GO_TO_SETTINGS, WAITING_RESULT
     }
 
     private final PermissionRepository repository;

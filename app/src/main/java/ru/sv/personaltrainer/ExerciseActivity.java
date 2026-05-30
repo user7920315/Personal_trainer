@@ -166,48 +166,32 @@ public class ExerciseActivity extends AppCompatActivity {
         cameraPermissionLauncher.launch(Manifest.permission.CAMERA);
     }
 
-    private final ActivityResultLauncher<String> cameraPermissionLauncher = registerForActivityResult(
-            new ActivityResultContracts.RequestPermission(),
-            isGranted -> {
-                boolean shouldShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(
-                        this, Manifest.permission.CAMERA);
-                permissionViewModel.onPermissionResult(isGranted, shouldShowRationale);
-            });
+    private final ActivityResultLauncher<String> cameraPermissionLauncher = registerForActivityResult(new ActivityResultContracts.RequestPermission(), isGranted -> {
+        boolean shouldShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA);
+        permissionViewModel.onPermissionResult(isGranted, shouldShowRationale);
+    });
 
     @Override
     protected void onResume() {
         super.onResume();
-        boolean canShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(
-                this, Manifest.permission.CAMERA);
+        boolean canShowRationale = ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.CAMERA);
         permissionViewModel.checkCameraPermission(canShowRationale);
     }
 
     private void showRationaleDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.dialog_camera_title))
-                .setMessage(getString(R.string.dialog_camera_message))
-                .setPositiveButton(getString(R.string.dialog_camera_allow), (dialog, which) -> {
-                    permissionViewModel.onRationaleShown();
-                })
-                .setNegativeButton(getString(R.string.dialog_camera_cancel), (dialog, which) -> {
-                    Toast.makeText(this, getString(R.string.toast_no_camera), Toast.LENGTH_LONG).show();
-                    finish();
-                })
-                .setCancelable(false)
-                .show();
+        new AlertDialog.Builder(this).setTitle(getString(R.string.dialog_camera_title)).setMessage(getString(R.string.dialog_camera_message)).setPositiveButton(getString(R.string.dialog_camera_allow), (dialog, which) -> {
+            permissionViewModel.onRationaleShown();
+        }).setNegativeButton(getString(R.string.dialog_camera_cancel), (dialog, which) -> {
+            Toast.makeText(this, getString(R.string.toast_no_camera), Toast.LENGTH_LONG).show();
+            finish();
+        }).setCancelable(false).show();
     }
 
     private void showGoToSettingsDialog() {
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.dialog_settings_title))
-                .setMessage(getString(R.string.dialog_settings_message))
-                .setPositiveButton(getString(R.string.dialog_settings_open), (dialog, which) -> {
-                    permissionViewModel.openSettings();
-                    finish();
-                })
-                .setNegativeButton(getString(R.string.dialog_camera_cancel), (dialog, which) -> finish())
-                .setCancelable(false)
-                .show();
+        new AlertDialog.Builder(this).setTitle(getString(R.string.dialog_settings_title)).setMessage(getString(R.string.dialog_settings_message)).setPositiveButton(getString(R.string.dialog_settings_open), (dialog, which) -> {
+            permissionViewModel.openSettings();
+            finish();
+        }).setNegativeButton(getString(R.string.dialog_camera_cancel), (dialog, which) -> finish()).setCancelable(false).show();
     }
 
     private void setupExerciseObservers() {
@@ -234,19 +218,7 @@ public class ExerciseActivity extends AppCompatActivity {
         WorkoutResult result = viewModel.getWorkoutResult().getValue();
         List<String> errors = result != null ? result.errors : null;
 
-        videoRecorder.submitFrame(
-                frame.bitmap,
-                frame.poseResult,
-                frame.errorLandmarks,
-                frame.repText,
-                frame.phaseText,
-                frame.feedbackText,
-                frame.phaseColor,
-                frame.exerciseName,
-                frame.qualityText,
-                frame.qualityColor,
-                errors
-        );
+        videoRecorder.submitFrame(frame.bitmap, frame.poseResult, frame.errorLandmarks, frame.repText, frame.phaseText, frame.feedbackText, frame.phaseColor, frame.exerciseName, frame.qualityText, frame.qualityColor, errors);
     }
 
     private void onWorkoutResult(WorkoutResult result) {
@@ -311,13 +283,9 @@ public class ExerciseActivity extends AppCompatActivity {
         if (!error.equals(lastSpokenError)) {
             lastErrorStartTime = now;
             lastSpokenError = error;
-        } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS
-                && !textToSpeech.isSpeaking()
-                && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
+        } else if (now - lastErrorStartTime >= TTS_THRESHOLD_MS && !textToSpeech.isSpeaking() && (now - lastSpeechTime) >= MIN_SPEECH_INTERVAL_MS) {
 
-            String cleanMessage = error
-                    .replace(getString(R.string.error_prefix_warning), "")
-                    .replace(getString(R.string.error_prefix_ok), "");
+            String cleanMessage = error.replace(getString(R.string.error_prefix_warning), "").replace(getString(R.string.error_prefix_ok), "");
 
             android.os.Bundle params = new android.os.Bundle();
             params.putString(TextToSpeech.Engine.KEY_PARAM_UTTERANCE_ID, "error_feedback");
@@ -376,25 +344,21 @@ public class ExerciseActivity extends AppCompatActivity {
 
     private void applyInsets() {
         ViewCompat.setOnApplyWindowInsetsListener(binding.previewView, (view, windowInsets) -> {
-            Insets insets = windowInsets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
 
             int topOffset = insets.top + getResources().getDimensionPixelSize(R.dimen.exercise_top_margin);
             int bottomOffset = insets.bottom + getResources().getDimensionPixelSize(R.dimen.feedback_card_margin);
 
-            android.view.ViewGroup.MarginLayoutParams repParams =
-                    (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams repParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
             repParams.topMargin = topOffset;
             binding.tvRepCount.setLayoutParams(repParams);
 
-            android.view.ViewGroup.MarginLayoutParams nameParams =
-                    (android.view.ViewGroup.MarginLayoutParams) binding.tvExerciseName.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams nameParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvExerciseName.getLayoutParams();
             nameParams.topMargin = topOffset;
             binding.tvExerciseName.setLayoutParams(nameParams);
 
             android.view.View card = binding.cardFeedback;
-            android.view.ViewGroup.MarginLayoutParams cardParams =
-                    (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams cardParams = (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
             cardParams.bottomMargin = bottomOffset;
             card.setLayoutParams(cardParams);
 
@@ -522,10 +486,7 @@ public class ExerciseActivity extends AppCompatActivity {
                 Preview preview = new Preview.Builder().build();
                 preview.setSurfaceProvider(binding.previewView.getSurfaceProvider());
 
-                ImageAnalysis analysis = new ImageAnalysis.Builder()
-                        .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
-                        .setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888)
-                        .build();
+                ImageAnalysis analysis = new ImageAnalysis.Builder().setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST).setOutputImageFormat(ImageAnalysis.OUTPUT_IMAGE_FORMAT_RGBA_8888).build();
                 analysis.setAnalyzer(cameraExecutor, this::analyzeFrame);
 
                 provider.unbindAll();

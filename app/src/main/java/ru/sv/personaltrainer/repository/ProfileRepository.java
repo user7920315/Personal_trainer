@@ -17,17 +17,37 @@ public class ProfileRepository {
         this.prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
     }
 
-    public void saveHeight(float height) { prefs.edit().putFloat(KEY_HEIGHT, height).apply(); }
-    public float getHeight() { return prefs.getFloat(KEY_HEIGHT, 0f); }
+    public void saveHeight(float height) {
+        prefs.edit().putFloat(KEY_HEIGHT, height).apply();
+    }
 
-    public void saveWeight(float weight) { prefs.edit().putFloat(KEY_WEIGHT, weight).apply(); }
-    public float getWeight() { return prefs.getFloat(KEY_WEIGHT, 0f); }
+    public float getHeight() {
+        return prefs.getFloat(KEY_HEIGHT, 0f);
+    }
 
-    public void saveAge(int age) { prefs.edit().putInt(KEY_AGE, age).apply(); }
-    public int getAge() { return prefs.getInt(KEY_AGE, 0); }
+    public void saveWeight(float weight) {
+        prefs.edit().putFloat(KEY_WEIGHT, weight).apply();
+    }
 
-    public void saveGender(String gender) { prefs.edit().putString(KEY_GENDER, gender).apply(); }
-    public String getGender() { return prefs.getString(KEY_GENDER, "male"); }
+    public float getWeight() {
+        return prefs.getFloat(KEY_WEIGHT, 0f);
+    }
+
+    public void saveAge(int age) {
+        prefs.edit().putInt(KEY_AGE, age).apply();
+    }
+
+    public int getAge() {
+        return prefs.getInt(KEY_AGE, 0);
+    }
+
+    public void saveGender(String gender) {
+        prefs.edit().putString(KEY_GENDER, gender).apply();
+    }
+
+    public String getGender() {
+        return prefs.getString(KEY_GENDER, "male");
+    }
 
     public void setOnboardingDone(boolean done) {
         prefs.edit().putBoolean(KEY_ONBOARDING_DONE, done).apply();

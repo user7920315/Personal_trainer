@@ -63,14 +63,13 @@ public class WearHelper {
     }
 
     private void send(String path, String msg) {
-        Wearable.getNodeClient(context).getConnectedNodes()
-                .addOnSuccessListener(nodes -> {
-                    if (nodes.isEmpty()) {
-                        return;
-                    }
-                    for (Node node : nodes) {
-                        messageClient.sendMessage(node.getId(), path, msg.getBytes());
-                    }
-                });
+        Wearable.getNodeClient(context).getConnectedNodes().addOnSuccessListener(nodes -> {
+            if (nodes.isEmpty()) {
+                return;
+            }
+            for (Node node : nodes) {
+                messageClient.sendMessage(node.getId(), path, msg.getBytes());
+            }
+        });
     }
 }

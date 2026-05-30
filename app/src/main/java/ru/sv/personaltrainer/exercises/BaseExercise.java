@@ -111,8 +111,7 @@ public abstract class BaseExercise {
         return lm != null && lm.size() >= 33;
     }
 
-    protected float getAngle(List<NormalizedLandmark> lm,
-                             int aIdx, int bIdx, int cIdx) {
+    protected float getAngle(List<NormalizedLandmark> lm, int aIdx, int bIdx, int cIdx) {
         if (!allVisible(lm, aIdx, bIdx, cIdx)) return -1f;
 
         NormalizedLandmark a = lm.get(aIdx);

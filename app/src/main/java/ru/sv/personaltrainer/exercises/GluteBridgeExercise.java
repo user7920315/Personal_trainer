@@ -89,10 +89,7 @@ public class GluteBridgeExercise extends BaseExercise {
 
         if (!baselineCaptured) {
             captureBaseline();
-            result.mainFeedback = baselineCaptured
-                    ? getString(R.string.feedback_glute_ready)
-                    : String.format(getString(R.string.msg_calibration_progress),
-                    baseFrameCount * 100 / BASE_FRAMES);
+            result.mainFeedback = baselineCaptured ? getString(R.string.feedback_glute_ready) : String.format(getString(R.string.msg_calibration_progress), baseFrameCount * 100 / BASE_FRAMES);
             result.phase = "";
             return result;
         }
@@ -125,9 +122,7 @@ public class GluteBridgeExercise extends BaseExercise {
         }
 
         result.repCount = repCount;
-        result.mainFeedback = result.errors.isEmpty()
-                ? buildFeedback(result.phase, hipRise)
-                : result.errors.get(0);
+        result.mainFeedback = result.errors.isEmpty() ? buildFeedback(result.phase, hipRise) : result.errors.get(0);
 
         return result;
     }
@@ -148,8 +143,7 @@ public class GluteBridgeExercise extends BaseExercise {
     }
 
 
-    private void checkHipAlignment(AnalysisResult result,
-                                   List<NormalizedLandmark> lm) {
+    private void checkHipAlignment(AnalysisResult result, List<NormalizedLandmark> lm) {
         float shoulderY = getAvgShoulderY();
         float kneeY = getAvgKneeY();
         float hipY = getAvgHipY();
@@ -165,35 +159,22 @@ public class GluteBridgeExercise extends BaseExercise {
 
 
         if (deviation > HIP_POS_SAG_ERROR) {
-            result.addError(
-                    getString(R.string.error_glute_hips_sag_strong),
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_glute_hips_sag_strong), LEFT_HIP, RIGHT_HIP);
         } else if (deviation > HIP_POS_SAG_WARN) {
-            result.addError(
-                    getString(R.string.error_glute_hips_sag_weak),
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_glute_hips_sag_weak), LEFT_HIP, RIGHT_HIP);
         } else if (deviation < HIP_POS_HIGH_ERROR) {
-            result.addError(
-                    getString(R.string.error_glute_hips_high_strong),
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_glute_hips_high_strong), LEFT_HIP, RIGHT_HIP);
         } else if (deviation < HIP_POS_HIGH_WARN) {
-            result.addError(
-                    getString(R.string.error_glute_hips_high_weak),
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_glute_hips_high_weak), LEFT_HIP, RIGHT_HIP);
         }
     }
 
 
-    private void checkKneeStartPosition(AnalysisResult result,
-                                        float angle) {
+    private void checkKneeStartPosition(AnalysisResult result, float angle) {
         if (angle > KNEE_TOO_FAR) {
-            result.addError(
-                    getString(R.string.error_glute_knee_far),
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError(getString(R.string.error_glute_knee_far), LEFT_KNEE, RIGHT_KNEE);
         } else if (angle < KNEE_TOO_CLOSE) {
-            result.addError(
-                    getString(R.string.error_glute_knee_close),
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError(getString(R.string.error_glute_knee_close), LEFT_KNEE, RIGHT_KNEE);
         }
     }
 
@@ -207,13 +188,9 @@ public class GluteBridgeExercise extends BaseExercise {
 
 
         if (lift > SHOULDER_LIFT_ERROR) {
-            result.addError(
-                    getString(R.string.error_glute_shoulders_lift_strong),
-                    LEFT_SHOULDER, RIGHT_SHOULDER);
+            result.addError(getString(R.string.error_glute_shoulders_lift_strong), LEFT_SHOULDER, RIGHT_SHOULDER);
         } else if (lift > SHOULDER_LIFT_WARN) {
-            result.addError(
-                    getString(R.string.error_glute_shoulders_lift_weak),
-                    LEFT_SHOULDER, RIGHT_SHOULDER);
+            result.addError(getString(R.string.error_glute_shoulders_lift_weak), LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
 
@@ -224,75 +201,54 @@ public class GluteBridgeExercise extends BaseExercise {
         if (emaLHeelY > 0) {
             float lift = baseHeelY - emaLHeelY;
             if (lift > HEEL_LIFT_ERROR) {
-                result.addError(
-                        getString(R.string.error_glute_heel_lift_left_strong),
-                        LEFT_HEEL);
+                result.addError(getString(R.string.error_glute_heel_lift_left_strong), LEFT_HEEL);
             } else if (lift > HEEL_LIFT_WARN) {
-                result.addError(
-                        getString(R.string.error_glute_heel_lift_left_weak),
-                        LEFT_HEEL);
+                result.addError(getString(R.string.error_glute_heel_lift_left_weak), LEFT_HEEL);
             }
         }
 
         if (emaRHeelY > 0) {
             float lift = baseHeelY - emaRHeelY;
             if (lift > HEEL_LIFT_ERROR) {
-                result.addError(
-                        getString(R.string.error_glute_heel_lift_right_strong),
-                        RIGHT_HEEL);
+                result.addError(getString(R.string.error_glute_heel_lift_right_strong), RIGHT_HEEL);
             } else if (lift > HEEL_LIFT_WARN) {
-                result.addError(
-                        getString(R.string.error_glute_heel_lift_right_weak),
-                        RIGHT_HEEL);
+                result.addError(getString(R.string.error_glute_heel_lift_right_weak), RIGHT_HEEL);
             }
         }
     }
 
-    private void checkWristsOnFloor(AnalysisResult result,
-                                    List<NormalizedLandmark> lm) {
-        if (isVisible(lm, LEFT_WRIST)
-                && isVisible(lm, LEFT_ELBOW)) {
+    private void checkWristsOnFloor(AnalysisResult result, List<NormalizedLandmark> lm) {
+        if (isVisible(lm, LEFT_WRIST) && isVisible(lm, LEFT_ELBOW)) {
             float wristY = lm.get(LEFT_WRIST).y();
             float elbowY = lm.get(LEFT_ELBOW).y();
             float lift = elbowY - wristY;
 
             if (lift > WRIST_LIFT_ERROR) {
-                result.addError(
-                        getString(R.string.error_glute_wrist_lift_left_strong),
-                        LEFT_WRIST);
+                result.addError(getString(R.string.error_glute_wrist_lift_left_strong), LEFT_WRIST);
             } else if (lift > WRIST_LIFT_WARN) {
-                result.addError(
-                        getString(R.string.error_glute_wrist_lift_left_weak),
-                        LEFT_WRIST);
+                result.addError(getString(R.string.error_glute_wrist_lift_left_weak), LEFT_WRIST);
             }
         }
 
 
-        if (isVisible(lm, RIGHT_WRIST)
-                && isVisible(lm, RIGHT_ELBOW)) {
+        if (isVisible(lm, RIGHT_WRIST) && isVisible(lm, RIGHT_ELBOW)) {
             float wristY = lm.get(RIGHT_WRIST).y();
             float elbowY = lm.get(RIGHT_ELBOW).y();
             float lift = elbowY - wristY;
 
 
             if (lift > WRIST_LIFT_ERROR) {
-                result.addError(
-                        getString(R.string.error_glute_wrist_lift_right_strong),
-                        RIGHT_WRIST);
+                result.addError(getString(R.string.error_glute_wrist_lift_right_strong), RIGHT_WRIST);
             } else if (lift > WRIST_LIFT_WARN) {
-                result.addError(
-                        getString(R.string.error_glute_wrist_lift_right_weak),
-                        RIGHT_WRIST);
+                result.addError(getString(R.string.error_glute_wrist_lift_right_weak), RIGHT_WRIST);
             }
         }
     }
 
 
-    private void checkArmsOnFloor(AnalysisResult result,
-                                  List<NormalizedLandmark> lm) {
+    private void checkArmsOnFloor(AnalysisResult result, List<NormalizedLandmark> lm) {
 
-        if (isVisible(lm, LEFT_ELBOW)
-                && isVisible(lm, LEFT_SHOULDER)) {
+        if (isVisible(lm, LEFT_ELBOW) && isVisible(lm, LEFT_SHOULDER)) {
 
             float elbowY = lm.get(LEFT_ELBOW).y();
             float shoulderY = lm.get(LEFT_SHOULDER).y();
@@ -300,19 +256,14 @@ public class GluteBridgeExercise extends BaseExercise {
 
 
             if (lift > ARM_LIFT_ERROR) {
-                result.addError(
-                        getString(R.string.error_glute_arm_lift_left_strong),
-                        LEFT_ELBOW, LEFT_SHOULDER);
+                result.addError(getString(R.string.error_glute_arm_lift_left_strong), LEFT_ELBOW, LEFT_SHOULDER);
             } else if (lift > ARM_LIFT_WARN) {
-                result.addError(
-                        getString(R.string.error_glute_arm_lift_left_weak),
-                        LEFT_ELBOW);
+                result.addError(getString(R.string.error_glute_arm_lift_left_weak), LEFT_ELBOW);
             }
         }
 
 
-        if (isVisible(lm, RIGHT_ELBOW)
-                && isVisible(lm, RIGHT_SHOULDER)) {
+        if (isVisible(lm, RIGHT_ELBOW) && isVisible(lm, RIGHT_SHOULDER)) {
 
             float elbowY = lm.get(RIGHT_ELBOW).y();
             float shoulderY = lm.get(RIGHT_SHOULDER).y();
@@ -320,13 +271,9 @@ public class GluteBridgeExercise extends BaseExercise {
 
 
             if (lift > ARM_LIFT_ERROR) {
-                result.addError(
-                        getString(R.string.error_glute_arm_lift_right_strong),
-                        RIGHT_ELBOW, RIGHT_SHOULDER);
+                result.addError(getString(R.string.error_glute_arm_lift_right_strong), RIGHT_ELBOW, RIGHT_SHOULDER);
             } else if (lift > ARM_LIFT_WARN) {
-                result.addError(
-                        getString(R.string.error_glute_arm_lift_right_weak),
-                        RIGHT_ELBOW);
+                result.addError(getString(R.string.error_glute_arm_lift_right_weak), RIGHT_ELBOW);
             }
         }
     }
@@ -368,36 +315,31 @@ public class GluteBridgeExercise extends BaseExercise {
 
 
     private float getAvgHipY() {
-        if (emaLHipY > 0 && emaRHipY > 0)
-            return (emaLHipY + emaRHipY) / 2f;
+        if (emaLHipY > 0 && emaRHipY > 0) return (emaLHipY + emaRHipY) / 2f;
         if (emaLHipY > 0) return emaLHipY;
         if (emaRHipY > 0) return emaRHipY;
         return -1f;
     }
 
     private float getAvgHeelY() {
-        if (emaLHeelY > 0 && emaRHeelY > 0)
-            return (emaLHeelY + emaRHeelY) / 2f;
+        if (emaLHeelY > 0 && emaRHeelY > 0) return (emaLHeelY + emaRHeelY) / 2f;
         if (emaLHeelY > 0) return emaLHeelY;
         if (emaRHeelY > 0) return emaRHeelY;
-        if (emaLAnkleY > 0 && emaRAnkleY > 0)
-            return (emaLAnkleY + emaRAnkleY) / 2f;
+        if (emaLAnkleY > 0 && emaRAnkleY > 0) return (emaLAnkleY + emaRAnkleY) / 2f;
         if (emaLAnkleY > 0) return emaLAnkleY;
         if (emaRAnkleY > 0) return emaRAnkleY;
         return -1f;
     }
 
     private float getAvgShoulderY() {
-        if (emaLShoulderY > 0 && emaRShoulderY > 0)
-            return (emaLShoulderY + emaRShoulderY) / 2f;
+        if (emaLShoulderY > 0 && emaRShoulderY > 0) return (emaLShoulderY + emaRShoulderY) / 2f;
         if (emaLShoulderY > 0) return emaLShoulderY;
         if (emaRShoulderY > 0) return emaRShoulderY;
         return -1f;
     }
 
     private float getAvgKneeY() {
-        if (emaLKneeY > 0 && emaRKneeY > 0)
-            return (emaLKneeY + emaRKneeY) / 2f;
+        if (emaLKneeY > 0 && emaRKneeY > 0) return (emaLKneeY + emaRKneeY) / 2f;
         if (emaLKneeY > 0) return emaLKneeY;
         if (emaRKneeY > 0) return emaRKneeY;
         return -1f;
@@ -415,13 +357,9 @@ public class GluteBridgeExercise extends BaseExercise {
     private String buildFeedback(String phase, float hipRise) {
         switch (phase) {
             case "UP":
-                return hipRise >= HIP_RISE_GOOD
-                        ? getString(R.string.feedback_glute_up_good)
-                        : getString(R.string.feedback_glute_up_higher);
+                return hipRise >= HIP_RISE_GOOD ? getString(R.string.feedback_glute_up_good) : getString(R.string.feedback_glute_up_higher);
             case "DOWN":
-                return repCount > 0
-                        ? getString(R.string.feedback_glute_down, repCount)
-                        : getString(R.string.feedback_glute_start);
+                return repCount > 0 ? getString(R.string.feedback_glute_down, repCount) : getString(R.string.feedback_glute_start);
             default:
                 return getString(R.string.feedback_glute_lie_down);
         }
@@ -430,48 +368,30 @@ public class GluteBridgeExercise extends BaseExercise {
 
     private void updateEMA(List<NormalizedLandmark> lm) {
         if (isVisible(lm, LEFT_SHOULDER)) {
-            emaLShoulderY = emaVal(emaLShoulderY,
-                    lm.get(LEFT_SHOULDER).y());
-            emaLShoulderX = emaVal(emaLShoulderX,
-                    lm.get(LEFT_SHOULDER).x());
+            emaLShoulderY = emaVal(emaLShoulderY, lm.get(LEFT_SHOULDER).y());
+            emaLShoulderX = emaVal(emaLShoulderX, lm.get(LEFT_SHOULDER).x());
         }
         if (isVisible(lm, RIGHT_SHOULDER)) {
-            emaRShoulderY = emaVal(emaRShoulderY,
-                    lm.get(RIGHT_SHOULDER).y());
-            emaRShoulderX = emaVal(emaRShoulderX,
-                    lm.get(RIGHT_SHOULDER).x());
+            emaRShoulderY = emaVal(emaRShoulderY, lm.get(RIGHT_SHOULDER).y());
+            emaRShoulderX = emaVal(emaRShoulderX, lm.get(RIGHT_SHOULDER).x());
         }
-        if (isVisible(lm, LEFT_HIP))
-            emaLHipY = emaVal(emaLHipY, lm.get(LEFT_HIP).y());
-        if (isVisible(lm, RIGHT_HIP))
-            emaRHipY = emaVal(emaRHipY, lm.get(RIGHT_HIP).y());
-        if (isVisible(lm, LEFT_KNEE))
-            emaLKneeY = emaVal(emaLKneeY, lm.get(LEFT_KNEE).y());
-        if (isVisible(lm, RIGHT_KNEE))
-            emaRKneeY = emaVal(emaRKneeY, lm.get(RIGHT_KNEE).y());
-        if (isVisible(lm, LEFT_ANKLE))
-            emaLAnkleY = emaVal(emaLAnkleY, lm.get(LEFT_ANKLE).y());
-        if (isVisible(lm, RIGHT_ANKLE))
-            emaRAnkleY = emaVal(emaRAnkleY, lm.get(RIGHT_ANKLE).y());
-        if (isVisible(lm, LEFT_HEEL))
-            emaLHeelY = emaVal(emaLHeelY, lm.get(LEFT_HEEL).y());
-        if (isVisible(lm, RIGHT_HEEL))
-            emaRHeelY = emaVal(emaRHeelY, lm.get(RIGHT_HEEL).y());
-        if (isVisible(lm, LEFT_ELBOW))
-            emaLElbowY = emaVal(emaLElbowY, lm.get(LEFT_ELBOW).y());
-        if (isVisible(lm, RIGHT_ELBOW))
-            emaRElbowY = emaVal(emaRElbowY, lm.get(RIGHT_ELBOW).y());
+        if (isVisible(lm, LEFT_HIP)) emaLHipY = emaVal(emaLHipY, lm.get(LEFT_HIP).y());
+        if (isVisible(lm, RIGHT_HIP)) emaRHipY = emaVal(emaRHipY, lm.get(RIGHT_HIP).y());
+        if (isVisible(lm, LEFT_KNEE)) emaLKneeY = emaVal(emaLKneeY, lm.get(LEFT_KNEE).y());
+        if (isVisible(lm, RIGHT_KNEE)) emaRKneeY = emaVal(emaRKneeY, lm.get(RIGHT_KNEE).y());
+        if (isVisible(lm, LEFT_ANKLE)) emaLAnkleY = emaVal(emaLAnkleY, lm.get(LEFT_ANKLE).y());
+        if (isVisible(lm, RIGHT_ANKLE)) emaRAnkleY = emaVal(emaRAnkleY, lm.get(RIGHT_ANKLE).y());
+        if (isVisible(lm, LEFT_HEEL)) emaLHeelY = emaVal(emaLHeelY, lm.get(LEFT_HEEL).y());
+        if (isVisible(lm, RIGHT_HEEL)) emaRHeelY = emaVal(emaRHeelY, lm.get(RIGHT_HEEL).y());
+        if (isVisible(lm, LEFT_ELBOW)) emaLElbowY = emaVal(emaLElbowY, lm.get(LEFT_ELBOW).y());
+        if (isVisible(lm, RIGHT_ELBOW)) emaRElbowY = emaVal(emaRElbowY, lm.get(RIGHT_ELBOW).y());
         if (allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER))
-            emaShoulderWidth = emaVal(emaShoulderWidth,
-                    distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER));
+            emaShoulderWidth = emaVal(emaShoulderWidth, distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER));
     }
 
 
     private void updateView() {
-        ViewMode raw = emaShoulderWidth > 0
-                ? (emaShoulderWidth < SIDE_THRESHOLD
-                ? ViewMode.SIDE : ViewMode.FRONT)
-                : ViewMode.UNKNOWN;
+        ViewMode raw = emaShoulderWidth > 0 ? (emaShoulderWidth < SIDE_THRESHOLD ? ViewMode.SIDE : ViewMode.FRONT) : ViewMode.UNKNOWN;
 
         if (raw == ViewMode.UNKNOWN) return;
 
@@ -481,16 +401,14 @@ public class GluteBridgeExercise extends BaseExercise {
             candidateView = raw;
             candidateCount = 1;
         }
-        if (candidateCount >= STABLE_FRAMES
-                && currentView != candidateView) {
+        if (candidateCount >= STABLE_FRAMES && currentView != candidateView) {
             currentView = candidateView;
         }
     }
 
     private float emaVal(float prev, float newVal) {
-        if (newVal < 0 || newVal > 1f
-                || Float.isNaN(newVal)
-                || Float.isInfinite(newVal)) return prev;
+        if (newVal < 0 || newVal > 1f || Float.isNaN(newVal) || Float.isInfinite(newVal))
+            return prev;
         if (prev < 0) return newVal;
         return prev + EMA_ALPHA * (newVal - prev);
     }

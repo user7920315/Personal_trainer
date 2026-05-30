@@ -25,49 +25,37 @@ public class PoseRepository {
 
     private static final String MODEL_FILE = "pose_landmarker_full.task";
 
-    private final PoseLandmarker      poseLandmarker;
-    private final BaseExercise        currentExercise;
-    private final ExecutorService     cameraExecutor;
-    private final Handler             mainHandler;
-    private final ErrorDebouncer      errorDebouncer;
+    private final PoseLandmarker poseLandmarker;
+    private final BaseExercise currentExercise;
+    private final ExecutorService cameraExecutor;
+    private final Handler mainHandler;
+    private final ErrorDebouncer errorDebouncer;
 
-    private Bitmap       lastFrameBitmap;
+    private Bitmap lastFrameBitmap;
     private final Object bitmapLock = new Object();
 
     private final AtomicLong lastTimestampUs = new AtomicLong(0L);
 
     public interface PoseCallback {
-        void onAnalysis(BaseExercise.AnalysisResult analysis,
-                        PoseLandmarkerResult poseResult,
-                        Bitmap frameBitmap);
+        void onAnalysis(BaseExercise.AnalysisResult analysis, PoseLandmarkerResult poseResult, Bitmap frameBitmap);
     }
 
     private PoseCallback callback;
 
     public PoseRepository(Context context, BaseExercise exercise) throws Exception {
         this.currentExercise = exercise;
-        this.cameraExecutor  = Executors.newSingleThreadExecutor();
-        this.mainHandler     = new Handler(Looper.getMainLooper());
-        this.errorDebouncer  = new ErrorDebouncer();
-        this.poseLandmarker  = createPoseLandmarker(context);
+        this.cameraExecutor = Executors.newSingleThreadExecutor();
+        this.mainHandler = new Handler(Looper.getMainLooper());
+        this.errorDebouncer = new ErrorDebouncer();
+        this.poseLandmarker = createPoseLandmarker(context);
     }
 
     private PoseLandmarker createPoseLandmarker(Context context) throws Exception {
-        BaseOptions base = BaseOptions.builder()
-                .setModelAssetPath(MODEL_FILE)
+        BaseOptions base = BaseOptions.builder().setModelAssetPath(MODEL_FILE).build();
+
+        PoseLandmarker.PoseLandmarkerOptions opts = PoseLandmarker.PoseLandmarkerOptions.builder().setBaseOptions(base).setRunningMode(RunningMode.LIVE_STREAM).setNumPoses(1).setMinPoseDetectionConfidence(0.5f).setMinPosePresenceConfidence(0.5f).setMinTrackingConfidence(0.5f).setResultListener((result, image) -> onPoseResultInternal(result))
+
                 .build();
-
-        PoseLandmarker.PoseLandmarkerOptions opts =
-                PoseLandmarker.PoseLandmarkerOptions.builder()
-                        .setBaseOptions(base)
-                        .setRunningMode(RunningMode.LIVE_STREAM)
-                        .setNumPoses(1)
-                        .setMinPoseDetectionConfidence(0.5f)
-                        .setMinPosePresenceConfidence(0.5f)
-                        .setMinTrackingConfidence(0.5f)
-                        .setResultListener((result, image) -> onPoseResultInternal(result))
-
-                        .build();
 
         return PoseLandmarker.createFromOptions(context, opts);
     }
@@ -91,8 +79,7 @@ public class PoseRepository {
 
                 matrix.postScale(-1f, 1f, source.getWidth() / 2f, source.getHeight() / 2f);
 
-                rotated = Bitmap.createBitmap(
-                        source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
+                rotated = Bitmap.createBitmap(source, 0, 0, source.getWidth(), source.getHeight(), matrix, true);
                 source.recycle();
 
 
@@ -108,10 +95,7 @@ public class PoseRepository {
                 }
                 lastTimestampUs.set(tsUs);
 
-                poseLandmarker.detectAsync(
-                        new BitmapImageBuilder(rotated).build(),
-                        tsUs
-                );
+                poseLandmarker.detectAsync(new BitmapImageBuilder(rotated).build(), tsUs);
 
             } catch (Exception e) {
             } finally {
@@ -122,11 +106,11 @@ public class PoseRepository {
 
     private Bitmap convertImageProxyToBitmap(ImageProxy imageProxy) {
         try {
-            ImageProxy.PlaneProxy plane  = imageProxy.getPlanes()[0];
-            ByteBuffer            buffer = plane.getBuffer();
-            int width      = imageProxy.getWidth();
-            int height     = imageProxy.getHeight();
-            int rowStride  = plane.getRowStride();
+            ImageProxy.PlaneProxy plane = imageProxy.getPlanes()[0];
+            ByteBuffer buffer = plane.getBuffer();
+            int width = imageProxy.getWidth();
+            int height = imageProxy.getHeight();
+            int rowStride = plane.getRowStride();
             int pixelStride = plane.getPixelStride();
 
             Bitmap bmp = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
@@ -157,9 +141,7 @@ public class PoseRepository {
     private void onPoseResultInternal(PoseLandmarkerResult result) {
         final Bitmap frameBitmap;
         synchronized (bitmapLock) {
-            frameBitmap = (lastFrameBitmap != null && !lastFrameBitmap.isRecycled())
-                    ? lastFrameBitmap.copy(Bitmap.Config.ARGB_8888, false)
-                    : null;
+            frameBitmap = (lastFrameBitmap != null && !lastFrameBitmap.isRecycled()) ? lastFrameBitmap.copy(Bitmap.Config.ARGB_8888, false) : null;
         }
 
 
@@ -170,14 +152,13 @@ public class PoseRepository {
             return;
         }
 
-        BaseExercise.AnalysisResult analysis =
-                currentExercise.analyze(result.landmarks().get(0));
+        BaseExercise.AnalysisResult analysis = currentExercise.analyze(result.landmarks().get(0));
 
         long nowMs = System.currentTimeMillis();
         analysis.errors = errorDebouncer.filter(analysis.errors, nowMs);
 
         final BaseExercise.AnalysisResult finalAnalysis = analysis;
-        final PoseLandmarkerResult        finalResult   = result;
+        final PoseLandmarkerResult finalResult = result;
 
         mainHandler.post(() -> {
             if (callback != null) callback.onAnalysis(finalAnalysis, finalResult, frameBitmap);
@@ -193,7 +174,8 @@ public class PoseRepository {
         cameraExecutor.shutdown();
         try {
             if (poseLandmarker != null) poseLandmarker.close();
-        } catch (Exception ignored) {}
+        } catch (Exception ignored) {
+        }
         synchronized (bitmapLock) {
             if (lastFrameBitmap != null) {
                 lastFrameBitmap.recycle();

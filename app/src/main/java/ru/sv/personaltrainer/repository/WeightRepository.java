@@ -49,7 +49,8 @@ public class WeightRepository {
 
     public List<WeightRecord> loadWeightLog() {
         String json = prefs.getString(KEY_WEIGHT_LOG, "[]");
-        Type type = new TypeToken<List<WeightRecord>>(){}.getType();
+        Type type = new TypeToken<List<WeightRecord>>() {
+        }.getType();
         List<WeightRecord> list = gson.fromJson(json, type);
         return list != null ? list : new ArrayList<>();
     }

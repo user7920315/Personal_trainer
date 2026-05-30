@@ -102,9 +102,7 @@ public class PlankExercise extends BaseExercise {
 
         result.repCount = repCount;
         result.holdSeconds = currentSeconds;
-        result.mainFeedback = result.errors.isEmpty()
-                ? buildFeedback()
-                : result.errors.get(0);
+        result.mainFeedback = result.errors.isEmpty() ? buildFeedback() : result.errors.get(0);
 
         return result;
     }
@@ -204,8 +202,7 @@ public class PlankExercise extends BaseExercise {
         }
 
         boolean hasWrist = emaWristX > 0 && emaWristY > 0;
-        boolean hasBody = (emaAnkleX > 0 && emaAnkleY > 0)
-                || (emaKneeX > 0 && emaKneeY > 0);
+        boolean hasBody = (emaAnkleX > 0 && emaAnkleY > 0) || (emaKneeX > 0 && emaKneeY > 0);
 
         if (emaShoulderX > 0 && emaShoulderY > 0 && hasWrist && hasBody) {
             checkArmBodyAngle(result);
@@ -230,8 +227,7 @@ public class PlankExercise extends BaseExercise {
 
     private void checkBodyLineSide(AnalysisResult result) {
         float diff = emaHipY - emaShoulderY;
-        float scale = (emaKneeY > 0 && emaShoulderY > 0)
-                ? Math.abs(emaKneeY - emaShoulderY) : 0.20f;
+        float scale = (emaKneeY > 0 && emaShoulderY > 0) ? Math.abs(emaKneeY - emaShoulderY) : 0.20f;
         if (scale < 0.05f) scale = 0.10f;
 
         float deviation = diff / scale;
@@ -269,11 +265,7 @@ public class PlankExercise extends BaseExercise {
         double diff = Math.abs(angleBetween - 90.0);
 
         if (diff > ARM_BODY_ANGLE_ERROR) {
-            result.addError(
-                    angleBetween < 90.0
-                            ? getString(R.string.error_plank_shoulders_forward)
-                            : getString(R.string.error_plank_shoulders_back),
-                    LEFT_SHOULDER, RIGHT_SHOULDER, LEFT_WRIST, RIGHT_WRIST);
+            result.addError(angleBetween < 90.0 ? getString(R.string.error_plank_shoulders_forward) : getString(R.string.error_plank_shoulders_back), LEFT_SHOULDER, RIGHT_SHOULDER, LEFT_WRIST, RIGHT_WRIST);
         } else if (diff > ARM_BODY_ANGLE_WARN) {
             result.addError(getString(R.string.error_plank_arms_adjust), LEFT_SHOULDER, RIGHT_SHOULDER);
         }
@@ -301,9 +293,7 @@ public class PlankExercise extends BaseExercise {
         float diff = emaLShoulderY - emaRShoulderY;
 
         if (Math.abs(diff) > SHOULDER_TILT_ERROR) {
-            result.addError(
-                    diff > 0 ? getString(R.string.error_plank_shoulder_tilt_left) : getString(R.string.error_plank_shoulder_tilt_right),
-                    LEFT_SHOULDER, RIGHT_SHOULDER);
+            result.addError(diff > 0 ? getString(R.string.error_plank_shoulder_tilt_left) : getString(R.string.error_plank_shoulder_tilt_right), LEFT_SHOULDER, RIGHT_SHOULDER);
         } else if (Math.abs(diff) > SHOULDER_TILT_WARN) {
             result.addError(getString(R.string.error_plank_shoulder_tilt_weak), LEFT_SHOULDER, RIGHT_SHOULDER);
         }
@@ -313,9 +303,7 @@ public class PlankExercise extends BaseExercise {
         float diff = emaLKneeY - emaRKneeY;
 
         if (Math.abs(diff) > KNEE_TILT_ERROR) {
-            result.addError(
-                    diff > 0 ? getString(R.string.error_plank_knee_tilt_left) : getString(R.string.error_plank_knee_tilt_right),
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError(diff > 0 ? getString(R.string.error_plank_knee_tilt_left) : getString(R.string.error_plank_knee_tilt_right), LEFT_KNEE, RIGHT_KNEE);
         } else if (Math.abs(diff) > KNEE_TILT_WARN) {
             result.addError(getString(R.string.error_plank_knee_tilt_weak), LEFT_KNEE, RIGHT_KNEE);
         }
@@ -440,7 +428,8 @@ public class PlankExercise extends BaseExercise {
     }
 
     private float emaVal(float prev, float newVal) {
-        if (newVal < 0 || newVal > 1.0f || Float.isNaN(newVal) || Float.isInfinite(newVal)) return prev;
+        if (newVal < 0 || newVal > 1.0f || Float.isNaN(newVal) || Float.isInfinite(newVal))
+            return prev;
         if (prev < 0) return newVal;
         return prev + EMA_ALPHA * (newVal - prev);
     }

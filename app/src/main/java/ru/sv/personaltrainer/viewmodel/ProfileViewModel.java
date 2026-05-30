@@ -32,11 +32,25 @@ public class ProfileViewModel extends AndroidViewModel {
     private final MutableLiveData<List<WorkoutRecord>> workouts = new MutableLiveData<>();
     private final MutableLiveData<WorkoutRepository.Stats> stats = new MutableLiveData<>();
 
-    public LiveData<UserProfile> getUserProfile() { return userProfile; }
-    public LiveData<BmiResult> getBmiResult() { return bmiResult; }
-    public LiveData<List<WeightRecord>> getWeightLog() { return weightLog; }
-    public LiveData<List<WorkoutRecord>> getWorkouts() { return workouts; }
-    public LiveData<WorkoutRepository.Stats> getStats() { return stats; }
+    public LiveData<UserProfile> getUserProfile() {
+        return userProfile;
+    }
+
+    public LiveData<BmiResult> getBmiResult() {
+        return bmiResult;
+    }
+
+    public LiveData<List<WeightRecord>> getWeightLog() {
+        return weightLog;
+    }
+
+    public LiveData<List<WorkoutRecord>> getWorkouts() {
+        return workouts;
+    }
+
+    public LiveData<WorkoutRepository.Stats> getStats() {
+        return stats;
+    }
 
     public ProfileViewModel(@NonNull Application application) {
         super(application);
@@ -79,13 +93,28 @@ public class ProfileViewModel extends AndroidViewModel {
 
         String category;
         int color;
-        if (bmi < 16.0f) { category = getString(R.string.profile_bmi_severe_deficit); color = getColor(R.color.bmi_severe_deficit); }
-        else if (bmi < 18.5f) { category = getString(R.string.profile_bmi_underweight); color = getColor(R.color.bmi_underweight); }
-        else if (bmi < 25.0f) { category = getString(R.string.profile_bmi_normal); color = getColor(R.color.bmi_normal); }
-        else if (bmi < 30.0f) { category = getString(R.string.profile_bmi_overweight); color = getColor(R.color.bmi_overweight); }
-        else if (bmi < 35.0f) { category = getString(R.string.profile_bmi_obesity_1); color = getColor(R.color.bmi_obesity_1); }
-        else if (bmi < 40.0f) { category = getString(R.string.profile_bmi_obesity_2); color = getColor(R.color.bmi_obesity_2); }
-        else { category = getString(R.string.profile_bmi_obesity_3); color = getColor(R.color.bmi_obesity_3); }
+        if (bmi < 16.0f) {
+            category = getString(R.string.profile_bmi_severe_deficit);
+            color = getColor(R.color.bmi_severe_deficit);
+        } else if (bmi < 18.5f) {
+            category = getString(R.string.profile_bmi_underweight);
+            color = getColor(R.color.bmi_underweight);
+        } else if (bmi < 25.0f) {
+            category = getString(R.string.profile_bmi_normal);
+            color = getColor(R.color.bmi_normal);
+        } else if (bmi < 30.0f) {
+            category = getString(R.string.profile_bmi_overweight);
+            color = getColor(R.color.bmi_overweight);
+        } else if (bmi < 35.0f) {
+            category = getString(R.string.profile_bmi_obesity_1);
+            color = getColor(R.color.bmi_obesity_1);
+        } else if (bmi < 40.0f) {
+            category = getString(R.string.profile_bmi_obesity_2);
+            color = getColor(R.color.bmi_obesity_2);
+        } else {
+            category = getString(R.string.profile_bmi_obesity_3);
+            color = getColor(R.color.bmi_obesity_3);
+        }
 
         String norm = buildNormText(bmi, age, "male".equals(gender));
         bmiResult.setValue(new BmiResult(bmi, category, color, norm));
@@ -110,8 +139,7 @@ public class ProfileViewModel extends AndroidViewModel {
         }
         String genderStr = isMale ? getString(R.string.men) : getString(R.string.women);
         String inNorm = (bmi >= normMin && bmi <= normMax) ? " ✓" : "";
-        return String.format(java.util.Locale.US,
-                getString(R.string.profile_bmi_norm_format), genderStr, age, normMin, normMax, inNorm);
+        return String.format(java.util.Locale.US, getString(R.string.profile_bmi_norm_format), genderStr, age, normMin, normMax, inNorm);
     }
 
     public void clearHistory() {

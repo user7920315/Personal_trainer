@@ -142,6 +142,7 @@ public class OnBoardingActivity extends AppCompatActivity {
 
         class VH extends RecyclerView.ViewHolder {
             ItemOnboardingBinding b;
+
             VH(ItemOnboardingBinding b) {
                 super(b.getRoot());
                 this.b = b;

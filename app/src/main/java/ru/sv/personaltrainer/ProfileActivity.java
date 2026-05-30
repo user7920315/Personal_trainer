@@ -81,9 +81,7 @@ public class ProfileActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.rootProfile, (v, insets) -> {
-            Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() |
-                            WindowInsetsCompat.Type.displayCutout());
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
@@ -133,7 +131,8 @@ public class ProfileActivity extends AppCompatActivity {
         viewModel.getUserProfile().observe(this, profile -> {
             if (profile == null) return;
             if (profile.height > 0) etHeight.setText(String.valueOf((int) profile.height));
-            if (profile.weight > 0) etWeight.setText(String.format(Locale.US, "%.1f", profile.weight));
+            if (profile.weight > 0)
+                etWeight.setText(String.format(Locale.US, "%.1f", profile.weight));
             if (profile.age > 0) etAge.setText(String.valueOf(profile.age));
             isMale = "male".equals(profile.gender);
             applyGenderState();
@@ -341,12 +340,7 @@ public class ProfileActivity extends AppCompatActivity {
             Toast.makeText(this, getString(R.string.toast_history_empty), Toast.LENGTH_SHORT).show();
             return;
         }
-        new AlertDialog.Builder(this)
-                .setTitle(getString(R.string.dialog_clear_title))
-                .setMessage(getString(R.string.dialog_clear_message))
-                .setPositiveButton(getString(R.string.dialog_clear_delete), (d, w) -> viewModel.clearHistory())
-                .setNegativeButton(getString(R.string.dialog_clear_cancel), null)
-                .show();
+        new AlertDialog.Builder(this).setTitle(getString(R.string.dialog_clear_title)).setMessage(getString(R.string.dialog_clear_message)).setPositiveButton(getString(R.string.dialog_clear_delete), (d, w) -> viewModel.clearHistory()).setNegativeButton(getString(R.string.dialog_clear_cancel), null).show();
     }
 
     private static class WorkoutHistoryAdapter extends RecyclerView.Adapter<WorkoutHistoryAdapter.ViewHolder> {
@@ -359,8 +353,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            ItemWorkoutHistoryBinding b = ItemWorkoutHistoryBinding.inflate(
-                    LayoutInflater.from(parent.getContext()), parent, false);
+            ItemWorkoutHistoryBinding b = ItemWorkoutHistoryBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
             return new ViewHolder(b);
         }
 
@@ -380,6 +373,7 @@ public class ProfileActivity extends AppCompatActivity {
 
         static class ViewHolder extends RecyclerView.ViewHolder {
             ItemWorkoutHistoryBinding b;
+
             ViewHolder(ItemWorkoutHistoryBinding b) {
                 super(b.getRoot());
                 this.b = b;

@@ -22,20 +22,13 @@ public class PushUpExercise extends BaseExercise {
             return result;
         }
 
-        boolean hasShoulders = allVisible(lm,
-                LEFT_SHOULDER, RIGHT_SHOULDER);
-        boolean hasElbows = allVisible(lm,
-                LEFT_ELBOW, RIGHT_ELBOW);
-        boolean hasWrists = allVisible(lm,
-                LEFT_WRIST, RIGHT_WRIST);
-        boolean hasHips = allVisible(lm,
-                LEFT_HIP, RIGHT_HIP);
-        boolean hasKnees = allVisible(lm,
-                LEFT_KNEE, RIGHT_KNEE);
-        boolean hasAnkles = allVisible(lm,
-                LEFT_ANKLE, RIGHT_ANKLE);
-        boolean hasHeels = allVisible(lm,
-                LEFT_HEEL, RIGHT_HEEL);
+        boolean hasShoulders = allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
+        boolean hasElbows = allVisible(lm, LEFT_ELBOW, RIGHT_ELBOW);
+        boolean hasWrists = allVisible(lm, LEFT_WRIST, RIGHT_WRIST);
+        boolean hasHips = allVisible(lm, LEFT_HIP, RIGHT_HIP);
+        boolean hasKnees = allVisible(lm, LEFT_KNEE, RIGHT_KNEE);
+        boolean hasAnkles = allVisible(lm, LEFT_ANKLE, RIGHT_ANKLE);
+        boolean hasHeels = allVisible(lm, LEFT_HEEL, RIGHT_HEEL);
         boolean hasNose = isVisible(lm, NOSE);
 
         if (!hasShoulders) {
@@ -44,12 +37,8 @@ public class PushUpExercise extends BaseExercise {
             return result;
         }
 
-        float leftElbow = hasElbows
-                ? getAngle(lm, LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST)
-                : -1f;
-        float rightElbow = hasElbows
-                ? getAngle(lm, RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST)
-                : -1f;
+        float leftElbow = hasElbows ? getAngle(lm, LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST) : -1f;
+        float rightElbow = hasElbows ? getAngle(lm, RIGHT_SHOULDER, RIGHT_ELBOW, RIGHT_WRIST) : -1f;
 
         float avgElbow;
         if (leftElbow < 0 && rightElbow < 0) {
@@ -73,48 +62,28 @@ public class PushUpExercise extends BaseExercise {
         if (hasShoulders && hasElbows) {
             float shoulderW = distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER);
             float elbowW = distX(lm, LEFT_ELBOW, RIGHT_ELBOW);
-            if (shoulderW > 0 && elbowW > 0
-                    && elbowW > shoulderW * 1.5f) {
-                result.addError(
-                        getString(R.string.error_push_up_elbows_wide),
-                        LEFT_ELBOW, RIGHT_ELBOW);
+            if (shoulderW > 0 && elbowW > 0 && elbowW > shoulderW * 1.5f) {
+                result.addError(getString(R.string.error_push_up_elbows_wide), LEFT_ELBOW, RIGHT_ELBOW);
             }
         }
 
         if (result.phase.equals("UP") && avgElbow < 150f) {
-            result.addError(
-                    getString(R.string.error_push_up_not_full_extension),
-                    LEFT_ELBOW, RIGHT_ELBOW);
+            result.addError(getString(R.string.error_push_up_not_full_extension), LEFT_ELBOW, RIGHT_ELBOW);
         }
 
         if (result.phase.equals("DOWN") && avgElbow > 110f) {
-            result.addError(
-                    getString(R.string.error_push_up_not_low_enough),
-                    LEFT_ELBOW, RIGHT_ELBOW);
+            result.addError(getString(R.string.error_push_up_not_low_enough), LEFT_ELBOW, RIGHT_ELBOW);
         }
 
-        analyzeBackAndHips(lm, result,
-                hasShoulders, hasHips, hasKnees,
-                hasAnkles, hasWrists, hasNose);
+        analyzeBackAndHips(lm, result, hasShoulders, hasHips, hasKnees, hasAnkles, hasWrists, hasNose);
 
         result.repCount = repCount;
-        result.mainFeedback = result.errors.isEmpty()
-                ? (result.phase.equals("DOWN")
-                ? getString(R.string.feedback_push_up_down)
-                : getString(R.string.feedback_push_up_up, repCount))
-                : result.errors.get(0);
+        result.mainFeedback = result.errors.isEmpty() ? (result.phase.equals("DOWN") ? getString(R.string.feedback_push_up_down) : getString(R.string.feedback_push_up_up, repCount)) : result.errors.get(0);
 
         return result;
     }
 
-    private void analyzeBackAndHips(List<NormalizedLandmark> lm,
-                                    AnalysisResult result,
-                                    boolean hasShoulders,
-                                    boolean hasHips,
-                                    boolean hasKnees,
-                                    boolean hasAnkles,
-                                    boolean hasWrists,
-                                    boolean hasNose) {
+    private void analyzeBackAndHips(List<NormalizedLandmark> lm, AnalysisResult result, boolean hasShoulders, boolean hasHips, boolean hasKnees, boolean hasAnkles, boolean hasWrists, boolean hasNose) {
 
         boolean hasElbows = allVisible(lm, LEFT_ELBOW, RIGHT_ELBOW);
 
@@ -128,23 +97,16 @@ public class PushUpExercise extends BaseExercise {
                 float diff = hipY - elbowY;
 
                 if (diff > 0.04f) {
-                    result.addError(
-                            getString(R.string.error_push_up_hips_sag),
-                            LEFT_HIP, RIGHT_HIP);
+                    result.addError(getString(R.string.error_push_up_hips_sag), LEFT_HIP, RIGHT_HIP);
 
                 } else if (diff < -0.04f) {
-                    result.addError(
-                            getString(R.string.error_push_up_hips_high),
-                            LEFT_HIP, RIGHT_HIP);
+                    result.addError(getString(R.string.error_push_up_hips_high), LEFT_HIP, RIGHT_HIP);
                 }
 
                 if (hasKnees) {
-                    float backAngle = getAngle(lm,
-                            LEFT_SHOULDER, LEFT_HIP, LEFT_KNEE);
+                    float backAngle = getAngle(lm, LEFT_SHOULDER, LEFT_HIP, LEFT_KNEE);
                     if (backAngle >= 0 && backAngle < 150f) {
-                        result.addError(
-                                getString(R.string.error_push_up_back_not_straight),
-                                LEFT_HIP, RIGHT_HIP);
+                        result.addError(getString(R.string.error_push_up_back_not_straight), LEFT_HIP, RIGHT_HIP);
                     }
                 }
             }
@@ -161,22 +123,16 @@ public class PushUpExercise extends BaseExercise {
             float tilt = Math.abs(leftShoulderY - rightShoulderY);
 
             if (tilt > 0.05f) {
-                result.addError(
-                        getString(R.string.error_push_up_shoulders_tilted),
-                        LEFT_SHOULDER, RIGHT_SHOULDER);
+                result.addError(getString(R.string.error_push_up_shoulders_tilted), LEFT_SHOULDER, RIGHT_SHOULDER);
             }
 
             if (hasNose) {
                 float noseY = lm.get(NOSE).y();
                 if (shoulderY >= 0) {
                     if (noseY > shoulderY + 0.08f) {
-                        result.addError(
-                                getString(R.string.error_push_up_head_down),
-                                NOSE);
+                        result.addError(getString(R.string.error_push_up_head_down), NOSE);
                     } else if (noseY < shoulderY - 0.08f) {
-                        result.addError(
-                                getString(R.string.error_push_up_head_up),
-                                NOSE);
+                        result.addError(getString(R.string.error_push_up_head_up), NOSE);
                     }
                 }
             }
@@ -192,19 +148,13 @@ public class PushUpExercise extends BaseExercise {
             float noseY = lm.get(NOSE).y();
 
             if (tilt > 0.05) {
-                result.addError(
-                        getString(R.string.error_push_up_shoulders_tilted),
-                        LEFT_SHOULDER, RIGHT_SHOULDER);
+                result.addError(getString(R.string.error_push_up_shoulders_tilted), LEFT_SHOULDER, RIGHT_SHOULDER);
             }
 
             if (noseY > shoulderY + 0.08f) {
-                result.addError(
-                        getString(R.string.error_push_up_head_down),
-                        NOSE);
+                result.addError(getString(R.string.error_push_up_head_down), NOSE);
             } else if (noseY < shoulderY - 0.08f) {
-                result.addError(
-                        getString(R.string.error_push_up_head_up),
-                        NOSE);
+                result.addError(getString(R.string.error_push_up_head_up), NOSE);
             }
         }
     }

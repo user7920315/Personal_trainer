@@ -99,37 +99,26 @@ public class SquatExercise extends BaseExercise {
         }
 
         result.repCount = repCount;
-        result.mainFeedback = result.errors.isEmpty()
-                ? buildFeedback(result.phase, view)
-                : result.errors.get(0);
+        result.mainFeedback = result.errors.isEmpty() ? buildFeedback(result.phase, view) : result.errors.get(0);
 
         return result;
     }
 
-    private void analyzeSide(List<NormalizedLandmark> lm,
-                             AnalysisResult result,
-                             Side s) {
+    private void analyzeSide(List<NormalizedLandmark> lm, AnalysisResult result, Side s) {
 
         checkDepth(result, s, lm);
 
         updateBackEMA(lm, s);
-        if (s.hasShoulder && s.hasHip
-                && s.hasKnee && s.hasAnkle) {
+        if (s.hasShoulder && s.hasHip && s.hasKnee && s.hasAnkle) {
             checkBack(result, s);
         }
         if (s.isLeft) {
-            if (s.hasHeel && s.hasToe
-                    && emaLHeelY > 0 && emaLFootIdxY > 0 && emaLAnkleY > 0) {
-                checkHeel(result,
-                        emaLHeelY, emaLFootIdxY, emaLAnkleY,
-                        true, s.heelIdx, s.toeIdx);
+            if (s.hasHeel && s.hasToe && emaLHeelY > 0 && emaLFootIdxY > 0 && emaLAnkleY > 0) {
+                checkHeel(result, emaLHeelY, emaLFootIdxY, emaLAnkleY, true, s.heelIdx, s.toeIdx);
             }
         } else {
-            if (s.hasHeel && s.hasToe
-                    && emaRHeelY > 0 && emaRFootIdxY > 0 && emaRAnkleY > 0) {
-                checkHeel(result,
-                        emaRHeelY, emaRFootIdxY, emaRAnkleY,
-                        false, s.heelIdx, s.toeIdx);
+            if (s.hasHeel && s.hasToe && emaRHeelY > 0 && emaRFootIdxY > 0 && emaRAnkleY > 0) {
+                checkHeel(result, emaRHeelY, emaRFootIdxY, emaRAnkleY, false, s.heelIdx, s.toeIdx);
             }
         }
 
@@ -138,50 +127,29 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    private void analyzeFront(List<NormalizedLandmark> lm,
-                              AnalysisResult result,
-                              Side s) {
+    private void analyzeFront(List<NormalizedLandmark> lm, AnalysisResult result, Side s) {
 
 
         checkDepth(result, s, lm);
 
-        if (allVisible(lm, LEFT_KNEE, RIGHT_KNEE,
-                LEFT_ANKLE, RIGHT_ANKLE)) {
+        if (allVisible(lm, LEFT_KNEE, RIGHT_KNEE, LEFT_ANKLE, RIGHT_ANKLE)) {
             checkKneesInward(lm, result);
         }
 
-        if (isVisible(lm, LEFT_HEEL)
-                && isVisible(lm, LEFT_FOOT_INDEX)
-                && isVisible(lm, LEFT_ANKLE)
-                && emaLHeelY > 0
-                && emaLFootIdxY > 0
-                && emaLAnkleY > 0) {
-            checkHeel(result,
-                    emaLHeelY, emaLFootIdxY, emaLAnkleY,
-                    true, LEFT_HEEL, LEFT_FOOT_INDEX);
+        if (isVisible(lm, LEFT_HEEL) && isVisible(lm, LEFT_FOOT_INDEX) && isVisible(lm, LEFT_ANKLE) && emaLHeelY > 0 && emaLFootIdxY > 0 && emaLAnkleY > 0) {
+            checkHeel(result, emaLHeelY, emaLFootIdxY, emaLAnkleY, true, LEFT_HEEL, LEFT_FOOT_INDEX);
         }
 
-        if (isVisible(lm, RIGHT_HEEL)
-                && isVisible(lm, RIGHT_FOOT_INDEX)
-                && isVisible(lm, RIGHT_ANKLE)
-                && emaRHeelY > 0
-                && emaRFootIdxY > 0
-                && emaRAnkleY > 0) {
-            checkHeel(result,
-                    emaRHeelY, emaRFootIdxY, emaRAnkleY,
-                    false, RIGHT_HEEL, RIGHT_FOOT_INDEX);
+        if (isVisible(lm, RIGHT_HEEL) && isVisible(lm, RIGHT_FOOT_INDEX) && isVisible(lm, RIGHT_ANKLE) && emaRHeelY > 0 && emaRFootIdxY > 0 && emaRAnkleY > 0) {
+            checkHeel(result, emaRHeelY, emaRFootIdxY, emaRAnkleY, false, RIGHT_HEEL, RIGHT_FOOT_INDEX);
         }
 
-        if (allVisible(lm, LEFT_HIP, RIGHT_HIP,
-                LEFT_KNEE, RIGHT_KNEE,
-                LEFT_ANKLE, RIGHT_ANKLE)) {
+        if (allVisible(lm, LEFT_HIP, RIGHT_HIP, LEFT_KNEE, RIGHT_KNEE, LEFT_ANKLE, RIGHT_ANKLE)) {
             checkAsymmetry(lm, result);
         }
     }
 
-    private void checkDepth(AnalysisResult result,
-                            Side s,
-                            List<NormalizedLandmark> lm) {
+    private void checkDepth(AnalysisResult result, Side s, List<NormalizedLandmark> lm) {
 
         if (!result.phase.equals("DOWN")) return;
 
@@ -201,34 +169,24 @@ public class SquatExercise extends BaseExercise {
 
 
         if (ratio < DEPTH_TOO_SHALLOW_ERR) {
-            result.addError(
-                    getString(R.string.error_squat_depth_shallow),
-                    s.hipIdx, s.kneeIdx);
+            result.addError(getString(R.string.error_squat_depth_shallow), s.hipIdx, s.kneeIdx);
 
         } else if (ratio < DEPTH_TOO_SHALLOW_WARN) {
-            result.addError(
-                    getString(R.string.error_squat_depth_shallow_warn),
-                    s.hipIdx, s.kneeIdx);
+            result.addError(getString(R.string.error_squat_depth_shallow_warn), s.hipIdx, s.kneeIdx);
 
         } else if (ratio > DEPTH_TOO_DEEP_ERR) {
-            result.addError(
-                    getString(R.string.error_squat_depth_deep),
-                    s.hipIdx, s.kneeIdx);
+            result.addError(getString(R.string.error_squat_depth_deep), s.hipIdx, s.kneeIdx);
 
         } else if (ratio > DEPTH_TOO_DEEP_WARN) {
-            result.addError(
-                    getString(R.string.error_squat_depth_deep_warn),
-                    s.hipIdx, s.kneeIdx);
+            result.addError(getString(R.string.error_squat_depth_deep_warn), s.hipIdx, s.kneeIdx);
         }
 
     }
 
     private void checkBack(AnalysisResult result, Side s) {
 
-        if (!isFinite(emaShX) || !isFinite(emaShY)
-                || !isFinite(emaHiX) || !isFinite(emaHiY)
-                || !isFinite(emaKnX) || !isFinite(emaKnY)
-                || !isFinite(emaAnX) || !isFinite(emaAnY)) return;
+        if (!isFinite(emaShX) || !isFinite(emaShY) || !isFinite(emaHiX) || !isFinite(emaHiY) || !isFinite(emaKnX) || !isFinite(emaKnY) || !isFinite(emaAnX) || !isFinite(emaAnY))
+            return;
 
 
         double backDx = emaHiX - emaShX;
@@ -248,23 +206,13 @@ public class SquatExercise extends BaseExercise {
 
 
         if (diff > BACK_DIFF_ERROR) {
-            result.addError(
-                    getString(R.string.error_squat_back_parallel),
-                    s.shoulderIdx, s.hipIdx);
+            result.addError(getString(R.string.error_squat_back_parallel), s.shoulderIdx, s.hipIdx);
         } else if (diff > BACK_DIFF_WARN) {
-            result.addError(
-                    getString(R.string.error_squat_back_warn),
-                    s.hipIdx);
+            result.addError(getString(R.string.error_squat_back_warn), s.hipIdx);
         }
     }
 
-    private void checkHeel(AnalysisResult result,
-                           float heelY,
-                           float footIndexY,
-                           float ankleY,
-                           boolean isLeft,
-                           int heelIdx,
-                           int footIdxIdx) {
+    private void checkHeel(AnalysisResult result, float heelY, float footIndexY, float ankleY, boolean isLeft, int heelIdx, int footIdxIdx) {
 
         float ankleHeelDist = Math.abs(ankleY - heelY);
         if (ankleHeelDist < 0.01f) {
@@ -279,20 +227,14 @@ public class SquatExercise extends BaseExercise {
 
 
         if (deviation > HEEL_ERROR) {
-            result.addError(
-                    getString(isLeft ? R.string.error_squat_heel_lift_left : R.string.error_squat_heel_lift_right),
-                    heelIdx, footIdxIdx);
+            result.addError(getString(isLeft ? R.string.error_squat_heel_lift_left : R.string.error_squat_heel_lift_right), heelIdx, footIdxIdx);
 
         } else if (deviation > HEEL_WARN) {
-            result.addError(
-                    getString(isLeft ? R.string.error_squat_heel_lift_left_warn : R.string.error_squat_heel_lift_right_warn),
-                    heelIdx);
+            result.addError(getString(isLeft ? R.string.error_squat_heel_lift_left_warn : R.string.error_squat_heel_lift_right_warn), heelIdx);
         }
     }
 
-    private void checkKneeOverToe(List<NormalizedLandmark> lm,
-                                  AnalysisResult result,
-                                  Side s) {
+    private void checkKneeOverToe(List<NormalizedLandmark> lm, AnalysisResult result, Side s) {
         float kneeX = lm.get(s.kneeIdx).x();
         float toeX = lm.get(s.toeIdx).x();
         float ankleX = lm.get(s.ankleIdx).x();
@@ -304,14 +246,11 @@ public class SquatExercise extends BaseExercise {
         float toeRel = (toeX - ankleX) / Math.abs(footDir);
 
         if (Math.abs(kneeRel) > Math.abs(toeRel) + KNEE_OVER_TOE) {
-            result.addError(
-                    getString(R.string.error_squat_knee_over_toe),
-                    s.kneeIdx, s.toeIdx);
+            result.addError(getString(R.string.error_squat_knee_over_toe), s.kneeIdx, s.toeIdx);
         }
     }
 
-    private void checkKneesInward(List<NormalizedLandmark> lm,
-                                  AnalysisResult result) {
+    private void checkKneesInward(List<NormalizedLandmark> lm, AnalysisResult result) {
         float kW = distX(lm, LEFT_KNEE, RIGHT_KNEE);
         float aW = distX(lm, LEFT_ANKLE, RIGHT_ANKLE);
 
@@ -320,18 +259,13 @@ public class SquatExercise extends BaseExercise {
         float ratio = kW / aW;
 
         if (ratio < KNEE_CAVE_ERROR) {
-            result.addError(
-                    getString(R.string.error_squat_knees_inward),
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError(getString(R.string.error_squat_knees_inward), LEFT_KNEE, RIGHT_KNEE);
         } else if (ratio < KNEE_CAVE_WARN) {
-            result.addError(
-                    getString(R.string.error_squat_knees_inward_warn),
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError(getString(R.string.error_squat_knees_inward_warn), LEFT_KNEE, RIGHT_KNEE);
         }
     }
 
-    private void checkAsymmetry(List<NormalizedLandmark> lm,
-                                AnalysisResult result) {
+    private void checkAsymmetry(List<NormalizedLandmark> lm, AnalysisResult result) {
         float lA = getAngle(lm, LEFT_HIP, LEFT_KNEE, LEFT_ANKLE);
         float rA = getAngle(lm, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE);
 
@@ -339,10 +273,7 @@ public class SquatExercise extends BaseExercise {
 
         float diff = Math.abs(lA - rA);
         if (diff > KNEE_ASYMMETRY) {
-            result.addError(lA > rA
-                            ? getString(R.string.error_squat_asymmetry_left)
-                            : getString(R.string.error_squat_asymmetry_right),
-                    lA > rA ? LEFT_KNEE : RIGHT_KNEE);
+            result.addError(lA > rA ? getString(R.string.error_squat_asymmetry_left) : getString(R.string.error_squat_asymmetry_right), lA > rA ? LEFT_KNEE : RIGHT_KNEE);
         }
     }
 
@@ -350,8 +281,7 @@ public class SquatExercise extends BaseExercise {
         ViewMode raw = detectRawView(lm);
 
         if (raw == ViewMode.UNKNOWN) {
-            return currentView != ViewMode.UNKNOWN
-                    ? currentView : ViewMode.UNKNOWN;
+            return currentView != ViewMode.UNKNOWN ? currentView : ViewMode.UNKNOWN;
         }
 
         if (raw == candidateView) {
@@ -361,26 +291,22 @@ public class SquatExercise extends BaseExercise {
             candidateCount = 1;
         }
 
-        if (candidateCount >= STABLE_FRAMES
-                && currentView != candidateView) {
+        if (candidateCount >= STABLE_FRAMES && currentView != candidateView) {
             resetEMA();
             currentView = candidateView;
         }
 
-        return currentView != ViewMode.UNKNOWN
-                ? currentView : raw;
+        return currentView != ViewMode.UNKNOWN ? currentView : raw;
     }
 
     private ViewMode detectRawView(List<NormalizedLandmark> lm) {
         if (emaShoulderWidth > 0) {
-            return emaShoulderWidth < SIDE_THRESHOLD
-                    ? ViewMode.SIDE : ViewMode.FRONT;
+            return emaShoulderWidth < SIDE_THRESHOLD ? ViewMode.SIDE : ViewMode.FRONT;
         }
         if (allVisible(lm, LEFT_HIP, RIGHT_HIP)) {
             float w = distX(lm, LEFT_HIP, RIGHT_HIP);
             if (w >= 0) {
-                return w < SIDE_THRESHOLD
-                        ? ViewMode.SIDE : ViewMode.FRONT;
+                return w < SIDE_THRESHOLD ? ViewMode.SIDE : ViewMode.FRONT;
             }
         }
         return ViewMode.UNKNOWN;
@@ -411,19 +337,15 @@ public class SquatExercise extends BaseExercise {
         }
     }
 
-    private float emaPointY(float prev,
-                            List<NormalizedLandmark> lm,
-                            int idx) {
+    private float emaPointY(float prev, List<NormalizedLandmark> lm, int idx) {
         if (!isVisible(lm, idx)) return -1f;
         float val = lm.get(idx).y();
         return emaVal(prev, val);
     }
 
     private float emaVal(float prev, float newVal) {
-        if (newVal < 0
-                || newVal > 1.0f
-                || Float.isNaN(newVal)
-                || Float.isInfinite(newVal)) return prev;
+        if (newVal < 0 || newVal > 1.0f || Float.isNaN(newVal) || Float.isInfinite(newVal))
+            return prev;
         if (prev < 0) return newVal;
         return prev + EMA_ALPHA * (newVal - prev);
     }
@@ -471,8 +393,7 @@ public class SquatExercise extends BaseExercise {
         boolean hasAnkle, hasHeel, hasToe;
     }
 
-    private Side buildSide(List<NormalizedLandmark> lm,
-                           boolean left) {
+    private Side buildSide(List<NormalizedLandmark> lm, boolean left) {
         Side s = new Side();
         s.isLeft = left;
         s.shoulderIdx = left ? LEFT_SHOULDER : RIGHT_SHOULDER;
@@ -489,9 +410,7 @@ public class SquatExercise extends BaseExercise {
         s.hasHeel = isVisible(lm, s.heelIdx);
         s.hasToe = isVisible(lm, s.toeIdx);
 
-        s.kneeAngle = (s.hasHip && s.hasKnee && s.hasAnkle)
-                ? getAngle(lm, s.hipIdx, s.kneeIdx, s.ankleIdx)
-                : -1f;
+        s.kneeAngle = (s.hasHip && s.hasKnee && s.hasAnkle) ? getAngle(lm, s.hipIdx, s.kneeIdx, s.ankleIdx) : -1f;
         return s;
     }
 
@@ -526,8 +445,7 @@ public class SquatExercise extends BaseExercise {
     }
 
     private String buildFeedback(String phase, ViewMode view) {
-        String hint = view == ViewMode.FRONT
-                ? getString(R.string.hint_squat_side) : "";
+        String hint = view == ViewMode.FRONT ? getString(R.string.hint_squat_side) : "";
         switch (phase) {
             case "DOWN":
                 return getString(R.string.feedback_squat_down) + hint;

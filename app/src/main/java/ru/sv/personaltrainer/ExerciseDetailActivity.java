@@ -29,19 +29,14 @@ public class ExerciseDetailActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.scrollViewDetail, (v, insets) -> {
-            Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() |
-                            WindowInsetsCompat.Type.displayCutout());
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             v.setPadding(bars.left, 0, bars.right, bars.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.btnDetailBack, (v, insets) -> {
-            Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() |
-                            WindowInsetsCompat.Type.displayCutout());
-            android.widget.FrameLayout.LayoutParams params =
-                    (android.widget.FrameLayout.LayoutParams) v.getLayoutParams();
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+            android.widget.FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) v.getLayoutParams();
             params.topMargin = bars.top + (int) (12 * getResources().getDisplayMetrics().density);
             v.setLayoutParams(params);
             return WindowInsetsCompat.CONSUMED;
