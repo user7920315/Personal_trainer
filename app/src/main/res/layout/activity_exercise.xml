@@ -151,8 +151,7 @@
             android:src="@drawable/record"
             android:background="@drawable/bg_square_outline"
             android:clickable="true"
-            android:focusable="true"
-            android:contentDescription="@string/btn_record" />
+            android:focusable="true"/>
 
         <ImageView
             android:id="@+id/btnReset"
