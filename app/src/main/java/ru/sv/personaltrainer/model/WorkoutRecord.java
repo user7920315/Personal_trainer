@@ -7,8 +7,7 @@ public class WorkoutRecord {
     public int reps;
     public long timestamp;
 
-    public WorkoutRecord(String exerciseId, String exerciseName,
-                         String icon, int reps, long timestamp) {
+    public WorkoutRecord(String exerciseId, String exerciseName, String icon, int reps, long timestamp) {
         this.exerciseId = exerciseId;
         this.exerciseName = exerciseName;
         this.icon = icon;

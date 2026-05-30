@@ -96,16 +96,13 @@ public class LungeExercise extends BaseExercise {
         }
 
         result.repCount = repCount;
-        result.mainFeedback = result.errors.isEmpty()
-                ? buildFeedback(result.phase, view)
-                : result.errors.get(0);
+        result.mainFeedback = result.errors.isEmpty() ? buildFeedback(result.phase, view) : result.errors.get(0);
 
         return result;
     }
 
 
-    private void analyzeSide(List<NormalizedLandmark> lm,
-                             AnalysisResult result) {
+    private void analyzeSide(List<NormalizedLandmark> lm, AnalysisResult result) {
 
         boolean leftIsForward = chooseForwardLegSide(lm);
 
@@ -162,42 +159,27 @@ public class LungeExercise extends BaseExercise {
     }
 
 
-    private void checkSideFrontKneeDepth(AnalysisResult result,
-                                         float angle,
-                                         int kneeIdx) {
+    private void checkSideFrontKneeDepth(AnalysisResult result, float angle, int kneeIdx) {
         if (angle > SIDE_FRONT_KNEE_SHALLOW) {
-            result.addError(
-                    getString(R.string.error_lunge_front_depth_shallow),
-                    kneeIdx);
+            result.addError(getString(R.string.error_lunge_front_depth_shallow), kneeIdx);
         } else if (angle > SIDE_FRONT_KNEE_IDEAL_MAX) {
-            result.addError(
-                    getString(R.string.error_lunge_front_depth_warn),
-                    kneeIdx);
+            result.addError(getString(R.string.error_lunge_front_depth_warn), kneeIdx);
         } else if (angle < SIDE_FRONT_KNEE_TOO_DEEP) {
-            result.addError(
-                    getString(R.string.error_lunge_front_depth_deep),
-                    kneeIdx);
+            result.addError(getString(R.string.error_lunge_front_depth_deep), kneeIdx);
         }
     }
 
 
-    private void checkSideBackKneeDepth(AnalysisResult result,
-                                        float angle,
-                                        int kneeIdx) {
+    private void checkSideBackKneeDepth(AnalysisResult result, float angle, int kneeIdx) {
         if (angle > SIDE_BACK_KNEE_SHALLOW) {
-            result.addError(
-                    getString(R.string.error_lunge_back_depth_shallow),
-                    kneeIdx);
+            result.addError(getString(R.string.error_lunge_back_depth_shallow), kneeIdx);
         } else if (angle > SIDE_BACK_KNEE_IDEAL_MAX) {
-            result.addError(
-                    getString(R.string.error_lunge_back_depth_warn),
-                    kneeIdx);
+            result.addError(getString(R.string.error_lunge_back_depth_warn), kneeIdx);
         }
     }
 
 
-    private void checkTrunkLeanSide(AnalysisResult result,
-                                    boolean leftForward) {
+    private void checkTrunkLeanSide(AnalysisResult result, boolean leftForward) {
         float shX = leftForward ? emaLShoulderX : emaRShoulderX;
         float shY = leftForward ? emaLShoulderY : emaRShoulderY;
         float hiX = leftForward ? emaLHipX : emaRHipX;
@@ -207,29 +189,20 @@ public class LungeExercise extends BaseExercise {
 
         double dx = shX - hiX;
         double dy = shY - hiY;
-        double angle = Math.toDegrees(
-                Math.atan2(Math.abs(dx), Math.abs(dy)));
+        double angle = Math.toDegrees(Math.atan2(Math.abs(dx), Math.abs(dy)));
 
 
         int shIdx = leftForward ? LEFT_SHOULDER : RIGHT_SHOULDER;
         int hiIdx = leftForward ? LEFT_HIP : RIGHT_HIP;
 
         if (angle > TRUNK_LEAN_ERROR) {
-            result.addError(
-                    getString(R.string.error_lunge_trunk_lean_strong),
-                    shIdx, hiIdx);
+            result.addError(getString(R.string.error_lunge_trunk_lean_strong), shIdx, hiIdx);
         } else if (angle > TRUNK_LEAN_WARN) {
-            result.addError(
-                    getString(R.string.error_lunge_trunk_lean_weak),
-                    shIdx);
+            result.addError(getString(R.string.error_lunge_trunk_lean_weak), shIdx);
         }
     }
 
-    private void checkKneeOverToe(AnalysisResult result,
-                                  List<NormalizedLandmark> lm,
-                                  int kneeIdx,
-                                  int ankleIdx,
-                                  int toeIdx) {
+    private void checkKneeOverToe(AnalysisResult result, List<NormalizedLandmark> lm, int kneeIdx, int ankleIdx, int toeIdx) {
         if (!allVisible(lm, kneeIdx, ankleIdx, toeIdx)) return;
 
         float kneeX = lm.get(kneeIdx).x();
@@ -243,15 +216,11 @@ public class LungeExercise extends BaseExercise {
 
 
         if (Math.abs(overToe) > KNEE_OVER_TOE_THRESHOLD) {
-            result.addError(
-                    getString(R.string.error_lunge_knee_over_toe),
-                    kneeIdx, toeIdx);
+            result.addError(getString(R.string.error_lunge_knee_over_toe), kneeIdx, toeIdx);
         }
     }
 
-    private void checkHeelLiftSide(AnalysisResult result,
-                                   boolean leftForward,
-                                   int heelIdx) {
+    private void checkHeelLiftSide(AnalysisResult result, boolean leftForward, int heelIdx) {
         float heelY = leftForward ? emaLHeelY : emaRHeelY;
         float footY = leftForward ? emaLFootY : emaRFootY;
         float ankleY = leftForward ? emaLAnkleY : emaRAnkleY;
@@ -265,18 +234,13 @@ public class LungeExercise extends BaseExercise {
 
 
         if (liftRatio > HEEL_LIFT_ERROR) {
-            result.addError(
-                    getString(R.string.error_lunge_heel_lift),
-                    heelIdx);
+            result.addError(getString(R.string.error_lunge_heel_lift), heelIdx);
         } else if (liftRatio > HEEL_LIFT_WARN) {
-            result.addError(
-                    getString(R.string.error_lunge_heel_lift_warn),
-                    heelIdx);
+            result.addError(getString(R.string.error_lunge_heel_lift_warn), heelIdx);
         }
     }
 
-    private void analyzeFront(List<NormalizedLandmark> lm,
-                              AnalysisResult result) {
+    private void analyzeFront(List<NormalizedLandmark> lm, AnalysisResult result) {
 
         float lAngle = getAngle(lm, LEFT_HIP, LEFT_KNEE, LEFT_ANKLE);
         float rAngle = getAngle(lm, RIGHT_HIP, RIGHT_KNEE, RIGHT_ANKLE);
@@ -294,7 +258,6 @@ public class LungeExercise extends BaseExercise {
 
 
         updatePhase(result, workingAngle);
-
 
 
         if (result.phase.equals("DOWN")) {
@@ -315,52 +278,35 @@ public class LungeExercise extends BaseExercise {
     }
 
 
-    private void checkFrontKneeDepth(AnalysisResult result,
-                                     float angle,
-                                     boolean leftIsWorking) {
+    private void checkFrontKneeDepth(AnalysisResult result, float angle, boolean leftIsWorking) {
         int kneeIdx = leftIsWorking ? LEFT_KNEE : RIGHT_KNEE;
 
         if (angle > FRONT_KNEE_SHALLOW) {
-            result.addError(
-                    getString(R.string.error_lunge_front_depth_shallow),
-                    kneeIdx);
+            result.addError(getString(R.string.error_lunge_front_depth_shallow), kneeIdx);
         } else if (angle > FRONT_KNEE_IDEAL_MAX) {
-            result.addError(
-                    getString(R.string.error_lunge_front_depth_warn),
-                    kneeIdx);
+            result.addError(getString(R.string.error_lunge_front_depth_warn), kneeIdx);
         } else if (angle < FRONT_KNEE_TOO_DEEP) {
-            result.addError(
-                    getString(R.string.error_lunge_front_depth_deep),
-                    kneeIdx);
+            result.addError(getString(R.string.error_lunge_front_depth_deep), kneeIdx);
         }
     }
 
 
-    private void checkFrontAsymmetry(AnalysisResult result,
-                                     float lAngle,
-                                     float rAngle) {
+    private void checkFrontAsymmetry(AnalysisResult result, float lAngle, float rAngle) {
         float diff = Math.abs(lAngle - rAngle);
 
 
         if (diff > FRONT_ASYMMETRY_ERROR) {
-            String msg = lAngle > rAngle
-                    ? getString(R.string.error_lunge_front_asymmetry_left)
-                    : getString(R.string.error_lunge_front_asymmetry_right);
-            result.addError(msg,
-                    lAngle > rAngle ? LEFT_KNEE : RIGHT_KNEE);
+            String msg = lAngle > rAngle ? getString(R.string.error_lunge_front_asymmetry_left) : getString(R.string.error_lunge_front_asymmetry_right);
+            result.addError(msg, lAngle > rAngle ? LEFT_KNEE : RIGHT_KNEE);
 
         } else if (diff > FRONT_ASYMMETRY_WARN) {
-            result.addError(
-                    getString(R.string.error_lunge_front_asymmetry_warn),
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError(getString(R.string.error_lunge_front_asymmetry_warn), LEFT_KNEE, RIGHT_KNEE);
         }
     }
 
 
-    private void checkFrontKneeCave(AnalysisResult result,
-                                    List<NormalizedLandmark> lm) {
-        if (!allVisible(lm, LEFT_KNEE, RIGHT_KNEE,
-                LEFT_ANKLE, RIGHT_ANKLE)) return;
+    private void checkFrontKneeCave(AnalysisResult result, List<NormalizedLandmark> lm) {
+        if (!allVisible(lm, LEFT_KNEE, RIGHT_KNEE, LEFT_ANKLE, RIGHT_ANKLE)) return;
 
         float kneeW = distX(lm, LEFT_KNEE, RIGHT_KNEE);
         float ankleW = distX(lm, LEFT_ANKLE, RIGHT_ANKLE);
@@ -371,13 +317,9 @@ public class LungeExercise extends BaseExercise {
 
 
         if (ratio < FRONT_KNEE_CAVE_ERROR) {
-            result.addError(
-                    getString(R.string.error_lunge_knees_inward),
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError(getString(R.string.error_lunge_knees_inward), LEFT_KNEE, RIGHT_KNEE);
         } else if (ratio < FRONT_KNEE_CAVE_WARN) {
-            result.addError(
-                    getString(R.string.error_lunge_knees_inward_warn),
-                    LEFT_KNEE, RIGHT_KNEE);
+            result.addError(getString(R.string.error_lunge_knees_inward_warn), LEFT_KNEE, RIGHT_KNEE);
         }
     }
 
@@ -392,19 +334,13 @@ public class LungeExercise extends BaseExercise {
 
         double dx = shX - hiX;
         double dy = shY - hiY;
-        double angle = Math.toDegrees(
-                Math.atan2(Math.abs(dx), Math.abs(dy)));
+        double angle = Math.toDegrees(Math.atan2(Math.abs(dx), Math.abs(dy)));
 
 
         if (angle > TRUNK_LEAN_ERROR) {
-            result.addError(
-                    getString(R.string.error_lunge_trunk_lean_strong),
-                    LEFT_SHOULDER, RIGHT_SHOULDER,
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_lunge_trunk_lean_strong), LEFT_SHOULDER, RIGHT_SHOULDER, LEFT_HIP, RIGHT_HIP);
         } else if (angle > TRUNK_LEAN_WARN) {
-            result.addError(
-                    getString(R.string.error_lunge_trunk_lean_weak),
-                    LEFT_SHOULDER, RIGHT_SHOULDER);
+            result.addError(getString(R.string.error_lunge_trunk_lean_weak), LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
 
@@ -419,14 +355,10 @@ public class LungeExercise extends BaseExercise {
 
 
         if (tilt > 0.30f) {
-            String msg = emaLHipY > emaRHipY
-                    ? getString(R.string.error_lunge_hip_tilt_left)
-                    : getString(R.string.error_lunge_hip_tilt_right);
+            String msg = emaLHipY > emaRHipY ? getString(R.string.error_lunge_hip_tilt_left) : getString(R.string.error_lunge_hip_tilt_right);
             result.addError(msg, LEFT_HIP, RIGHT_HIP);
         } else if (tilt > 0.15f) {
-            result.addError(
-                    getString(R.string.error_lunge_hip_tilt_weak),
-                    LEFT_HIP, RIGHT_HIP);
+            result.addError(getString(R.string.error_lunge_hip_tilt_weak), LEFT_HIP, RIGHT_HIP);
         }
     }
 
@@ -491,21 +423,16 @@ public class LungeExercise extends BaseExercise {
             emaRShoulderX = emaVal(emaRShoulderX, lm.get(RIGHT_SHOULDER).x());
         }
         if (allVisible(lm, LEFT_SHOULDER, RIGHT_SHOULDER)) {
-            emaShoulderWidth = emaVal(emaShoulderWidth,
-                    distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER));
+            emaShoulderWidth = emaVal(emaShoulderWidth, distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER));
         }
     }
 
 
     private ViewMode updateView() {
-        ViewMode raw = emaShoulderWidth > 0
-                ? (emaShoulderWidth < SIDE_THRESHOLD
-                ? ViewMode.SIDE : ViewMode.FRONT)
-                : ViewMode.UNKNOWN;
+        ViewMode raw = emaShoulderWidth > 0 ? (emaShoulderWidth < SIDE_THRESHOLD ? ViewMode.SIDE : ViewMode.FRONT) : ViewMode.UNKNOWN;
 
         if (raw == ViewMode.UNKNOWN) {
-            return currentView != ViewMode.UNKNOWN
-                    ? currentView : ViewMode.UNKNOWN;
+            return currentView != ViewMode.UNKNOWN ? currentView : ViewMode.UNKNOWN;
         }
         if (raw == candidateView) {
             candidateCount++;
@@ -513,8 +440,7 @@ public class LungeExercise extends BaseExercise {
             candidateView = raw;
             candidateCount = 1;
         }
-        if (candidateCount >= STABLE_FRAMES
-                && currentView != candidateView) {
+        if (candidateCount >= STABLE_FRAMES && currentView != candidateView) {
             currentView = candidateView;
         }
         return currentView != ViewMode.UNKNOWN ? currentView : raw;
@@ -522,9 +448,8 @@ public class LungeExercise extends BaseExercise {
 
 
     private float emaVal(float prev, float newVal) {
-        if (newVal < 0 || newVal > 1f
-                || Float.isNaN(newVal)
-                || Float.isInfinite(newVal)) return prev;
+        if (newVal < 0 || newVal > 1f || Float.isNaN(newVal) || Float.isInfinite(newVal))
+            return prev;
         if (prev < 0) return newVal;
         return prev + EMA_ALPHA * (newVal - prev);
     }
@@ -538,8 +463,7 @@ public class LungeExercise extends BaseExercise {
     }
 
     private String buildFeedback(String phase, ViewMode view) {
-        String hint = view == ViewMode.FRONT
-                ? getString(R.string.hint_lunge_side) : "";
+        String hint = view == ViewMode.FRONT ? getString(R.string.hint_lunge_side) : "";
         switch (phase) {
             case "DOWN":
                 return getString(R.string.feedback_lunge_down) + hint;

@@ -37,11 +37,7 @@ public class ScreenRecordService extends Service {
 
         try {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-                startForeground(
-                        NOTIFICATION_ID,
-                        notification,
-                        ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA
-                );
+                startForeground(NOTIFICATION_ID, notification, ServiceInfo.FOREGROUND_SERVICE_TYPE_CAMERA);
             } else {
                 startForeground(NOTIFICATION_ID, notification);
             }
@@ -67,15 +63,11 @@ public class ScreenRecordService extends Service {
 
     private void createNotificationChannel() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            NotificationChannel channel = new NotificationChannel(
-                    CHANNEL_ID,
-                    getString(R.string.notification_channel_name),
-                    NotificationManager.IMPORTANCE_LOW);
+            NotificationChannel channel = new NotificationChannel(CHANNEL_ID, getString(R.string.notification_channel_name), NotificationManager.IMPORTANCE_LOW);
             channel.setSound(null, null);
             channel.enableVibration(false);
 
-            NotificationManager manager =
-                    getSystemService(NotificationManager.class);
+            NotificationManager manager = getSystemService(NotificationManager.class);
             if (manager != null) {
                 manager.createNotificationChannel(channel);
             }
@@ -83,13 +75,6 @@ public class ScreenRecordService extends Service {
     }
 
     private Notification buildNotification() {
-        return new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentTitle(getString(R.string.notification_title))
-                .setContentText(getString(R.string.notification_text))
-                .setSmallIcon(android.R.drawable.ic_media_play)
-                .setPriority(NotificationCompat.PRIORITY_LOW)
-                .setOngoing(true)
-                .setSilent(true)
-                .build();
+        return new NotificationCompat.Builder(this, CHANNEL_ID).setContentTitle(getString(R.string.notification_title)).setContentText(getString(R.string.notification_text)).setSmallIcon(android.R.drawable.ic_media_play).setPriority(NotificationCompat.PRIORITY_LOW).setOngoing(true).setSilent(true).build();
     }
 }

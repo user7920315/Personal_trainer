@@ -39,9 +39,7 @@ public class ExerciseListActivity extends AppCompatActivity {
         setContentView(binding.getRoot());
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.rootList, (v, insets) -> {
-            Insets bars = insets.getInsets(
-                    WindowInsetsCompat.Type.systemBars() |
-                            WindowInsetsCompat.Type.displayCutout());
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             v.setPadding(bars.left, bars.top, bars.right, bars.bottom);
             return WindowInsetsCompat.CONSUMED;
         });
@@ -63,8 +61,14 @@ public class ExerciseListActivity extends AppCompatActivity {
 
     private void setupSearch() {
         binding.etSearch.addTextChangedListener(new android.text.TextWatcher() {
-            @Override public void beforeTextChanged(CharSequence s, int st, int c, int a) {}
-            @Override public void afterTextChanged(android.text.Editable s) {}
+            @Override
+            public void beforeTextChanged(CharSequence s, int st, int c, int a) {
+            }
+
+            @Override
+            public void afterTextChanged(android.text.Editable s) {
+            }
+
             @Override
             public void onTextChanged(CharSequence s, int start, int b, int count) {
                 viewModel.filter(s.toString());
@@ -103,8 +107,7 @@ public class ExerciseListActivity extends AppCompatActivity {
 
         @Override
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
-            ItemExerciseBinding b = ItemExerciseBinding.inflate(
-                    LayoutInflater.from(parent.getContext()), parent, false);
+            ItemExerciseBinding b = ItemExerciseBinding.inflate(LayoutInflater.from(parent.getContext()), parent, false);
             return new ViewHolder(b);
         }
 
@@ -126,6 +129,7 @@ public class ExerciseListActivity extends AppCompatActivity {
 
         static class ViewHolder extends RecyclerView.ViewHolder {
             ItemExerciseBinding b;
+
             ViewHolder(ItemExerciseBinding b) {
                 super(b.getRoot());
                 this.b = b;

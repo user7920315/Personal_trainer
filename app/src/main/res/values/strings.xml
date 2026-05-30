@@ -301,7 +301,7 @@
     <string name="profile_title">Профиль</string>
     <string name="profile_default_name">Спортсмен</string>
     <string name="profile_fill_data">Заполните данные ниже</string>
-    <string name="bmi_title">⚖ Индекс массы тела</string>
+    <string name="bmi_title">Индекс массы тела</string>
     <string name="gender">Пол</string>
     <string name="gender_male">Мужской</string>
     <string name="gender_female">Женский</string>

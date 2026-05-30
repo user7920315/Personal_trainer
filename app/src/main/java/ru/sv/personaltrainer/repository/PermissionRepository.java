@@ -26,8 +26,7 @@ public class PermissionRepository {
     }
 
     public boolean isCameraGranted() {
-        return ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA)
-                == PackageManager.PERMISSION_GRANTED;
+        return ContextCompat.checkSelfPermission(context, android.Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED;
     }
 
     public int getCameraDenialCount() {

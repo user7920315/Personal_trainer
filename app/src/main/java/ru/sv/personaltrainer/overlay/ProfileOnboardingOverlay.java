@@ -23,29 +23,11 @@ public class ProfileOnboardingOverlay {
 
     private static final String KEY_DONE = "profile_onboarding_done";
 
-    private static final int[] TITLE_RES = {
-            R.string.profile_onboarding_title_1,
-            R.string.profile_onboarding_title_2,
-            R.string.profile_onboarding_title_3,
-            R.string.profile_onboarding_title_4,
-            R.string.profile_onboarding_title_5
-    };
+    private static final int[] TITLE_RES = {R.string.profile_onboarding_title_1, R.string.profile_onboarding_title_2, R.string.profile_onboarding_title_3, R.string.profile_onboarding_title_4, R.string.profile_onboarding_title_5};
 
-    private static final int[] TEXT_RES = {
-            R.string.profile_onboarding_text_1,
-            R.string.profile_onboarding_text_2,
-            R.string.profile_onboarding_text_3,
-            R.string.profile_onboarding_text_4,
-            R.string.profile_onboarding_text_5
-    };
+    private static final int[] TEXT_RES = {R.string.profile_onboarding_text_1, R.string.profile_onboarding_text_2, R.string.profile_onboarding_text_3, R.string.profile_onboarding_text_4, R.string.profile_onboarding_text_5};
 
-    private static final int[] TARGET_IDS = {
-            R.id.btnGenderMale,
-            R.id.btnCalculateBmi,
-            R.id.tvNoWeightData,
-            R.id.tvTotalWorkouts,
-            R.id.tvNoHistory
-    };
+    private static final int[] TARGET_IDS = {R.id.btnGenderMale, R.id.btnCalculateBmi, R.id.tvNoWeightData, R.id.tvTotalWorkouts, R.id.tvNoHistory};
 
     private static final int HIGHLIGHT_PADDING_DP = 10;
     private static final int CARD_MARGIN_DP = 12;
@@ -58,16 +40,14 @@ public class ProfileOnboardingOverlay {
     private View card;
     private int step = 0;
 
-    public ProfileOnboardingOverlay(Activity activity,
-                                    ScrollView scrollView) {
+    public ProfileOnboardingOverlay(Activity activity, ScrollView scrollView) {
         this.activity = activity;
         this.scrollView = scrollView;
         this.root = activity.findViewById(android.R.id.content);
     }
 
     public void startIfNeeded() {
-        SharedPreferences prefs = activity.getSharedPreferences(
-                MainActivity.PREFS_NAME, Activity.MODE_PRIVATE);
+        SharedPreferences prefs = activity.getSharedPreferences(MainActivity.PREFS_NAME, Activity.MODE_PRIVATE);
         if (!prefs.getBoolean(KEY_DONE, false)) {
             step = 0;
             root.post(this::showStep);
@@ -145,9 +125,7 @@ public class ProfileOnboardingOverlay {
     private void attachSpotlight(RectF rect) {
         spotlight = new SpotlightView(activity, rect);
 
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
 
         spotlight.setOnTouchListener((v, e) -> true);
 
@@ -158,14 +136,11 @@ public class ProfileOnboardingOverlay {
     }
 
     private void attachCard(RectF rect) {
-        card = LayoutInflater.from(activity)
-                .inflate(R.layout.item_profile_onboarding_card,
-                        root, false);
+        card = LayoutInflater.from(activity).inflate(R.layout.item_profile_onboarding_card, root, false);
 
         ((TextView) card.findViewById(R.id.tvOnbTitle)).setText(TITLE_RES[step]);
         ((TextView) card.findViewById(R.id.tvOnbText)).setText(TEXT_RES[step]);
-        ((TextView) card.findViewById(R.id.tvOnbCounter))
-                .setText((step + 1) + " / " + TARGET_IDS.length);
+        ((TextView) card.findViewById(R.id.tvOnbCounter)).setText((step + 1) + " / " + TARGET_IDS.length);
 
         Button btnNext = card.findViewById(R.id.btnOnbNext);
         Button btnSkip = card.findViewById(R.id.btnOnbSkip);
@@ -180,24 +155,20 @@ public class ProfileOnboardingOverlay {
         });
         btnSkip.setOnClickListener(v -> markDone());
 
-        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(
-                dpToPx(300),
-                ViewGroup.LayoutParams.WRAP_CONTENT);
+        FrameLayout.LayoutParams lp = new FrameLayout.LayoutParams(dpToPx(300), ViewGroup.LayoutParams.WRAP_CONTENT);
         card.setLayoutParams(lp);
         card.setAlpha(0f);
         root.addView(card);
 
-        card.getViewTreeObserver().addOnPreDrawListener(
-                new ViewTreeObserver.OnPreDrawListener() {
-                    @Override
-                    public boolean onPreDraw() {
-                        card.getViewTreeObserver()
-                                .removeOnPreDrawListener(this);
-                        placeCard(rect, card);
-                        card.animate().alpha(1f).setDuration(300).start();
-                        return true;
-                    }
-                });
+        card.getViewTreeObserver().addOnPreDrawListener(new ViewTreeObserver.OnPreDrawListener() {
+            @Override
+            public boolean onPreDraw() {
+                card.getViewTreeObserver().removeOnPreDrawListener(this);
+                placeCard(rect, card);
+                card.animate().alpha(1f).setDuration(300).start();
+                return true;
+            }
+        });
     }
 
     private void placeCard(RectF rect, View card) {
@@ -247,16 +218,11 @@ public class ProfileOnboardingOverlay {
 
     private void markDone() {
         removeViews();
-        activity.getSharedPreferences(
-                        MainActivity.PREFS_NAME, Activity.MODE_PRIVATE)
-                .edit()
-                .putBoolean(KEY_DONE, true)
-                .apply();
+        activity.getSharedPreferences(MainActivity.PREFS_NAME, Activity.MODE_PRIVATE).edit().putBoolean(KEY_DONE, true).apply();
     }
 
     private int dpToPx(int dp) {
-        return Math.round(dp
-                * activity.getResources().getDisplayMetrics().density);
+        return Math.round(dp * activity.getResources().getDisplayMetrics().density);
     }
 
 
@@ -271,8 +237,7 @@ public class ProfileOnboardingOverlay {
         SpotlightView(Activity ctx, RectF hole) {
             super(ctx);
             this.hole = hole;
-            this.radius = 16f * ctx.getResources()
-                    .getDisplayMetrics().density;
+            this.radius = 16f * ctx.getResources().getDisplayMetrics().density;
 
             setLayerType(LAYER_TYPE_SOFTWARE, null);
 
@@ -280,13 +245,11 @@ public class ProfileOnboardingOverlay {
             dimPaint.setStyle(Paint.Style.FILL);
 
             clearPaint.setAntiAlias(true);
-            clearPaint.setXfermode(
-                    new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
+            clearPaint.setXfermode(new PorterDuffXfermode(PorterDuff.Mode.CLEAR));
 
             borderPaint.setColor(getResources().getColor(R.color.spotlight_border, null));
             borderPaint.setStyle(Paint.Style.STROKE);
-            borderPaint.setStrokeWidth(
-                    3f * ctx.getResources().getDisplayMetrics().density);
+            borderPaint.setStrokeWidth(3f * ctx.getResources().getDisplayMetrics().density);
             borderPaint.setAntiAlias(true);
         }
 

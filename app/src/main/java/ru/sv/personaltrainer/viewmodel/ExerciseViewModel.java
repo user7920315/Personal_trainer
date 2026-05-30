@@ -38,12 +38,29 @@ public class ExerciseViewModel extends AndroidViewModel {
 
     private String lastRepText;
 
-    public LiveData<WorkoutResult> getWorkoutResult() { return workoutResult; }
-    public LiveData<VideoFrame> getVideoFrame() { return videoFrame; }
-    public LiveData<Boolean> getIsRecording() { return isRecording; }
-    public LiveData<Boolean> getTtsEnabled() { return ttsEnabled; }
-    public LiveData<Event<String>> getTtsEvent() { return ttsEvent; }
-    public LiveData<WearData> getWearData() { return wearData; }
+    public LiveData<WorkoutResult> getWorkoutResult() {
+        return workoutResult;
+    }
+
+    public LiveData<VideoFrame> getVideoFrame() {
+        return videoFrame;
+    }
+
+    public LiveData<Boolean> getIsRecording() {
+        return isRecording;
+    }
+
+    public LiveData<Boolean> getTtsEnabled() {
+        return ttsEnabled;
+    }
+
+    public LiveData<Event<String>> getTtsEvent() {
+        return ttsEvent;
+    }
+
+    public LiveData<WearData> getWearData() {
+        return wearData;
+    }
 
     public ExerciseViewModel(@NonNull Application application, BaseExercise exercise) {
         super(application);
@@ -59,9 +76,7 @@ public class ExerciseViewModel extends AndroidViewModel {
         }
     }
 
-    private void onPoseResult(BaseExercise.AnalysisResult analysis,
-                              PoseLandmarkerResult poseResult,
-                              Bitmap frameBitmap) {
+    private void onPoseResult(BaseExercise.AnalysisResult analysis, PoseLandmarkerResult poseResult, Bitmap frameBitmap) {
         WorkoutResult result = mapToWorkoutResult(analysis, poseResult);
         workoutResult.postValue(result);
 
@@ -70,27 +85,12 @@ public class ExerciseViewModel extends AndroidViewModel {
         }
 
         if (frameBitmap != null) {
-            videoFrame.postValue(new VideoFrame(
-                    frameBitmap,
-                    result.poseResult,
-                    result.errorLandmarks,
-                    result.repText,
-                    result.phaseText,
-                    result.mainFeedback,
-                    result.phaseColor,
-                    currentExercise.getName(),
-                    result.qualityText,
-                    result.qualityColor,
-                    System.nanoTime()
-            ));
-        }
-        else{
+            videoFrame.postValue(new VideoFrame(frameBitmap, result.poseResult, result.errorLandmarks, result.repText, result.phaseText, result.mainFeedback, result.phaseColor, currentExercise.getName(), result.qualityText, result.qualityColor, System.nanoTime()));
+        } else {
         }
 
-        String error = (result.errors != null && !result.errors.isEmpty())
-                ? result.errors.get(0) : "";
-        wearData.postValue(new WearData(
-                result.phaseText, result.phaseColor, result.repText, error));
+        String error = (result.errors != null && !result.errors.isEmpty()) ? result.errors.get(0) : "";
+        wearData.postValue(new WearData(result.phaseText, result.phaseColor, result.repText, error));
     }
 
     public void analyzeFrame(androidx.camera.core.ImageProxy imageProxy) {
@@ -131,8 +131,7 @@ public class ExerciseViewModel extends AndroidViewModel {
         if (poseRepository != null) poseRepository.shutdown();
     }
 
-    private WorkoutResult mapToWorkoutResult(BaseExercise.AnalysisResult raw,
-                                             PoseLandmarkerResult poseResult) {
+    private WorkoutResult mapToWorkoutResult(BaseExercise.AnalysisResult raw, PoseLandmarkerResult poseResult) {
         WorkoutResult r = new WorkoutResult();
         r.poseResult = poseResult;
 
@@ -154,17 +153,14 @@ public class ExerciseViewModel extends AndroidViewModel {
         r.errorLandmarks = raw.errorLandmarks != null ? raw.errorLandmarks : new ArrayList<>();
 
         if (raw.errors == null || raw.errors.isEmpty()) {
-            r.mainFeedback = raw.mainFeedback != null && raw.mainFeedback.startsWith("⚠")
-                    ? buildPositiveFeedback(raw.phase) : raw.mainFeedback;
+            r.mainFeedback = raw.mainFeedback != null && raw.mainFeedback.startsWith("⚠") ? buildPositiveFeedback(raw.phase) : raw.mainFeedback;
             r.errors = new ArrayList<>();
         } else {
             r.errors = new ArrayList<>(raw.errors);
             r.mainFeedback = raw.errors.get(0);
         }
 
-        r.repText = (r.holdSeconds >= 0)
-                ? formatHoldTime(r.holdSeconds)
-                : getString(R.string.vm_reps_format, r.repCount);
+        r.repText = (r.holdSeconds >= 0) ? formatHoldTime(r.holdSeconds) : getString(R.string.vm_reps_format, r.repCount);
         lastRepText = r.repText;
 
         r.phaseText = phaseToText(r.phase);
@@ -176,35 +172,45 @@ public class ExerciseViewModel extends AndroidViewModel {
     }
 
     private String formatHoldTime(int seconds) {
-        return seconds == 0
-                ? getString(R.string.vm_hold_time_zero)
-                : getString(R.string.vm_hold_time_format, seconds);
+        return seconds == 0 ? getString(R.string.vm_hold_time_zero) : getString(R.string.vm_hold_time_format, seconds);
     }
 
     private String buildPositiveFeedback(String phase) {
         switch (phase) {
-            case "DOWN": return getString(R.string.vm_feedback_down);
-            case "UP": return getString(R.string.vm_feedback_up);
-            case "HOLD": return getString(R.string.vm_feedback_hold);
-            default: return getString(R.string.vm_feedback_start);
+            case "DOWN":
+                return getString(R.string.vm_feedback_down);
+            case "UP":
+                return getString(R.string.vm_feedback_up);
+            case "HOLD":
+                return getString(R.string.vm_feedback_hold);
+            default:
+                return getString(R.string.vm_feedback_start);
         }
     }
 
     private String phaseToText(String phase) {
         switch (phase) {
-            case "DOWN": return getString(R.string.vm_phase_down);
-            case "UP": return getString(R.string.vm_phase_up);
-            case "HOLD": return getString(R.string.vm_phase_hold);
-            default: return getString(R.string.vm_phase_ready);
+            case "DOWN":
+                return getString(R.string.vm_phase_down);
+            case "UP":
+                return getString(R.string.vm_phase_up);
+            case "HOLD":
+                return getString(R.string.vm_phase_hold);
+            default:
+                return getString(R.string.vm_phase_ready);
         }
     }
 
     private int phaseToColor(String phase) {
         switch (phase) {
-            case "DOWN": return getColor(R.color.phase_down);
-            case "UP": return getColor(R.color.phase_up);
-            case "HOLD": return getColor(R.color.phase_hold);
-            default: return getColor(R.color.phase_ready);
+            case "DOWN":
+                return getColor(R.color.phase_down);
+            case "UP":
+                return getColor(R.color.phase_up);
+            case "HOLD":
+                return getColor(R.color.phase_hold);
+            default:
+                return getColor(R.color.phase_ready);
         }
     }
 
@@ -226,13 +232,20 @@ public class ExerciseViewModel extends AndroidViewModel {
 
     private String getIconForExercise(String id) {
         switch (id) {
-            case "SQUAT": return getString(R.string.icon_squat);
-            case "LUNGE": return getString(R.string.icon_lunge);
-            case "GLUTE_BRIDGE": return getString(R.string.icon_glute);
-            case "BURPEE": return getString(R.string.icon_burpee);
-            case "PULL_UP": return getString(R.string.icon_pullup);
-            case "PLANK": return getString(R.string.icon_plank);
-            default: return getString(R.string.icon_default);
+            case "SQUAT":
+                return getString(R.string.icon_squat);
+            case "LUNGE":
+                return getString(R.string.icon_lunge);
+            case "GLUTE_BRIDGE":
+                return getString(R.string.icon_glute);
+            case "BURPEE":
+                return getString(R.string.icon_burpee);
+            case "PULL_UP":
+                return getString(R.string.icon_pullup);
+            case "PLANK":
+                return getString(R.string.icon_plank);
+            default:
+                return getString(R.string.icon_default);
         }
     }
 
@@ -261,12 +274,7 @@ public class ExerciseViewModel extends AndroidViewModel {
         public final int qualityColor;
         public final long timestampNs;
 
-        public VideoFrame(Bitmap bitmap, PoseLandmarkerResult poseResult,
-                          List<Integer> errorLandmarks, String repText,
-                          String phaseText, String feedbackText,
-                          int phaseColor, String exerciseName,
-                          String qualityText, int qualityColor,
-                          long timestampNs) {
+        public VideoFrame(Bitmap bitmap, PoseLandmarkerResult poseResult, List<Integer> errorLandmarks, String repText, String phaseText, String feedbackText, int phaseColor, String exerciseName, String qualityText, int qualityColor, long timestampNs) {
             this.bitmap = bitmap;
             this.poseResult = poseResult;
             this.errorLandmarks = errorLandmarks;

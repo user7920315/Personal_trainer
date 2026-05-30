@@ -64,16 +64,11 @@ public class BurpeeExercise extends BaseExercise {
         updateStage(lm, isPlankPos, isStandPos, isJumpPos, result);
 
         result.repCount = repCount;
-        result.mainFeedback = result.errors.isEmpty()
-                ? buildFeedback() : result.errors.get(0);
+        result.mainFeedback = result.errors.isEmpty() ? buildFeedback() : result.errors.get(0);
         return result;
     }
 
-    private void updateStage(List<NormalizedLandmark> lm,
-                             boolean isPlankPos,
-                             boolean isStandPos,
-                             boolean isJumpPos,
-                             AnalysisResult result) {
+    private void updateStage(List<NormalizedLandmark> lm, boolean isPlankPos, boolean isStandPos, boolean isJumpPos, AnalysisResult result) {
         switch (stage) {
 
             case STAND:
@@ -140,9 +135,7 @@ public class BurpeeExercise extends BaseExercise {
     private String buildFeedback() {
         switch (stage) {
             case STAND:
-                return repCount == 0
-                        ? getString(R.string.feedback_burpee_stand_start)
-                        : getString(R.string.feedback_burpee_stand_repeat, repCount);
+                return repCount == 0 ? getString(R.string.feedback_burpee_stand_start) : getString(R.string.feedback_burpee_stand_repeat, repCount);
             case PLANK:
                 return getString(R.string.feedback_burpee_plank);
             case PLANK_DONE:

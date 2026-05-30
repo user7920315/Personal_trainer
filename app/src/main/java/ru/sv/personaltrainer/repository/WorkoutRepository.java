@@ -38,7 +38,8 @@ public class WorkoutRepository {
 
     public List<WorkoutRecord> loadWorkouts() {
         String json = prefs.getString(KEY_WORKOUTS, "[]");
-        Type type = new TypeToken<List<WorkoutRecord>>(){}.getType();
+        Type type = new TypeToken<List<WorkoutRecord>>() {
+        }.getType();
         List<WorkoutRecord> list = gson.fromJson(json, type);
         return list != null ? list : new ArrayList<>();
     }
