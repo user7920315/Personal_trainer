@@ -79,7 +79,7 @@
     <color name="btn_tts_disabled">#80FFFFFF</color>
     <color name="phase_ready_white">#FFFFFFFF</color>
     <color name="card_exercise_name_bg">#BBE94560</color>
-    <color name="card_feedback_bg">#EE1A1A2E</color>
+    <color name="card_feedback_bg">#661A1A2E</color>
     <color name="chart_circle_hole">#FF0F3460</color>
     <color name="chart_text">#FFAAAAAA</color>
     <color name="chart_axis">#33FFFFFF</color>
@@ -118,4 +118,5 @@
     <color name="btn_reset_bg">#88E94560</color>
     <color name="error_divider">#33FF0000</color>
     <color name="ic_fitness_background">#1C1C28</color>
+    <color name="toolbar_bg">#441A1A2E</color>
 </resources>

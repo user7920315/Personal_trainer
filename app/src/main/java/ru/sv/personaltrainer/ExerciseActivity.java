@@ -302,11 +302,12 @@ public class ExerciseActivity extends AppCompatActivity {
     }
 
     private void initViews() {
+        binding.toolbar.setTitle("");
         binding.tvExerciseName.setText(currentExercise.getName());
+        binding.toolbar.setNavigationOnClickListener(v -> finish());
         if ("PLANK".equals(exerciseId)) {
             binding.tvRepCount.setText(getString(R.string.hold_time_zero));
         }
-        binding.btnBack.setOnClickListener(v -> finish());
         binding.btnReset.setOnClickListener(v -> {
             viewModel.resetExercise();
             resetUI();
@@ -346,16 +347,16 @@ public class ExerciseActivity extends AppCompatActivity {
         ViewCompat.setOnApplyWindowInsetsListener(binding.previewView, (view, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
 
-            int topOffset = insets.top + getResources().getDimensionPixelSize(R.dimen.exercise_top_margin);
+            int topOffset = insets.top;
             int bottomOffset = insets.bottom + getResources().getDimensionPixelSize(R.dimen.feedback_card_margin);
 
-            android.view.ViewGroup.MarginLayoutParams repParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
-            repParams.topMargin = topOffset;
-            binding.tvRepCount.setLayoutParams(repParams);
+            android.view.ViewGroup.MarginLayoutParams toolbarParams = (android.view.ViewGroup.MarginLayoutParams) binding.toolbar.getLayoutParams();
+            toolbarParams.topMargin = topOffset;
+            binding.toolbar.setLayoutParams(toolbarParams);
 
-            android.view.ViewGroup.MarginLayoutParams nameParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvExerciseName.getLayoutParams();
-            nameParams.topMargin = topOffset;
-            binding.tvExerciseName.setLayoutParams(nameParams);
+            android.view.ViewGroup.MarginLayoutParams repParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
+            repParams.topMargin = getResources().getDimensionPixelSize(R.dimen.spacing_sm);
+            binding.tvRepCount.setLayoutParams(repParams);
 
             android.view.View card = binding.cardFeedback;
             android.view.ViewGroup.MarginLayoutParams cardParams = (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
