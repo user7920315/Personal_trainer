@@ -1,8 +1,8 @@
 package ru.sv.personaltrainer;
 
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
-import android.widget.MediaController;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
@@ -11,14 +11,18 @@ import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.lifecycle.ViewModelProvider;
 
+import java.io.File;
+
 import ru.sv.personaltrainer.databinding.ActivityExerciseDetailBinding;
 import ru.sv.personaltrainer.model.ExerciseInfo;
+import ru.sv.personaltrainer.util.VideoCacheManager;
 import ru.sv.personaltrainer.viewmodel.ExerciseDetailViewModel;
 
 public class ExerciseDetailActivity extends AppCompatActivity {
 
     private ActivityExerciseDetailBinding binding;
     private ExerciseDetailViewModel viewModel;
+    private VideoCacheManager videoCache;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -27,6 +31,8 @@ public class ExerciseDetailActivity extends AppCompatActivity {
 
         binding = ActivityExerciseDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
+
+        videoCache = new VideoCacheManager(this);
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.scrollViewDetail, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
@@ -70,28 +76,23 @@ public class ExerciseDetailActivity extends AppCompatActivity {
 
     private void setupVideo(ExerciseInfo info) {
         String videoFile = info.getVideoFileName();
-        try {
-            String path = "file:///android_asset/videos/" + videoFile;
-            binding.videoView.setVideoPath(path);
 
-            MediaController mediaController = new MediaController(this);
-            mediaController.setAnchorView(binding.videoView);
-            binding.videoView.setMediaController(mediaController);
+        File localFile = videoCache.getVideoFile(videoFile);
+        Uri videoUri = Uri.fromFile(localFile);
 
-            binding.videoView.setOnPreparedListener(mp -> {
-                mp.setLooping(true);
-                mp.start();
-            });
+        binding.videoView.setVideoURI(videoUri);
 
-            binding.videoView.setOnErrorListener((mp, what, extra) -> {
-                binding.videoView.setVisibility(android.view.View.GONE);
-                return true;
-            });
+        binding.videoView.setOnPreparedListener(mp -> {
+            mp.setLooping(true);
+            mp.start();
+        });
 
-            binding.videoView.requestFocus();
-        } catch (Exception e) {
+        binding.videoView.setOnErrorListener((mp, what, extra) -> {
             binding.videoView.setVisibility(android.view.View.GONE);
-        }
+            return true;
+        });
+
+        binding.videoView.requestFocus();
     }
 
     private void setupButtons(String exerciseId) {
@@ -106,7 +107,9 @@ public class ExerciseDetailActivity extends AppCompatActivity {
     @Override
     protected void onPause() {
         super.onPause();
-        if (binding.videoView.isPlaying()) binding.videoView.pause();
+        if (binding.videoView.isPlaying()) {
+            binding.videoView.pause();
+        }
     }
 
     @Override

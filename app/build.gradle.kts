@@ -61,6 +61,9 @@ dependencies {
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
     implementation("com.google.code.gson:gson:2.10.1")
 
+    implementation("androidx.media3:media3-exoplayer:1.3.1")
+    implementation("androidx.media3:media3-ui:1.3.1")
+
     implementation("com.google.android.gms:play-services-wearable:18.1.0")
 
     testImplementation(libs.junit)
