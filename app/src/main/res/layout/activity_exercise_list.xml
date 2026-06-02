@@ -16,29 +16,15 @@
         android:paddingTop="@dimen/spacing_lg"
         android:paddingBottom="@dimen/spacing_md">
 
-        <LinearLayout
+        <TextView
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:orientation="vertical">
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/greeting_hello"
-                android:textColor="@color/text_secondary"
-                android:textSize="@dimen/text_sm" />
-
-            <TextView
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:maxLines="1"
-                android:text="@string/greeting_subtitle"
-                android:textColor="@color/white"
-                android:textSize="@dimen/list_header_text"
-                android:textStyle="bold" />
-
-        </LinearLayout>
+            android:maxLines="1"
+            android:text="@string/greeting_subtitle"
+            android:textColor="@color/white"
+            android:textSize="@dimen/list_header_text"
+            android:textStyle="bold" />
 
         <androidx.cardview.widget.CardView
             android:id="@+id/btnProfile"

@@ -27,8 +27,6 @@ public class ExerciseDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
-
         binding = ActivityExerciseDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
@@ -37,6 +35,14 @@ public class ExerciseDetailActivity extends AppCompatActivity {
         ViewCompat.setOnApplyWindowInsetsListener(binding.scrollViewDetail, (v, insets) -> {
             Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
             v.setPadding(bars.left, 0, bars.right, bars.bottom);
+            return WindowInsetsCompat.CONSUMED;
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(binding.videoContainer, (v, insets) -> {
+            Insets bars = insets.getInsets(WindowInsetsCompat.Type.statusBars());
+            android.widget.FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) v.getLayoutParams();
+            params.topMargin = bars.top;
+            v.setLayoutParams(params);
             return WindowInsetsCompat.CONSUMED;
         });
 

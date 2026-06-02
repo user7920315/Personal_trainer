@@ -13,6 +13,7 @@
         android:orientation="vertical">
 
         <FrameLayout
+            android:id="@+id/videoContainer"
             android:layout_width="match_parent"
             android:layout_height="230dp"
             android:background="@color/black">
@@ -37,10 +38,11 @@
                 android:contentDescription="@string/btn_back" />
 
             <TextView
-                android:layout_width="wrap_content"
+                android:layout_width="390dp"
                 android:layout_height="wrap_content"
-                android:layout_gravity="bottom|end"
-                android:layout_margin="8dp"
+                android:layout_gravity="bottom|center_horizontal"
+                android:layout_marginBottom="8dp"
+                android:gravity="center"
                 android:text="@string/trainer"
                 android:textColor="#80FFFFFF"
                 android:textSize="9sp" />
