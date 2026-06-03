@@ -119,4 +119,7 @@
     <color name="error_divider">#33FF0000</color>
     <color name="ic_fitness_background">#1C1C28</color>
     <color name="toolbar_bg">#441A1A2E</color>
+    <color name="difficulty_easy">#4CAF50</color>
+    <color name="difficulty_medium">#FF9800</color>
+    <color name="difficulty_hard">#F44336</color>
 </resources>

@@ -114,10 +114,22 @@ public class ExerciseListActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(ViewHolder holder, int position) {
             ExerciseInfo ex = items.get(position);
-            holder.b.tvEmoji.setText(ex.getEmoji());
+            holder.b.ivExercise.setImageResource(ex.getImageResId());
             holder.b.tvTitle.setText(ex.getTitle());
             holder.b.tvMuscles.setText(ex.getMuscleGroup());
             holder.b.tvDifficulty.setText("● " + ex.getDifficulty());
+
+            int difficultyColor;
+            String diff = ex.getDifficulty().toLowerCase();
+            if (diff.contains("лёгкий")) {
+                difficultyColor = ContextCompat.getColor(holder.itemView.getContext(), R.color.difficulty_easy);
+            } else if (diff.contains("средний")) {
+                difficultyColor = ContextCompat.getColor(holder.itemView.getContext(), R.color.difficulty_medium);
+            } else {
+                difficultyColor = ContextCompat.getColor(holder.itemView.getContext(), R.color.difficulty_hard);
+            }
+            holder.b.tvDifficulty.setTextColor(difficultyColor);
+
             holder.b.cardRoot.setBackgroundColor(ContextCompat.getColor(holder.itemView.getContext(), ex.getColor()));
             holder.b.getRoot().setOnClickListener(v -> listener.onClick(ex));
         }

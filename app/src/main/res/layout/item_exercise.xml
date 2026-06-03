@@ -16,14 +16,12 @@
         android:orientation="horizontal"
         android:padding="20dp">
 
-        <TextView
-            android:id="@+id/tvEmoji"
-            android:layout_width="60dp"
-            android:layout_height="60dp"
+        <ImageView
+            android:id="@+id/ivExercise"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:layout_marginEnd="16dp"
-            android:background="@drawable/bg_emoji_circle"
-            android:gravity="center"
-            android:textSize="32sp" />
+            android:scaleType="centerCrop" />
 
         <LinearLayout
             android:layout_width="0dp"

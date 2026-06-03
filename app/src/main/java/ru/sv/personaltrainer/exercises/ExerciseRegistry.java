@@ -16,7 +16,7 @@ public class ExerciseRegistry {
                 new ExerciseInfo(
                         "PUSH_UP",
                         context.getString(R.string.exercise_push_up_name),
-                        context.getString(R.string.exercise_push_up_emoji),
+                        R.drawable.exercise_push_up,
                         context.getString(R.string.exercise_push_up_muscles),
                         context.getString(R.string.exercise_push_up_difficulty),
                         R.color.exercise_push_up,
@@ -27,7 +27,7 @@ public class ExerciseRegistry {
                 new ExerciseInfo(
                         "SQUAT",
                         context.getString(R.string.exercise_squat_name),
-                        context.getString(R.string.exercise_squat_emoji),
+                        R.drawable.exercise_squat,
                         context.getString(R.string.exercise_squat_muscles),
                         context.getString(R.string.exercise_squat_difficulty),
                         R.color.exercise_squat,
@@ -38,7 +38,7 @@ public class ExerciseRegistry {
                 new ExerciseInfo(
                         "PLANK",
                         context.getString(R.string.exercise_plank_name),
-                        context.getString(R.string.exercise_plank_emoji),
+                        R.drawable.exercise_plank,
                         context.getString(R.string.exercise_plank_muscles),
                         context.getString(R.string.exercise_plank_difficulty),
                         R.color.exercise_plank,
@@ -49,7 +49,7 @@ public class ExerciseRegistry {
                 new ExerciseInfo(
                         "LUNGE",
                         context.getString(R.string.exercise_lunge_name),
-                        context.getString(R.string.exercise_lunge_emoji),
+                        R.drawable.exercise_lunge,
                         context.getString(R.string.exercise_lunge_muscles),
                         context.getString(R.string.exercise_lunge_difficulty),
                         R.color.exercise_lunge,
@@ -60,7 +60,7 @@ public class ExerciseRegistry {
                 new ExerciseInfo(
                         "GLUTE_BRIDGE",
                         context.getString(R.string.exercise_glute_bridge_name),
-                        context.getString(R.string.exercise_glute_bridge_emoji),
+                        R.drawable.exercise_glute_bridge,
                         context.getString(R.string.exercise_glute_bridge_muscles),
                         context.getString(R.string.exercise_glute_bridge_difficulty),
                         R.color.exercise_glute_bridge,
@@ -71,7 +71,7 @@ public class ExerciseRegistry {
                 new ExerciseInfo(
                         "BURPEE",
                         context.getString(R.string.exercise_burpee_name),
-                        context.getString(R.string.exercise_burpee_emoji),
+                        R.drawable.exercise_burpee,
                         context.getString(R.string.exercise_burpee_muscles),
                         context.getString(R.string.exercise_burpee_difficulty),
                         R.color.exercise_burpee,
@@ -82,7 +82,7 @@ public class ExerciseRegistry {
                 new ExerciseInfo(
                         "PULL_UP",
                         context.getString(R.string.exercise_pull_up_name),
-                        context.getString(R.string.exercise_pull_up_emoji),
+                        R.drawable.exercise_pull_up,
                         context.getString(R.string.exercise_pull_up_muscles),
                         context.getString(R.string.exercise_pull_up_difficulty),
                         R.color.exercise_pull_up,

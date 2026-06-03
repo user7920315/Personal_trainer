@@ -75,7 +75,7 @@ public class ExerciseDetailActivity extends AppCompatActivity {
     }
 
     private void fillData(ExerciseInfo info) {
-        binding.tvDetailTitle.setText(info.getEmoji() + " " + info.getTitle());
+        binding.tvDetailTitle.setText(info.getTitle());
         binding.tvDetailMeta.setText(info.getMuscleGroup() + "  •  " + info.getDifficulty());
         binding.tvDetailDescription.setText(info.getDescription());
     }

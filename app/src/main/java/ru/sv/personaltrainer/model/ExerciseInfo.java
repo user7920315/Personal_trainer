@@ -4,7 +4,7 @@ public class ExerciseInfo {
 
     private final String id;
     private final String title;
-    private final String emoji;
+    private final int imageResId;
     private final String muscleGroup;
     private final String difficulty;
     private final int color;
@@ -12,10 +12,10 @@ public class ExerciseInfo {
     private final String description;
     private final String videoFileName;
 
-    public ExerciseInfo(String id, String title, String emoji, String muscleGroup, String difficulty, int color, String description, String videoFileName) {
+    public ExerciseInfo(String id, String title, int imageResId, String muscleGroup, String difficulty, int color, String description, String videoFileName) {
         this.id = id;
         this.title = title;
-        this.emoji = emoji;
+        this.imageResId = imageResId;
         this.muscleGroup = muscleGroup;
         this.difficulty = difficulty;
         this.color = color;
@@ -31,8 +31,8 @@ public class ExerciseInfo {
         return title;
     }
 
-    public String getEmoji() {
-        return emoji;
+    public int getImageResId() {
+        return imageResId;
     }
 
     public String getMuscleGroup() {
