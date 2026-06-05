@@ -140,7 +140,7 @@
             android:layout_height="48dp"
             android:layout_marginEnd="8dp"
             android:padding="12dp"
-            android:src="@drawable/record"
+            android:src="@drawable/play"
             android:background="@drawable/bg_square_outline"
             android:clickable="true"
             android:focusable="true"/>

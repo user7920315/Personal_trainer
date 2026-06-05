@@ -26,7 +26,8 @@ import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.widget.TextView;
-
+import android.os.Handler;
+import android.os.Looper;
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 import com.google.mediapipe.tasks.vision.poselandmarker.PoseLandmarkerResult;
 
@@ -848,11 +849,11 @@ public class VideoRecorder {
 
     private void notifyError(String error) {
         if (callback == null) return;
-        ((android.app.Activity) context).runOnUiThread(() -> callback.onRecordingError(error));
+        new Handler(Looper.getMainLooper()).post(() -> callback.onRecordingError(error));
     }
 
     private void notifySaved(String path) {
         if (callback == null) return;
-        ((android.app.Activity) context).runOnUiThread(() -> callback.onRecordingSaved(path));
+        new Handler(Looper.getMainLooper()).post(() -> callback.onRecordingSaved(path));
     }
 }

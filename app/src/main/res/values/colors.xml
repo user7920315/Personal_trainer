@@ -116,11 +116,11 @@
     <color name="difficulty_medium">#FF9800</color>
     <color name="difficulty_hard">#F44336</color>
 
-    <color name="exercise_push_up">#FFE94560</color>
+    <color name="exercise_push_up">#FF006957</color>
     <color name="exercise_squat">#FF8106A9</color>
     <color name="exercise_plank">#FF68237F</color>
     <color name="exercise_lunge">#FF1B4332</color>
     <color name="exercise_glute_bridge">#FFAF3BD4</color>
-    <color name="exercise_burpee">#FF7B2D00</color>
+    <color name="exercise_burpee">#FF0E53A7</color>
     <color name="exercise_pull_up">#FF1A3A5C</color>
 </resources>

@@ -24,6 +24,7 @@ public class PoseOverlayView extends View {
     private final Paint errorStroke = new Paint();
     private final Paint errorLinePaint = new Paint();
     private final Paint glowPaint = new Paint();
+    private final Paint crossPaint = new Paint();
 
     private PoseLandmarkerResult poseResult;
     private List<Integer> errorLandmarks;
@@ -31,32 +32,34 @@ public class PoseOverlayView extends View {
     private float pulseRadius = 0f;
     private boolean pulseGrowing = true;
 
-    private static final float PULSE_MIN = 14f;
-    private static final float PULSE_MAX = 22f;
-    private static final float PULSE_STEP = 0.5f;
+    private static final float PULSE_MIN_DP = 14f;
+    private static final float PULSE_MAX_DP = 22f;
+    private static final float PULSE_STEP_DP = 0.5f;
+
+    private final float dp;
 
     private static final int[][] POSE_CONNECTIONS = {{0, 1}, {1, 2}, {2, 3}, {3, 7}, {0, 4}, {4, 5}, {5, 6}, {6, 8}, {9, 10}, {11, 12}, {11, 23}, {12, 24}, {23, 24}, {11, 13}, {13, 15}, {15, 17}, {15, 19}, {15, 21}, {17, 19}, {12, 14}, {14, 16}, {16, 18}, {16, 20}, {16, 22}, {18, 20}, {23, 25}, {25, 27}, {27, 29}, {27, 31}, {29, 31}, {24, 26}, {26, 28}, {28, 30}, {28, 32}, {30, 32}};
 
     private static final int[] LEFT_LANDMARKS = {11, 13, 15, 17, 19, 21, 23, 25, 27, 29, 31};
-
     private static final int[] RIGHT_LANDMARKS = {12, 14, 16, 18, 20, 22, 24, 26, 28, 30, 32};
-
 
     public PoseOverlayView(Context context) {
         super(context);
+        dp = getResources().getDisplayMetrics().density;
         initPaints();
     }
 
     public PoseOverlayView(Context context, AttributeSet attrs) {
         super(context, attrs);
+        dp = getResources().getDisplayMetrics().density;
         initPaints();
     }
 
     public PoseOverlayView(Context context, AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
+        dp = getResources().getDisplayMetrics().density;
         initPaints();
     }
-
 
     private void initPaints() {
         pointPaint.setColor(Color.WHITE);
@@ -64,7 +67,7 @@ public class PoseOverlayView extends View {
         pointPaint.setAntiAlias(true);
 
         linePaint.setColor(getResources().getColor(R.color.pose_line_green, null));
-        linePaint.setStrokeWidth(5f);
+        linePaint.setStrokeWidth(5f * dp);
         linePaint.setStyle(Paint.Style.STROKE);
         linePaint.setAntiAlias(true);
         linePaint.setStrokeCap(Paint.Cap.ROUND);
@@ -75,11 +78,11 @@ public class PoseOverlayView extends View {
 
         errorStroke.setColor(getResources().getColor(R.color.pose_error_stroke, null));
         errorStroke.setStyle(Paint.Style.STROKE);
-        errorStroke.setStrokeWidth(2.5f);
+        errorStroke.setStrokeWidth(2.5f * dp);
         errorStroke.setAntiAlias(true);
 
         errorLinePaint.setColor(Color.RED);
-        errorLinePaint.setStrokeWidth(6f);
+        errorLinePaint.setStrokeWidth(6f * dp);
         errorLinePaint.setStyle(Paint.Style.STROKE);
         errorLinePaint.setAntiAlias(true);
         errorLinePaint.setStrokeCap(Paint.Cap.ROUND);
@@ -87,7 +90,12 @@ public class PoseOverlayView extends View {
         glowPaint.setStyle(Paint.Style.FILL);
         glowPaint.setAntiAlias(true);
 
-        pulseRadius = PULSE_MIN;
+        crossPaint.setColor(Color.WHITE);
+        crossPaint.setStrokeWidth(2.5f * dp);
+        crossPaint.setAntiAlias(true);
+        crossPaint.setStrokeCap(Paint.Cap.ROUND);
+
+        pulseRadius = PULSE_MIN_DP * dp;
     }
 
     public void updateResults(PoseLandmarkerResult result, int imageWidth, int imageHeight, List<Integer> errorLandmarks) {
@@ -97,7 +105,6 @@ public class PoseOverlayView extends View {
     }
 
     public void drawOnCanvas(Canvas canvas, PoseLandmarkerResult result, int frameWidth, int frameHeight, List<Integer> errors) {
-
         if (result == null || result.landmarks().isEmpty()) return;
 
         List<NormalizedLandmark> landmarks = result.landmarks().get(0);
@@ -110,7 +117,6 @@ public class PoseOverlayView extends View {
 
         this.errorLandmarks = savedErrors;
     }
-
 
     @Override
     protected void onDraw(Canvas canvas) {
@@ -131,7 +137,6 @@ public class PoseOverlayView extends View {
             postInvalidateDelayed(16);
         }
     }
-
 
     private void drawConnections(Canvas canvas, List<NormalizedLandmark> landmarks, float viewW, float viewH) {
         for (int[] connection : POSE_CONNECTIONS) {
@@ -162,7 +167,6 @@ public class PoseOverlayView extends View {
         }
     }
 
-
     private void drawLandmarks(Canvas canvas, List<NormalizedLandmark> landmarks, float viewW, float viewH) {
         for (int i = 0; i < landmarks.size(); i++) {
             NormalizedLandmark lm = landmarks.get(i);
@@ -180,10 +184,10 @@ public class PoseOverlayView extends View {
     }
 
     private void drawNormalPoint(Canvas canvas, float x, float y, int index) {
-        float radius = isKeyLandmark(index) ? 10f : 7f;
+        float radius = (isKeyLandmark(index) ? 10f : 7f) * dp;
 
         pointPaint.setColor(getResources().getColor(R.color.pose_point_shadow, null));
-        canvas.drawCircle(x + 1f, y + 1f, radius, pointPaint);
+        canvas.drawCircle(x + 1f * dp, y + 1f * dp, radius, pointPaint);
 
         pointPaint.setColor(getResources().getColor(R.color.pose_point_white, null));
         canvas.drawCircle(x, y, radius, pointPaint);
@@ -192,9 +196,17 @@ public class PoseOverlayView extends View {
         canvas.drawCircle(x - radius * 0.3f, y - radius * 0.3f, radius * 0.3f, pointPaint);
     }
 
-
     private void drawErrorPoint(Canvas canvas, float x, float y) {
-        RadialGradient gradient = new RadialGradient(x, y, pulseRadius * 1.5f, new int[]{getResources().getColor(R.color.pose_glow_1, null), getResources().getColor(R.color.pose_glow_2, null), getResources().getColor(R.color.pose_glow_3, null)}, new float[]{0f, 0.5f, 1f}, Shader.TileMode.CLAMP);
+        RadialGradient gradient = new RadialGradient(
+                x, y, pulseRadius * 1.5f,
+                new int[]{
+                        getResources().getColor(R.color.pose_glow_1, null),
+                        getResources().getColor(R.color.pose_glow_2, null),
+                        getResources().getColor(R.color.pose_glow_3, null)
+                },
+                new float[]{0f, 0.5f, 1f},
+                Shader.TileMode.CLAMP
+        );
         glowPaint.setShader(gradient);
         canvas.drawCircle(x, y, pulseRadius * 1.5f, glowPaint);
 
@@ -202,36 +214,28 @@ public class PoseOverlayView extends View {
         canvas.drawCircle(x, y, pulseRadius, errorPaint);
 
         errorPaint.setColor(getResources().getColor(R.color.pose_error_bright, null));
-        canvas.drawCircle(x, y, 14f, errorPaint);
+        canvas.drawCircle(x, y, 14f * dp, errorPaint);
 
-        canvas.drawCircle(x, y, 14f, errorStroke);
+        canvas.drawCircle(x, y, 14f * dp, errorStroke);
 
-        drawCross(canvas, x, y, 7f);
+        drawCross(canvas, x, y, 7f * dp);
     }
 
-
     private void drawCross(Canvas canvas, float x, float y, float size) {
-        Paint crossPaint = new Paint();
-        crossPaint.setColor(Color.WHITE);
-        crossPaint.setStrokeWidth(2.5f);
-        crossPaint.setAntiAlias(true);
-        crossPaint.setStrokeCap(Paint.Cap.ROUND);
-
         canvas.drawLine(x - size, y - size, x + size, y + size, crossPaint);
         canvas.drawLine(x + size, y - size, x - size, y + size, crossPaint);
     }
 
-
     private void updatePulse() {
+        float step = PULSE_STEP_DP * dp;
         if (pulseGrowing) {
-            pulseRadius += PULSE_STEP;
-            if (pulseRadius >= PULSE_MAX) pulseGrowing = false;
+            pulseRadius += step;
+            if (pulseRadius >= PULSE_MAX_DP * dp) pulseGrowing = false;
         } else {
-            pulseRadius -= PULSE_STEP;
-            if (pulseRadius <= PULSE_MIN) pulseGrowing = true;
+            pulseRadius -= step;
+            if (pulseRadius <= PULSE_MIN_DP * dp) pulseGrowing = true;
         }
     }
-
 
     private boolean isVisible(NormalizedLandmark lm) {
         if (lm.visibility().isPresent()) {

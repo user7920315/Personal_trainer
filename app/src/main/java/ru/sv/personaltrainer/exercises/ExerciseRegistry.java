@@ -14,17 +14,6 @@ public class ExerciseRegistry {
         return Arrays.asList(
 
                 new ExerciseInfo(
-                        "PUSH_UP",
-                        context.getString(R.string.exercise_push_up_name),
-                        R.drawable.exercise_push_up,
-                        context.getString(R.string.exercise_push_up_muscles),
-                        context.getString(R.string.exercise_push_up_difficulty),
-                        R.color.exercise_push_up,
-                        context.getString(R.string.exercise_push_up_description),
-                        context.getString(R.string.exercise_push_up_video)
-                ),
-
-                new ExerciseInfo(
                         "SQUAT",
                         context.getString(R.string.exercise_squat_name),
                         R.drawable.exercise_squat,
@@ -47,17 +36,6 @@ public class ExerciseRegistry {
                 ),
 
                 new ExerciseInfo(
-                        "LUNGE",
-                        context.getString(R.string.exercise_lunge_name),
-                        R.drawable.exercise_lunge,
-                        context.getString(R.string.exercise_lunge_muscles),
-                        context.getString(R.string.exercise_lunge_difficulty),
-                        R.color.exercise_lunge,
-                        context.getString(R.string.exercise_lunge_description),
-                        context.getString(R.string.exercise_lunge_video)
-                ),
-
-                new ExerciseInfo(
                         "GLUTE_BRIDGE",
                         context.getString(R.string.exercise_glute_bridge_name),
                         R.drawable.exercise_glute_bridge,
@@ -69,14 +47,25 @@ public class ExerciseRegistry {
                 ),
 
                 new ExerciseInfo(
-                        "BURPEE",
-                        context.getString(R.string.exercise_burpee_name),
-                        R.drawable.exercise_burpee,
-                        context.getString(R.string.exercise_burpee_muscles),
-                        context.getString(R.string.exercise_burpee_difficulty),
-                        R.color.exercise_burpee,
-                        context.getString(R.string.exercise_burpee_description),
-                        context.getString(R.string.exercise_burpee_video)
+                        "PUSH_UP",
+                        context.getString(R.string.exercise_push_up_name),
+                        R.drawable.exercise_push_up,
+                        context.getString(R.string.exercise_push_up_muscles),
+                        context.getString(R.string.exercise_push_up_difficulty),
+                        R.color.exercise_push_up,
+                        context.getString(R.string.exercise_push_up_description),
+                        context.getString(R.string.exercise_push_up_video)
+                ),
+
+                new ExerciseInfo(
+                        "LUNGE",
+                        context.getString(R.string.exercise_lunge_name),
+                        R.drawable.exercise_lunge,
+                        context.getString(R.string.exercise_lunge_muscles),
+                        context.getString(R.string.exercise_lunge_difficulty),
+                        R.color.exercise_lunge,
+                        context.getString(R.string.exercise_lunge_description),
+                        context.getString(R.string.exercise_lunge_video)
                 ),
 
                 new ExerciseInfo(
@@ -88,6 +77,17 @@ public class ExerciseRegistry {
                         R.color.exercise_pull_up,
                         context.getString(R.string.exercise_pull_up_description),
                         context.getString(R.string.exercise_pull_up_video)
+                ),
+
+                new ExerciseInfo(
+                        "BURPEE",
+                        context.getString(R.string.exercise_burpee_name),
+                        R.drawable.exercise_burpee,
+                        context.getString(R.string.exercise_burpee_muscles),
+                        context.getString(R.string.exercise_burpee_difficulty),
+                        R.color.exercise_burpee,
+                        context.getString(R.string.exercise_burpee_description),
+                        context.getString(R.string.exercise_burpee_video)
                 )
         );
     }

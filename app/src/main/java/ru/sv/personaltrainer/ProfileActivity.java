@@ -367,7 +367,12 @@ public class ProfileActivity extends AppCompatActivity {
             }
             h.b.tvWorkoutName.setText(r.exerciseName);
             h.b.tvWorkoutDate.setText(sdf.format(new Date(r.timestamp)));
-            h.b.tvWorkoutReps.setText(String.valueOf(r.reps));
+
+            if ("PLANK".equals(r.exerciseId)) {
+                h.b.tvWorkoutReps.setText(r.reps + " сек");
+            } else {
+                h.b.tvWorkoutReps.setText(String.valueOf(r.reps));
+            }
         }
 
         @Override

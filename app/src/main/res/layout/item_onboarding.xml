@@ -8,11 +8,15 @@
 
     <ImageView
         android:id="@+id/onboarding_image"
-        android:layout_width="160dp"
-        android:layout_height="160dp"
-        android:layout_marginBottom="40dp"
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:layout_marginBottom="@dimen/spacing_lg"
         android:contentDescription="@string/app_name"
-        android:scaleType="fitCenter" />
+        android:scaleType="fitCenter"
+        android:adjustViewBounds="true"
+        android:maxWidth="200dp"
+        android:maxHeight="200dp" />
 
     <TextView
         android:id="@+id/onboarding_title"

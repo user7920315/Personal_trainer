@@ -41,6 +41,14 @@ public class OnBoardingActivity extends AppCompatActivity {
             R.string.onboarding_desc_5
     };
 
+    private static final int[] IMAGES = {
+            R.drawable.ic_fitness,
+            R.drawable.ic_onboarding_2,
+            R.drawable.ic_onboarding_3,
+            R.drawable.ic_onboarding_4,
+            R.drawable.ic_onboarding_5
+    };
+
     private static final int[] BACKGROUNDS = {
             R.color.onboarding_bg_1, R.color.onboarding_bg_2,
             R.color.onboarding_bg_3, R.color.onboarding_bg_4,
@@ -129,7 +137,7 @@ public class OnBoardingActivity extends AppCompatActivity {
 
         @Override
         public void onBindViewHolder(@NonNull VH holder, int pos) {
-            holder.b.onboardingImage.setImageResource(R.drawable.ic_fitness);
+            holder.b.onboardingImage.setImageResource(IMAGES[pos]);
             holder.b.onboardingTitle.setText(TITLE_RES[pos]);
             holder.b.onboardingDescription.setText(DESC_RES[pos]);
             holder.b.getRoot().setBackgroundColor(getColor(BACKGROUNDS[pos]));

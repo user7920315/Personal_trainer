@@ -16,9 +16,9 @@
 
         <ImageView
             android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:padding="8dp"
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:padding="12dp"
             android:src="@drawable/arrow_back"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
