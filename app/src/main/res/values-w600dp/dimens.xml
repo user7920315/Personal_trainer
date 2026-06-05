@@ -12,7 +12,7 @@
     <dimen name="btn_height_lg">60dp</dimen>
 
     <dimen name="text_sm">14sp</dimen>
-    <dimen name="text_md">16sp</dimen>
+    <dimen name="text_md">23sp</dimen>
     <dimen name="text_lg">19sp</dimen>
     <dimen name="text_xl">23sp</dimen>
 

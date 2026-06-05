@@ -333,4 +333,14 @@
     <string name="male_symbol">♂ </string>
     <string name="female_symbol">♀ </string>
     <string name="trainer">Упражнения выполнены МС, чемпионом России по тяжелой атлетике среди юношей Андреем Демьяновым</string>
+    <string name="msg_detecting_mode">Определение режима упражнения...</string>
+    <string name="feedback_mode_floor">Режим: классический мостик на полу</string>
+    <string name="feedback_mode_bench">Режим: hip thrust со скамейкой</string>
+    <string name="feedback_hipthrust_up_good">Отлично! Таз поднят максимально</string>
+    <string name="feedback_hipthrust_up_higher">Поднимите таз выше, напрягите ягодицы</string>
+    <string name="feedback_hipthrust_down">Опустите таз. Повторений: %d</string>
+    <string name="feedback_hipthrust_start">Примите исходное положение на скамейке</string>
+    <string name="feedback_hipthrust_ready">Готов к hip thrust. Спина на скамейке, ноги на полу</string>
+    <string name="error_glute_neck_extension_weak">Не запрокидывайте голову сильно назад</string>
+    <string name="error_glute_neck_extension_strong">Голова сильно запрокинута! Держите шею нейтрально</string>
 </resources>

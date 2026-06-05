@@ -15,7 +15,7 @@
 
     <dimen name="text_xs">10sp</dimen>
     <dimen name="text_sm">12sp</dimen>
-    <dimen name="text_md">14sp</dimen>
+    <dimen name="text_md">18sp</dimen>
     <dimen name="text_lg">16sp</dimen>
     <dimen name="text_xl">18sp</dimen>
     <dimen name="text_xxl">22sp</dimen>

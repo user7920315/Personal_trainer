@@ -344,23 +344,27 @@ public class ExerciseActivity extends AppCompatActivity {
     }
 
     private void applyInsets() {
-        ViewCompat.setOnApplyWindowInsetsListener(binding.previewView, (view, windowInsets) -> {
-            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (view, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(
+                    WindowInsetsCompat.Type.systemBars()
+                            | WindowInsetsCompat.Type.displayCutout()
+            );
 
-            int topOffset = insets.top;
-            int bottomOffset = insets.bottom + getResources().getDimensionPixelSize(R.dimen.feedback_card_margin);
-
-            android.view.ViewGroup.MarginLayoutParams toolbarParams = (android.view.ViewGroup.MarginLayoutParams) binding.toolbar.getLayoutParams();
-            toolbarParams.topMargin = topOffset;
+            android.view.ViewGroup.MarginLayoutParams toolbarParams =
+                    (android.view.ViewGroup.MarginLayoutParams) binding.toolbar.getLayoutParams();
+            toolbarParams.topMargin = insets.top;
             binding.toolbar.setLayoutParams(toolbarParams);
 
-            android.view.ViewGroup.MarginLayoutParams repParams = (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
+            android.view.ViewGroup.MarginLayoutParams repParams =
+                    (android.view.ViewGroup.MarginLayoutParams) binding.tvRepCount.getLayoutParams();
             repParams.topMargin = getResources().getDimensionPixelSize(R.dimen.spacing_sm);
             binding.tvRepCount.setLayoutParams(repParams);
 
             android.view.View card = binding.cardFeedback;
-            android.view.ViewGroup.MarginLayoutParams cardParams = (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
-            cardParams.bottomMargin = bottomOffset;
+            android.view.ViewGroup.MarginLayoutParams cardParams =
+                    (android.view.ViewGroup.MarginLayoutParams) card.getLayoutParams();
+            cardParams.bottomMargin = insets.bottom
+                    + getResources().getDimensionPixelSize(R.dimen.feedback_card_margin);
             card.setLayoutParams(cardParams);
 
             if (videoRecorder != null) {

@@ -6,7 +6,8 @@ import java.util.List;
 
 import ru.sv.personaltrainer.R;
 
-public class PlankExercise extends BaseExercise {
+public class
+PlankExercise extends BaseExercise {
 
     private static final float HIP_SAG_WARN = 0.15f;
     private static final float HIP_SAG_ERROR = 0.25f;

@@ -10,7 +10,7 @@
 
     <dimen name="text_xs">13sp</dimen>
     <dimen name="text_sm">15sp</dimen>
-    <dimen name="text_md">17sp</dimen>
+    <dimen name="text_md">24sp</dimen>
     <dimen name="text_lg">20sp</dimen>
     <dimen name="text_xl">24sp</dimen>
     <dimen name="text_xxl">28sp</dimen>

@@ -8,15 +8,16 @@ import ru.sv.personaltrainer.R;
 
 public class GluteBridgeExercise extends BaseExercise {
 
-    private static final float PHASE_UP_ENTER = 0.07f;
-    private static final float PHASE_DOWN_EXIT = 0.03f;
+    private static final float PHASE_UP_ENTER_FLOOR = 0.06f;
+    private static final float PHASE_UP_ENTER_BENCH = 0.03f;
+    private static final float PHASE_DOWN_EXIT_FLOOR = 0.03f;
+    private static final float PHASE_DOWN_EXIT_BENCH = 0.015f;
 
     private static final float HIP_RISE_GOOD = 0.15f;
-    private static final float HIP_POS_SAG_WARN = 0.10f;
-    private static final float HIP_POS_SAG_ERROR = 0.20f;
-    private static final float HIP_POS_HIGH_WARN = -0.10f;
-    private static final float HIP_POS_HIGH_ERROR = -0.20f;
-
+    private static final float HIP_POS_SAG_WARN = 0.18f;
+    private static final float HIP_POS_SAG_ERROR = 0.30f;
+    private static final float HIP_POS_HIGH_WARN = -0.05f;
+    private static final float HIP_POS_HIGH_ERROR = -0.12f;
 
     private static final float KNEE_TOO_CLOSE = 65f;
     private static final float KNEE_TOO_FAR = 120f;
@@ -32,9 +33,25 @@ public class GluteBridgeExercise extends BaseExercise {
     private static final float SHOULDER_LIFT_WARN = 0.03f;
     private static final float SHOULDER_LIFT_ERROR = 0.06f;
 
+    private static final float NECK_EXTENSION_WARN = 0.08f;
+    private static final float NECK_EXTENSION_ERROR = 0.15f;
+
     private static final float SIDE_THRESHOLD = 0.12f;
     private static final int STABLE_FRAMES = 8;
     private static final float EMA_ALPHA = 0.15f;
+    private ExerciseMode currentMode = ExerciseMode.FLOOR;
+    private boolean modeDetected = false;
+    private ExerciseMode modeOverride = null;
+
+    private static final float MODE_SHOULDER_HIP_DIFF_BENCH = 0.18f;
+    private static final float MODE_SHOULDER_HIP_DIFF_FLOOR = 0.10f;
+    private static final float MODE_SHOULDER_HEEL_DIFF_BENCH = 0.40f;
+    private static final int MODE_STABLE_FRAMES = 15;
+    private static final int MODE_MAX_DETECT_FRAMES = 90;
+
+    private int modeCandidateCount = 0;
+    private ExerciseMode modeCandidate = ExerciseMode.FLOOR;
+    private int modeDetectFrameCount = 0;
 
     private float emaLShoulderY = -1f, emaLShoulderX = -1f;
     private float emaRShoulderY = -1f, emaRShoulderX = -1f;
@@ -55,7 +72,6 @@ public class GluteBridgeExercise extends BaseExercise {
     private float baseHeelY = -1f;
     private int baseFrameCount = 0;
     private static final int BASE_FRAMES = 30;
-
     private boolean baselineCaptured = false;
 
     private ViewMode currentView = ViewMode.UNKNOWN;
@@ -63,6 +79,14 @@ public class GluteBridgeExercise extends BaseExercise {
     private int candidateCount = 0;
 
     private enum ViewMode {SIDE, FRONT, UNKNOWN}
+
+
+
+    public void setMode(ExerciseMode mode) {
+        this.modeOverride = mode;
+        this.currentMode = mode;
+        this.modeDetected = true;
+    }
 
     @Override
     public String getName() {
@@ -87,9 +111,25 @@ public class GluteBridgeExercise extends BaseExercise {
         updateEMA(lm);
         updateView();
 
+        if (!modeDetected) {
+            detectMode();
+            if (!modeDetected) {
+                result.mainFeedback = getString(R.string.msg_detecting_mode);
+                result.phase = "";
+                return result;
+            }
+            result.mainFeedback = currentMode == ExerciseMode.BENCH
+                    ? getString(R.string.feedback_mode_bench)
+                    : getString(R.string.feedback_mode_floor);
+            result.phase = "";
+            return result;
+        }
+
         if (!baselineCaptured) {
             captureBaseline();
-            result.mainFeedback = baselineCaptured ? getString(R.string.feedback_glute_ready) : String.format(getString(R.string.msg_calibration_progress), baseFrameCount * 100 / BASE_FRAMES);
+            result.mainFeedback = baselineCaptured
+                    ? getString(R.string.feedback_glute_ready)
+                    : String.format(getString(R.string.msg_calibration_progress), baseFrameCount * 100 / BASE_FRAMES);
             result.phase = "";
             return result;
         }
@@ -101,17 +141,21 @@ public class GluteBridgeExercise extends BaseExercise {
             return result;
         }
 
-
         float hipRise = baseHipY - currentHipY;
 
         updatePhase(result, hipRise);
 
         if (result.phase.equals("UP")) {
-            checkShouldersOnFloor(result);
             checkHeelsOnFloor(result);
-            checkArmsOnFloor(result, lm);
-            checkWristsOnFloor(result, lm);
             checkHipAlignment(result, lm);
+
+            if (currentMode == ExerciseMode.FLOOR) {
+                checkShouldersOnFloor(result);
+                checkArmsOnFloor(result, lm);
+                checkWristsOnFloor(result, lm);
+            } else {
+                checkNeckAlignment(result, lm);
+            }
         }
 
         if (result.phase.equals("DOWN")) {
@@ -122,25 +166,130 @@ public class GluteBridgeExercise extends BaseExercise {
         }
 
         result.repCount = repCount;
-        result.mainFeedback = result.errors.isEmpty() ? buildFeedback(result.phase, hipRise) : result.errors.get(0);
+        result.mainFeedback = result.errors.isEmpty()
+                ? buildFeedback(result.phase, hipRise)
+                : result.errors.get(0);
 
         return result;
     }
 
 
+
+    private float getPhaseUpEnter() {
+        return currentMode == ExerciseMode.BENCH ? PHASE_UP_ENTER_BENCH : PHASE_UP_ENTER_FLOOR;
+    }
+
+    private float getPhaseDownExit() {
+        return currentMode == ExerciseMode.BENCH ? PHASE_DOWN_EXIT_BENCH : PHASE_DOWN_EXIT_FLOOR;
+    }
+
     private void updatePhase(AnalysisResult r, float hipRise) {
-        if (hipRise > PHASE_UP_ENTER) {
+        float upEnter = getPhaseUpEnter();
+        float downExit = getPhaseDownExit();
+
+        if (hipRise > upEnter) {
             if (!isDown) isDown = true;
             r.phase = "UP";
-        } else if (hipRise < PHASE_DOWN_EXIT && isDown) {
+        } else if (hipRise < downExit && isDown) {
             isDown = false;
             repCount++;
             r.phase = "DOWN";
         } else {
             r.phase = isDown ? "UP" : "DOWN";
         }
-
     }
+
+    public enum ExerciseMode {
+        FLOOR,
+        BENCH
+    }
+
+    private void detectMode() {
+        if (modeDetected) return;
+
+        if (modeOverride != null) {
+            currentMode = modeOverride;
+            modeDetected = true;
+            return;
+        }
+
+        modeDetectFrameCount++;
+
+        float shoulderY = getAvgShoulderY();
+        float hipY = getAvgHipY();
+        float heelY = getAvgHeelY();
+
+        if (shoulderY < 0 || hipY < 0 || heelY < 0) {
+            return;
+        }
+
+        float shoulderHipDiff = hipY - shoulderY;
+        float shoulderHeelDiff = heelY - shoulderY;
+
+        boolean isBench = shoulderHipDiff > MODE_SHOULDER_HIP_DIFF_BENCH
+                && shoulderHeelDiff > MODE_SHOULDER_HEEL_DIFF_BENCH;
+        boolean isFloor = shoulderHipDiff < MODE_SHOULDER_HIP_DIFF_FLOOR
+                || shoulderHeelDiff < MODE_SHOULDER_HEEL_DIFF_BENCH - 0.10f;
+
+        ExerciseMode raw;
+        if (isBench) {
+            raw = ExerciseMode.BENCH;
+        } else if (isFloor) {
+            raw = ExerciseMode.FLOOR;
+        } else {
+            return;
+        }
+
+        if (raw == modeCandidate) {
+            modeCandidateCount++;
+        } else {
+            modeCandidate = raw;
+            modeCandidateCount = 1;
+        }
+
+        if (modeCandidateCount >= MODE_STABLE_FRAMES) {
+            currentMode = modeCandidate;
+            modeDetected = true;
+        }
+
+        if (modeDetectFrameCount >= MODE_MAX_DETECT_FRAMES && !modeDetected) {
+            currentMode = ExerciseMode.FLOOR;
+            modeDetected = true;
+        }
+    }
+
+
+
+    private void captureBaseline() {
+        if (baseFrameCount >= BASE_FRAMES) {
+            baselineCaptured = true;
+            return;
+        }
+
+        float hipY = getAvgHipY();
+        float heelY = getAvgHeelY();
+        float shY = getAvgShoulderY();
+
+        if (hipY < 0 || heelY < 0 || shY < 0) {
+            return;
+        }
+
+        if (baseFrameCount == 0) {
+            baseHipY = hipY;
+            baseHeelY = heelY;
+            baseShoulderY = shY;
+        } else {
+            baseHipY = Math.max(baseHipY, hipY);
+            baseHeelY = baseHeelY * 0.8f + heelY * 0.2f;
+            baseShoulderY = baseShoulderY * 0.8f + shY * 0.2f;
+        }
+        baseFrameCount++;
+
+        if (baseFrameCount >= BASE_FRAMES) {
+            baselineCaptured = true;
+        }
+    }
+
 
 
     private void checkHipAlignment(AnalysisResult result, List<NormalizedLandmark> lm) {
@@ -153,10 +302,9 @@ public class GluteBridgeExercise extends BaseExercise {
         float expectedHipY = (kneeY + shoulderY) / 2f;
         float span = Math.abs(kneeY - shoulderY);
 
-        if (span < 0.05f) return;
+        if (span < 0.08f) return;
 
         float deviation = (hipY - expectedHipY) / span;
-
 
         if (deviation > HIP_POS_SAG_ERROR) {
             result.addError(getString(R.string.error_glute_hips_sag_strong), LEFT_HIP, RIGHT_HIP);
@@ -169,15 +317,13 @@ public class GluteBridgeExercise extends BaseExercise {
         }
     }
 
-
     private void checkKneeStartPosition(AnalysisResult result, float angle) {
         if (angle > KNEE_TOO_FAR) {
-            result.addError(getString(R.string.error_glute_knee_far), LEFT_KNEE, RIGHT_KNEE);
-        } else if (angle < KNEE_TOO_CLOSE) {
             result.addError(getString(R.string.error_glute_knee_close), LEFT_KNEE, RIGHT_KNEE);
+        } else if (angle < KNEE_TOO_CLOSE) {
+            result.addError(getString(R.string.error_glute_knee_far), LEFT_KNEE, RIGHT_KNEE);
         }
     }
-
 
     private void checkShouldersOnFloor(AnalysisResult result) {
         if (baseShoulderY < 0) return;
@@ -186,14 +332,12 @@ public class GluteBridgeExercise extends BaseExercise {
 
         float lift = baseShoulderY - currentShY;
 
-
         if (lift > SHOULDER_LIFT_ERROR) {
             result.addError(getString(R.string.error_glute_shoulders_lift_strong), LEFT_SHOULDER, RIGHT_SHOULDER);
         } else if (lift > SHOULDER_LIFT_WARN) {
             result.addError(getString(R.string.error_glute_shoulders_lift_weak), LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
-
 
     private void checkHeelsOnFloor(AnalysisResult result) {
         if (baseHeelY < 0) return;
@@ -230,12 +374,10 @@ public class GluteBridgeExercise extends BaseExercise {
             }
         }
 
-
         if (isVisible(lm, RIGHT_WRIST) && isVisible(lm, RIGHT_ELBOW)) {
             float wristY = lm.get(RIGHT_WRIST).y();
             float elbowY = lm.get(RIGHT_ELBOW).y();
             float lift = elbowY - wristY;
-
 
             if (lift > WRIST_LIFT_ERROR) {
                 result.addError(getString(R.string.error_glute_wrist_lift_right_strong), RIGHT_WRIST);
@@ -245,15 +387,11 @@ public class GluteBridgeExercise extends BaseExercise {
         }
     }
 
-
     private void checkArmsOnFloor(AnalysisResult result, List<NormalizedLandmark> lm) {
-
         if (isVisible(lm, LEFT_ELBOW) && isVisible(lm, LEFT_SHOULDER)) {
-
             float elbowY = lm.get(LEFT_ELBOW).y();
             float shoulderY = lm.get(LEFT_SHOULDER).y();
             float lift = shoulderY - elbowY;
-
 
             if (lift > ARM_LIFT_ERROR) {
                 result.addError(getString(R.string.error_glute_arm_lift_left_strong), LEFT_ELBOW, LEFT_SHOULDER);
@@ -262,13 +400,10 @@ public class GluteBridgeExercise extends BaseExercise {
             }
         }
 
-
         if (isVisible(lm, RIGHT_ELBOW) && isVisible(lm, RIGHT_SHOULDER)) {
-
             float elbowY = lm.get(RIGHT_ELBOW).y();
             float shoulderY = lm.get(RIGHT_SHOULDER).y();
             float lift = shoulderY - elbowY;
-
 
             if (lift > ARM_LIFT_ERROR) {
                 result.addError(getString(R.string.error_glute_arm_lift_right_strong), RIGHT_ELBOW, RIGHT_SHOULDER);
@@ -278,40 +413,21 @@ public class GluteBridgeExercise extends BaseExercise {
         }
     }
 
+    private void checkNeckAlignment(AnalysisResult result, List<NormalizedLandmark> lm) {
+        if (!isVisible(lm, LEFT_SHOULDER) || !isVisible(lm, 3)) return;
 
-    private void captureBaseline() {
-        if (baseFrameCount >= BASE_FRAMES) {
-            baselineCaptured = true;
-            return;
-        }
+        float shoulderY = lm.get(LEFT_SHOULDER).y();
+        float earY = lm.get(3).y();
 
-        float hipY = getAvgHipY();
-        float heelY = getAvgHeelY();
-        float shY = getAvgShoulderY();
+        float extension = earY - shoulderY;
 
-        if (hipY < 0 || heelY < 0 || shY < 0) return;
-
-
-        if (baseHipY > 0 && (baseHipY - hipY) > PHASE_UP_ENTER) {
-            return;
-        }
-
-        if (baseFrameCount == 0) {
-            baseHipY = hipY;
-            baseHeelY = heelY;
-            baseShoulderY = shY;
-        } else {
-            baseHipY = baseHipY * 0.8f + hipY * 0.2f;
-            baseHeelY = baseHeelY * 0.8f + heelY * 0.2f;
-            baseShoulderY = baseShoulderY * 0.8f + shY * 0.2f;
-        }
-        baseFrameCount++;
-
-
-        if (baseFrameCount >= BASE_FRAMES) {
-            baselineCaptured = true;
+        if (extension > NECK_EXTENSION_ERROR) {
+            result.addError(getString(R.string.error_glute_neck_extension_strong), 3);
+        } else if (extension > NECK_EXTENSION_WARN) {
+            result.addError(getString(R.string.error_glute_neck_extension_weak), 3);
         }
     }
+
 
 
     private float getAvgHipY() {
@@ -357,14 +473,31 @@ public class GluteBridgeExercise extends BaseExercise {
     private String buildFeedback(String phase, float hipRise) {
         switch (phase) {
             case "UP":
-                return hipRise >= HIP_RISE_GOOD ? getString(R.string.feedback_glute_up_good) : getString(R.string.feedback_glute_up_higher);
+                if (currentMode == ExerciseMode.BENCH) {
+                    return hipRise >= HIP_RISE_GOOD
+                            ? getString(R.string.feedback_hipthrust_up_good)
+                            : getString(R.string.feedback_hipthrust_up_higher);
+                } else {
+                    return hipRise >= HIP_RISE_GOOD
+                            ? getString(R.string.feedback_glute_up_good)
+                            : getString(R.string.feedback_glute_up_higher);
+                }
             case "DOWN":
-                return repCount > 0 ? getString(R.string.feedback_glute_down, repCount) : getString(R.string.feedback_glute_start);
+                if (repCount > 0) {
+                    return currentMode == ExerciseMode.BENCH
+                            ? getString(R.string.feedback_hipthrust_down, repCount)
+                            : getString(R.string.feedback_glute_down, repCount);
+                } else {
+                    return currentMode == ExerciseMode.BENCH
+                            ? getString(R.string.feedback_hipthrust_start)
+                            : getString(R.string.feedback_glute_start);
+                }
             default:
-                return getString(R.string.feedback_glute_lie_down);
+                return currentMode == ExerciseMode.BENCH
+                        ? getString(R.string.feedback_hipthrust_ready)
+                        : getString(R.string.feedback_glute_lie_down);
         }
     }
-
 
     private void updateEMA(List<NormalizedLandmark> lm) {
         if (isVisible(lm, LEFT_SHOULDER)) {
@@ -389,7 +522,6 @@ public class GluteBridgeExercise extends BaseExercise {
             emaShoulderWidth = emaVal(emaShoulderWidth, distX(lm, LEFT_SHOULDER, RIGHT_SHOULDER));
     }
 
-
     private void updateView() {
         ViewMode raw = emaShoulderWidth > 0 ? (emaShoulderWidth < SIDE_THRESHOLD ? ViewMode.SIDE : ViewMode.FRONT) : ViewMode.UNKNOWN;
 
@@ -413,7 +545,6 @@ public class GluteBridgeExercise extends BaseExercise {
         return prev + EMA_ALPHA * (newVal - prev);
     }
 
-
     @Override
     public void reset() {
         super.reset();
@@ -432,5 +563,12 @@ public class GluteBridgeExercise extends BaseExercise {
         currentView = ViewMode.UNKNOWN;
         candidateView = ViewMode.UNKNOWN;
         candidateCount = 0;
+
+        currentMode = ExerciseMode.FLOOR;
+        modeDetected = false;
+        modeCandidate = ExerciseMode.FLOOR;
+        modeCandidateCount = 0;
+        modeDetectFrameCount = 0;
+        modeOverride = null;
     }
 }
