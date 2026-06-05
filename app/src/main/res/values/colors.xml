@@ -12,13 +12,6 @@
     <color name="text_secondary">#AAAAAA</color>
     <color name="input_outline">#444466</color>
     <color name="divider">#1AFFFFFF</color>
-    <color name="exercise_push_up">#FFE94560</color>
-    <color name="exercise_squat">#FF0F3460</color>
-    <color name="exercise_plank">#FF16213E</color>
-    <color name="exercise_lunge">#FF1B4332</color>
-    <color name="exercise_glute_bridge">#FF4A1942</color>
-    <color name="exercise_burpee">#FF7B2D00</color>
-    <color name="exercise_pull_up">#FF1A3A5C</color>
     <color name="onboarding_bg_1">#FF1A1A2E</color>
     <color name="onboarding_bg_2">#FF0F3460</color>
     <color name="onboarding_bg_3">#FF16213E</color>
@@ -122,4 +115,12 @@
     <color name="difficulty_easy">#4CAF50</color>
     <color name="difficulty_medium">#FF9800</color>
     <color name="difficulty_hard">#F44336</color>
+
+    <color name="exercise_push_up">#FFE94560</color>
+    <color name="exercise_squat">#FF8106A9</color>
+    <color name="exercise_plank">#FF68237F</color>
+    <color name="exercise_lunge">#FF1B4332</color>
+    <color name="exercise_glute_bridge">#FFAF3BD4</color>
+    <color name="exercise_burpee">#FF7B2D00</color>
+    <color name="exercise_pull_up">#FF1A3A5C</color>
 </resources>

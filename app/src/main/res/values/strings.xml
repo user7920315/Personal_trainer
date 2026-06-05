@@ -110,8 +110,8 @@
     <string name="error_plank_head_down_weak">⚠ Не опускайте голову вниз</string>
     <string name="error_plank_head_up_strong">⚠ Голова сильно задрана — смотрите в пол</string>
     <string name="error_plank_head_up_weak">⚠ Не запрокидывайте голову</string>
-    <string name="error_plank_shoulder_tilt_left">⚠ Левое плечо ниже — выровняйте корпус</string>
-    <string name="error_plank_shoulder_tilt_right">⚠ Правое плечо ниже — выровняйте корпус</string>
+    <string name="error_plank_shoulder_tilt_left">⚠ Левое плечо выше — выровняйте корпус</string>
+    <string name="error_plank_shoulder_tilt_right">⚠ Правое плечо выше — выровняйте корпус</string>
     <string name="error_plank_shoulder_tilt_weak">⚠ Плечи немного перекошены — выровняйте</string>
     <string name="error_plank_knee_tilt_left">⚠ Левая нога ниже — выровняйте таз</string>
     <string name="error_plank_knee_tilt_right">⚠ Правая нога ниже — выровняйте таз</string>
@@ -265,7 +265,6 @@
     <string name="chart_label_weight">Вес (кг)</string>
     <string name="chart_date_format">dd.MM</string>
     <string name="history_date_format">dd.MM.yyyy  HH:mm</string>
-    <string name="icon_default_workout">💪</string>
     <string name="notification_channel_name">Запись тренировки</string>
     <string name="notification_title">Персональный тренер</string>
     <string name="notification_text">Идёт запись тренировки...</string>

@@ -12,10 +12,11 @@
         android:paddingHorizontal="4dp"
         android:paddingVertical="10dp">
 
-        <TextView
-            android:id="@+id/tvWorkoutIcon"
+        <ImageView
+            android:id="@+id/ivWorkoutIcon"
             android:layout_width="40dp"
             android:layout_height="40dp"
+            android:scaleType="fitCenter"
             android:layout_marginEnd="12dp"
             android:background="@drawable/bg_stat_card"
             android:gravity="center"

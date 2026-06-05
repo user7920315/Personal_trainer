@@ -324,10 +324,10 @@ PlankExercise extends BaseExercise {
         }
     }
 
-    public int getBestHoldSeconds() {
+    @Override
+    public int getRepCount() {
         return bestHoldSeconds;
     }
-
 
     private void updateEMA(List<NormalizedLandmark> lm) {
         if (allVisible(lm, LEFT_HIP, RIGHT_HIP)) {

@@ -50,7 +50,6 @@ public class VideoCacheManager {
                 out.write(buffer, 0, read);
             }
 
-            // Отметить кэш актуальным
             context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
                     .edit()
                     .putInt(KEY_VERSION, CURRENT_VERSION)

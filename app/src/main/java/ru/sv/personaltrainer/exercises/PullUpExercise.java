@@ -1,6 +1,5 @@
 package ru.sv.personaltrainer.exercises;
 
-
 import com.google.mediapipe.tasks.components.containers.NormalizedLandmark;
 
 import java.util.List;
@@ -9,14 +8,13 @@ import ru.sv.personaltrainer.R;
 
 public class PullUpExercise extends BaseExercise {
 
-    private static final float CHIN_ABOVE_WRIST_MIN = 0.02f;
+    private static final float CHIN_ABOVE_WRIST_MIN = 0.05f;
 
-    private static final float ELBOW_EXTENDED_ANGLE = 155f;
-    private static final float ELBOW_DOWN_ANGLE = 135f;
+    private static final float ELBOW_EXTENDED_ANGLE = 40f;
+    private static final float ELBOW_DOWN_ANGLE = 120f;
 
-    private static final float ELBOW_FULL_EXTEND_WARN = 150f;
-    private static final float ELBOW_FULL_EXTEND_ERROR = 140f;
-
+    private static final float ELBOW_FULL_EXTEND_WARN = 50f;
+    private static final float ELBOW_FULL_EXTEND_ERROR = 70f;
 
     private static final float SWING_WARN = 0.05f;
     private static final float SWING_ERROR = 0.10f;
@@ -97,7 +95,6 @@ public class PullUpExercise extends BaseExercise {
 
         updatePhase(result, lm, avgElbowAngle);
 
-
         checkFullExtension(result, avgElbowAngle);
         checkChinAboveBar(result, lm);
         checkElbowSymmetry(result, lm);
@@ -116,14 +113,10 @@ public class PullUpExercise extends BaseExercise {
     }
 
     private void updatePhase(AnalysisResult r, List<NormalizedLandmark> lm, float elbowAngle) {
-
-        if (elbowAngle > ELBOW_EXTENDED_ANGLE) {
-            if (isDown) {
-            }
+        if (elbowAngle < ELBOW_EXTENDED_ANGLE) {
             isDown = true;
             r.phase = "DOWN";
-
-        } else if (elbowAngle < ELBOW_DOWN_ANGLE && isDown) {
+        } else if (elbowAngle > ELBOW_DOWN_ANGLE && isDown) {
             boolean chinOver = checkChinOverBar(lm);
             if (chinOver) {
                 isDown = false;
@@ -131,21 +124,19 @@ public class PullUpExercise extends BaseExercise {
             }
             r.phase = "UP";
         } else {
-            r.phase = elbowAngle > 135f ? "DOWN" : "UP";
+            r.phase = elbowAngle > 100f ? "UP" : "DOWN";
         }
     }
-
 
     private void checkFullExtension(AnalysisResult result, float angle) {
         if (!result.phase.equals("DOWN")) return;
 
-        if (angle < ELBOW_FULL_EXTEND_ERROR) {
+        if (angle > ELBOW_FULL_EXTEND_ERROR) {
             result.addError(getString(R.string.error_pull_up_not_full_extension), LEFT_ELBOW, RIGHT_ELBOW);
-        } else if (angle < ELBOW_FULL_EXTEND_WARN) {
+        } else if (angle > ELBOW_FULL_EXTEND_WARN) {
             result.addError(getString(R.string.error_pull_up_not_full_extension_warn), LEFT_ELBOW, RIGHT_ELBOW);
         }
     }
-
 
     private void checkChinAboveBar(AnalysisResult result, List<NormalizedLandmark> lm) {
         if (!result.phase.equals("UP")) return;
@@ -154,14 +145,12 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-
     private boolean checkChinOverBar(List<NormalizedLandmark> lm) {
         if (emaNoseY < 0) return false;
         float wristY = getAvgWristY();
         if (wristY < 0) return false;
         return (wristY - emaNoseY) > CHIN_ABOVE_WRIST_MIN;
     }
-
 
     private void checkElbowSymmetry(AnalysisResult result, List<NormalizedLandmark> lm) {
         float lA = getAngle(lm, LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST);
@@ -178,10 +167,8 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-
     private void checkSwing(AnalysisResult result) {
         if (emaSwingX < 0) return;
-
 
         if (emaSwingX > SWING_ERROR) {
             result.addError(getString(R.string.error_pull_up_swing_strong), LEFT_SHOULDER, RIGHT_SHOULDER);
@@ -189,7 +176,6 @@ public class PullUpExercise extends BaseExercise {
             result.addError(getString(R.string.error_pull_up_swing_weak), LEFT_SHOULDER, RIGHT_SHOULDER);
         }
     }
-
 
     private void checkElbowWidth(AnalysisResult result, List<NormalizedLandmark> lm) {
         if (!allVisible(lm, LEFT_ELBOW, RIGHT_ELBOW, LEFT_SHOULDER, RIGHT_SHOULDER)) return;
@@ -206,7 +192,6 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-
     private void checkLegSwing(AnalysisResult result, List<NormalizedLandmark> lm) {
         float shX = getAvgShoulderX();
         float hipX = getAvgHipX();
@@ -222,7 +207,6 @@ public class PullUpExercise extends BaseExercise {
         }
     }
 
-
     private void captureBarPosition() {
         if (barFrameCount >= BAR_CAPTURE_FRAMES) return;
         float wY = getAvgWristY();
@@ -231,7 +215,6 @@ public class PullUpExercise extends BaseExercise {
         barY = barFrameCount == 0 ? wY : (barY + wY) / 2f;
         barFrameCount++;
     }
-
 
     private void updateSwing() {
         float shX = getAvgShoulderX();
@@ -243,7 +226,6 @@ public class PullUpExercise extends BaseExercise {
         }
         prevShoulderX = shX;
     }
-
 
     private float getAvgElbowAngle(List<NormalizedLandmark> lm) {
         float lA = getAngle(lm, LEFT_SHOULDER, LEFT_ELBOW, LEFT_WRIST);
@@ -285,7 +267,6 @@ public class PullUpExercise extends BaseExercise {
                 return getString(R.string.feedback_pull_up_start);
         }
     }
-
 
     private void updateEMA(List<NormalizedLandmark> lm) {
         if (isVisible(lm, NOSE)) {

@@ -46,8 +46,6 @@ import java.util.concurrent.atomic.AtomicLong;
 
 public class VideoRecorder {
 
-    private static final String TAG = "VideoRecorder";
-
     private static final String VIDEO_MIME = "video/avc";
     private static final String AUDIO_MIME = "audio/mp4a-latm";
     private static final int VIDEO_BITRATE = 6_000_000;

@@ -360,7 +360,11 @@ public class ProfileActivity extends AppCompatActivity {
         @Override
         public void onBindViewHolder(ViewHolder h, int position) {
             WorkoutRecord r = items.get(position);
-            h.b.tvWorkoutIcon.setText(r.icon != null ? r.icon : "💪");
+            if (r.iconResId != 0) {
+                h.b.ivWorkoutIcon.setImageResource(r.iconResId);
+            } else {
+                h.b.ivWorkoutIcon.setImageResource(R.drawable.exercise_squat);
+            }
             h.b.tvWorkoutName.setText(r.exerciseName);
             h.b.tvWorkoutDate.setText(sdf.format(new Date(r.timestamp)));
             h.b.tvWorkoutReps.setText(String.valueOf(r.reps));

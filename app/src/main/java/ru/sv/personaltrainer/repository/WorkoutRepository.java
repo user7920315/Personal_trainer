@@ -28,10 +28,10 @@ public class WorkoutRepository {
         this.gson = new Gson();
     }
 
-    public void saveWorkout(String exerciseId, String exerciseName, String icon, int reps) {
+    public void saveWorkout(String exerciseId, String exerciseName, int iconResId, int reps) {
         if (reps <= 0) return;
         List<WorkoutRecord> history = loadWorkouts();
-        history.add(new WorkoutRecord(exerciseId, exerciseName, icon, reps, System.currentTimeMillis()));
+        history.add(new WorkoutRecord(exerciseId, exerciseName, iconResId, reps, System.currentTimeMillis()));
         if (history.size() > 100) history.remove(0);
         prefs.edit().putString(KEY_WORKOUTS, gson.toJson(history)).apply();
     }

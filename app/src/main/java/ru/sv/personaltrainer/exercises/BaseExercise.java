@@ -55,8 +55,10 @@ public abstract class BaseExercise {
         public int holdSeconds = -1;
 
         public void addError(String message, int... landmarks) {
-            errors.add(message);
-            for (int lm : landmarks) errorLandmarks.add(lm);
+            if (!errors.contains(message)) {
+                errors.add(message);
+                for (int lm : landmarks) errorLandmarks.add(lm);
+            }
         }
     }
 

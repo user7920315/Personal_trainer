@@ -237,14 +237,22 @@ public class ExerciseActivity extends AppCompatActivity {
             binding.poseOverlay.updateResults(null, 0, 0, null);
         }
 
-        if (result.errors != null && result.errors.size() > 0) {
+        if (result.errors != null && !result.errors.isEmpty()) {
             binding.layoutErrors.setVisibility(android.view.View.VISIBLE);
             StringBuilder sb = new StringBuilder();
-            for (int i = 0; i < result.errors.size() && i < 3; i++) {
-                sb.append(result.errors.get(i));
-                if (i < result.errors.size() - 1 && i < 2) sb.append("\n");
+            int count = 0;
+            for (int i = 0; i < result.errors.size() && count < 3; i++) {
+                String err = result.errors.get(i);
+                if (err.equals(result.mainFeedback)) continue;
+
+                if (sb.length() > 0) sb.append("\n");
+                sb.append(err);
+                count++;
             }
             binding.tvErrors.setText(sb.toString());
+            if (sb.length() == 0) {
+                binding.layoutErrors.setVisibility(android.view.View.GONE);
+            }
         } else {
             binding.layoutErrors.setVisibility(android.view.View.GONE);
         }

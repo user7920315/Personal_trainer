@@ -86,7 +86,6 @@ public class ExerciseViewModel extends AndroidViewModel {
 
         if (frameBitmap != null) {
             videoFrame.postValue(new VideoFrame(frameBitmap, result.poseResult, result.errorLandmarks, result.repText, result.phaseText, result.mainFeedback, result.phaseColor, currentExercise.getName(), result.qualityText, result.qualityColor, System.nanoTime()));
-        } else {
         }
 
         String error = (result.errors != null && !result.errors.isEmpty()) ? result.errors.get(0) : "";
@@ -104,7 +103,7 @@ public class ExerciseViewModel extends AndroidViewModel {
 
     public boolean isTtsEnabled() {
         Boolean current = ttsEnabled.getValue();
-        return current == null || current;
+        return current == null || !current;
     }
 
     public void setRecording(boolean recording) {
@@ -117,10 +116,10 @@ public class ExerciseViewModel extends AndroidViewModel {
 
     public void finishWorkout(String exerciseId) {
         if (currentExercise == null) return;
-        String icon = getIconForExercise(exerciseId);
+        int iconResId = getIconForExercise(exerciseId);
         int reps = currentExercise.getRepCount();
         if (reps > 0) {
-            workoutRepository.saveWorkout(exerciseId, currentExercise.getName(), icon, reps);
+            workoutRepository.saveWorkout(exerciseId, currentExercise.getName(), iconResId, reps);
         }
         currentExercise.reset();
     }
@@ -230,22 +229,15 @@ public class ExerciseViewModel extends AndroidViewModel {
         return getColor(R.color.quality_poor);
     }
 
-    private String getIconForExercise(String id) {
+    private int getIconForExercise(String id) {
         switch (id) {
-            case "SQUAT":
-                return getString(R.string.icon_squat);
-            case "LUNGE":
-                return getString(R.string.icon_lunge);
-            case "GLUTE_BRIDGE":
-                return getString(R.string.icon_glute);
-            case "BURPEE":
-                return getString(R.string.icon_burpee);
-            case "PULL_UP":
-                return getString(R.string.icon_pullup);
-            case "PLANK":
-                return getString(R.string.icon_plank);
-            default:
-                return getString(R.string.icon_default);
+            case "SQUAT":        return R.drawable.exercise_squat;
+            case "LUNGE":        return R.drawable.exercise_lunge;
+            case "GLUTE_BRIDGE": return R.drawable.exercise_glute_bridge;
+            case "BURPEE":       return R.drawable.exercise_burpee;
+            case "PULL_UP":      return R.drawable.exercise_pull_up;
+            case "PLANK":        return R.drawable.exercise_plank;
+            default:             return 0;
         }
     }
 
