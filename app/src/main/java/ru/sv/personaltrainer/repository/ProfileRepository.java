@@ -52,8 +52,4 @@ public class ProfileRepository {
     public void setOnboardingDone(boolean done) {
         prefs.edit().putBoolean(KEY_ONBOARDING_DONE, done).apply();
     }
-
-    public boolean isOnboardingDone() {
-        return prefs.getBoolean(KEY_ONBOARDING_DONE, false);
-    }
 }

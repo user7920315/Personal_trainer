@@ -81,13 +81,6 @@ public class GluteBridgeExercise extends BaseExercise {
     private enum ViewMode {SIDE, FRONT, UNKNOWN}
 
 
-
-    public void setMode(ExerciseMode mode) {
-        this.modeOverride = mode;
-        this.currentMode = mode;
-        this.modeDetected = true;
-    }
-
     @Override
     public String getName() {
         return getString(R.string.exercise_glute_bridge_name);

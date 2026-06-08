@@ -13,8 +13,4 @@ public class Event<T> {
         hasBeenHandled = true;
         return content;
     }
-
-    public T peekContent() {
-        return content;
-    }
 }

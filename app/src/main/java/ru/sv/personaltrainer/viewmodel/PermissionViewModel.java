@@ -84,7 +84,4 @@ public class PermissionViewModel extends AndroidViewModel {
         repository.openAppSettings();
     }
 
-    public void resetDenials() {
-        repository.resetCameraDenials();
-    }
 }

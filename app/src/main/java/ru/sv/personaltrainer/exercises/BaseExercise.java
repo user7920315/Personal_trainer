@@ -100,15 +100,6 @@ public abstract class BaseExercise {
         return false;
     }
 
-    protected float getVisibility(List<NormalizedLandmark> lm, int idx) {
-        if (idx >= lm.size()) return 0f;
-        NormalizedLandmark point = lm.get(idx);
-        if (point.visibility().isPresent()) {
-            return point.visibility().get();
-        }
-        return 0f;
-    }
-
     protected boolean isValidData(List<NormalizedLandmark> lm) {
         return lm != null && lm.size() >= 33;
     }

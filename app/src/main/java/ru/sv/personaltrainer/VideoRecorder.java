@@ -210,10 +210,6 @@ public class VideoRecorder {
         measureAndLayout();
     }
 
-    public boolean isRecording() {
-        return recording;
-    }
-
     public void startRecording() {
         if (recording) return;
 

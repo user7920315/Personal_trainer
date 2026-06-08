@@ -104,20 +104,6 @@ public class PoseOverlayView extends View {
         invalidate();
     }
 
-    public void drawOnCanvas(Canvas canvas, PoseLandmarkerResult result, int frameWidth, int frameHeight, List<Integer> errors) {
-        if (result == null || result.landmarks().isEmpty()) return;
-
-        List<NormalizedLandmark> landmarks = result.landmarks().get(0);
-
-        List<Integer> savedErrors = this.errorLandmarks;
-        this.errorLandmarks = errors;
-
-        drawConnections(canvas, landmarks, frameWidth, frameHeight);
-        drawLandmarks(canvas, landmarks, frameWidth, frameHeight);
-
-        this.errorLandmarks = savedErrors;
-    }
-
     @Override
     protected void onDraw(Canvas canvas) {
         super.onDraw(canvas);

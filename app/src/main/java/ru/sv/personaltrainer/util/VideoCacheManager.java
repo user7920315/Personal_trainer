@@ -59,13 +59,4 @@ public class VideoCacheManager {
             throw new RuntimeException("Не удалось скопировать видео: " + assetName, e);
         }
     }
-
-    public static void clearCache(Context context) {
-        File cacheDir = new File(context.getCacheDir(), "videos");
-        if (cacheDir.exists()) {
-            for (File f : cacheDir.listFiles()) {
-                f.delete();
-            }
-        }
-    }
 }

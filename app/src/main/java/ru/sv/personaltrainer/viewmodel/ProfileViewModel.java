@@ -148,12 +148,6 @@ public class ProfileViewModel extends AndroidViewModel {
         stats.setValue(workoutRepo.getStats());
     }
 
-    public void refreshData() {
-        weightLog.setValue(weightRepo.loadWeightLog());
-        workouts.setValue(workoutRepo.loadWorkouts());
-        stats.setValue(workoutRepo.getStats());
-    }
-
     private String getString(int resId) {
         return getApplication().getString(resId);
     }

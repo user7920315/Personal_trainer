@@ -18,6 +18,4 @@ public class WorkoutResult {
     public int qualityColor;
 
     public PoseLandmarkerResult poseResult;
-    public int previewWidth;
-    public int previewHeight;
 }
