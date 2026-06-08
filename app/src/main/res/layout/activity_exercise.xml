@@ -113,7 +113,6 @@
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/layoutButtons"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginStart="@dimen/feedback_card_margin"

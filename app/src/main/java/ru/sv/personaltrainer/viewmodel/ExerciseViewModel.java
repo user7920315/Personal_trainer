@@ -103,7 +103,7 @@ public class ExerciseViewModel extends AndroidViewModel {
 
     public boolean isTtsEnabled() {
         Boolean current = ttsEnabled.getValue();
-        return current == null || !current;
+        return current != null ? current : true;
     }
 
     public void setRecording(boolean recording) {
