@@ -271,8 +271,7 @@
     <string name="error_prefix_warning">⚠ </string>
     <string name="error_prefix_ok">✅ </string>
     <string name="error_format">Ошибка: %s</string>
-    <string name="greeting_hello">Привет! 👋</string>
-    <string name="greeting_subtitle">Выбери упражнение</string>
+    <string name="greeting_subtitle">Выберите упражнение</string>
     <string name="search_hint">Поиск упражнений...</string>
     <string name="exercise_default_title">Упражнение</string>
     <string name="exercise_default_muscles">Мышцы</string>

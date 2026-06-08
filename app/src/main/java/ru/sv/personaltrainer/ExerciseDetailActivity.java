@@ -27,32 +27,25 @@ public class ExerciseDetailActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+
         binding = ActivityExerciseDetailBinding.inflate(getLayoutInflater());
         setContentView(binding.getRoot());
 
         videoCache = new VideoCacheManager(this);
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.scrollViewDetail, (v, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-            v.setPadding(bars.left, 0, bars.right, bars.bottom);
-            return WindowInsetsCompat.CONSUMED;
+        ViewCompat.setOnApplyWindowInsetsListener(binding.getRoot(), (v, insets) -> {
+            Insets bars = insets.getInsets(
+                    WindowInsetsCompat.Type.systemBars() |
+                            WindowInsetsCompat.Type.displayCutout()
+            );
+
+            binding.scrollViewDetail.setPadding(bars.left, bars.top, bars.right, bars.bottom);
+
+            return insets;
         });
 
-        ViewCompat.setOnApplyWindowInsetsListener(binding.videoContainer, (v, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.statusBars());
-            android.widget.FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) v.getLayoutParams();
-            params.topMargin = bars.top;
-            v.setLayoutParams(params);
-            return WindowInsetsCompat.CONSUMED;
-        });
-
-        ViewCompat.setOnApplyWindowInsetsListener(binding.btnDetailBack, (v, insets) -> {
-            Insets bars = insets.getInsets(WindowInsetsCompat.Type.systemBars() | WindowInsetsCompat.Type.displayCutout());
-            android.widget.FrameLayout.LayoutParams params = (android.widget.FrameLayout.LayoutParams) v.getLayoutParams();
-            params.topMargin = bars.top + (int) (12 * getResources().getDisplayMetrics().density);
-            v.setLayoutParams(params);
-            return WindowInsetsCompat.CONSUMED;
-        });
+        ViewCompat.requestApplyInsets(binding.getRoot());
 
         String exerciseId = getIntent().getStringExtra("EXERCISE_ID");
         if (exerciseId == null) {
@@ -82,22 +75,17 @@ public class ExerciseDetailActivity extends AppCompatActivity {
 
     private void setupVideo(ExerciseInfo info) {
         String videoFile = info.getVideoFileName();
-
         File localFile = videoCache.getVideoFile(videoFile);
         Uri videoUri = Uri.fromFile(localFile);
-
         binding.videoView.setVideoURI(videoUri);
-
         binding.videoView.setOnPreparedListener(mp -> {
             mp.setLooping(true);
             mp.start();
         });
-
         binding.videoView.setOnErrorListener((mp, what, extra) -> {
             binding.videoView.setVisibility(android.view.View.GONE);
             return true;
         });
-
         binding.videoView.requestFocus();
     }
 

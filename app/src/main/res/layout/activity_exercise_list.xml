@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/rootList"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootList"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/background_dark"
@@ -13,7 +13,6 @@
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingHorizontal="@dimen/spacing_lg"
-        android:paddingTop="@dimen/spacing_lg"
         android:paddingBottom="@dimen/spacing_md">
 
         <TextView

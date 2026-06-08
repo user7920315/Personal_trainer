@@ -3,6 +3,6 @@
     <string name="app_name">MyTrainer</string>
     <string name="connection_connected">●●●</string>
     <string name="connection_disconnected">○○○</string>
-    <string name="phase_search">⏳ Поиск...</string>
+    <string name="phase_search">Поиск...</string>
     <string name="phase_ready">ГОТОВ</string>
 </resources>

@@ -17,7 +17,7 @@ public class WearRepository {
     private android.content.Context context;
 
     public WearRepository() {
-        this.phaseText = new MutableLiveData<>("⏳ Поиск...");
+        this.phaseText = new MutableLiveData<>("Поиск...");
         this.phaseColor = new MutableLiveData<>(0xFFAAAAAA);
         this.errorText = new MutableLiveData<>("");
         this.errorVisible = new MutableLiveData<>(false);
